@@ -33,7 +33,7 @@ export default async function ShopPage({ params }: { params: { locale: string } 
     <section className="py-s5 sm:py-s6">
       <Container>
         <header className="anim-fade-up mx-auto mb-s5 max-w-2xl text-center">
-          <h1 className="font-display text-[36px] uppercase tracking-wide text-fg-dark sm:text-[56px]">
+          <h1 className="font-hero text-[36px] uppercase tracking-wide text-fg-dark sm:text-[56px]">
             {t("title")}
           </h1>
           <p className="mt-2 font-sans text-[12px] font-extrabold uppercase tracking-[0.2em] text-fg-dark-soft sm:text-[13px]">

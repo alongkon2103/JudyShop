@@ -1,23 +1,34 @@
 export const SITE = {
   name: "Judy Shop",
-  /** Short, customer-facing tagline used under the hero + as og:site_name. */
-  tagline: "ร้านจำหน่ายสิทธิ์ Whitelist สำหรับเกม TikTok Interactive",
-  /** Default meta description (appears in search results + share previews). */
+  /** Short, customer-facing tagline — used under the hero, as the
+   *  og:site_name fallback, and as Twitter's title. English-first
+   *  because our primary audience is international TikTok Live
+   *  viewers. */
+  tagline: "Official Whitelist Storefront for TikTok Interactive Games",
+  /** Default meta description (appears in search results + share
+   *  previews). Lead with English; the Thai variant is exposed as
+   *  `descriptionTh` for locale=th routes. */
   description:
-    "Judy Shop — ร้านจำหน่ายสิทธิ์ Whitelist สำหรับเกม TikTok Interactive อย่างเป็นทางการ ส่งมอบสิทธิ์ทันทีหลังชำระเงิน รองรับการชำระเงินผ่าน PromptPay และบัตรเครดิตอย่างปลอดภัย",
-  /** English variant — used when locale=en or for international SEO. */
-  descriptionEn:
-    "Judy Shop — Official whitelist storefront for TikTok Interactive games. Instant access on payment, with secure PromptPay and credit card checkout.",
+    "Judy Shop — the official whitelist storefront for TikTok Interactive games. Get instant access right after payment. Secure checkout via Stripe (credit card) and PromptPay. Trusted by streamers and viewers worldwide.",
+  /** Thai variant — used by the localised pages under /th. */
+  descriptionTh:
+    "Judy Shop — ร้านจำหน่ายสิทธิ์ Whitelist สำหรับเกม TikTok Interactive อย่างเป็นทางการ ส่งมอบสิทธิ์ทันทีหลังชำระเงิน รองรับ Stripe (บัตรเครดิต) และ PromptPay",
+  /** Search keywords. English terms first since they drive the most
+   *  international SEO traffic; the Thai tail still helps capture
+   *  local intent. */
   keywords: [
     "TikTok Interactive",
-    "Roblox",
-    "Whitelist",
+    "TikTok Interactive games",
+    "TikTok Live games",
+    "Roblox whitelist",
+    "Whitelist subscription",
     "Judy Shop",
     "Judy Legend",
     "Judy Jump",
-    "TikTok Live เกม",
+    "Buy whitelist",
+    "PromptPay checkout",
     "ซื้อ Whitelist",
-    "PromptPay",
+    "ไวลิสต์ TikTok Interactive",
   ],
   discordUrl: "https://discord.gg/ERV8KqRztF",
   tiktokUrl: "https://www.tiktok.com/@judyshop_th",

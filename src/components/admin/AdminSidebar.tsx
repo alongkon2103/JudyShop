@@ -11,6 +11,9 @@ import {
   Receipt,
   Settings,
   History,
+  Users,
+  TrendingUp,
+  BarChart3,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 
@@ -19,7 +22,10 @@ type NavItem = { href: string; label: string; icon: typeof Package };
 const NAV: { section: string; items: NavItem[] }[] = [
   {
     section: "Overview",
-    items: [{ href: "/admin", label: "Dashboard", icon: LayoutDashboard }],
+    items: [
+      { href: "/admin",           label: "Dashboard", icon: LayoutDashboard },
+      { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+    ],
   },
   {
     section: "Catalogue",
@@ -30,6 +36,8 @@ const NAV: { section: string; items: NavItem[] }[] = [
     items: [
       { href: "/admin/whitelist",     label: "Whitelist",     icon: ScrollText },
       { href: "/admin/transactions",  label: "Transactions",  icon: Receipt },
+      { href: "/admin/partners",      label: "Partners",      icon: Users },
+      { href: "/admin/finance",       label: "Finance",       icon: TrendingUp },
       { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
       { href: "/admin/news",          label: "News",          icon: Newspaper },
     ],

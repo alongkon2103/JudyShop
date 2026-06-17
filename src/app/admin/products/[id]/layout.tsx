@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { Settings, Coins, Image as ImageIcon, Gift, FileBox } from "lucide-react";
+import { Settings, Coins, Image as ImageIcon, Gift, FileBox, Users } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/admin-session";
 import { PageHeader } from "@/components/admin/PageHeader";
@@ -19,7 +19,7 @@ export default async function EditProductLayout({
     where: { id: params.id },
     include: {
       _count: {
-        select: { plans: true, images: true, giftOverlays: true, presets: true },
+        select: { plans: true, images: true, giftOverlays: true, presets: true, partners: true },
       },
     },
   });
@@ -32,6 +32,7 @@ export default async function EditProductLayout({
     { href: `${base}/images`,   label: "Images",   icon: <ImageIcon size={14} strokeWidth={2.25} />, count: product._count.images },
     { href: `${base}/overlays`, label: "Gift overlays", icon: <Gift size={14} strokeWidth={2.25} />, count: product._count.giftOverlays },
     { href: `${base}/presets`,  label: "Presets",  icon: <FileBox size={14} strokeWidth={2.25} />,   count: product._count.presets },
+    { href: `${base}/partners`, label: "Partners", icon: <Users size={14} strokeWidth={2.25} />,    count: product._count.partners },
   ];
 
   return (

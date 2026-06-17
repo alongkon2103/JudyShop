@@ -15,7 +15,7 @@ export function Hero() {
     <section className="relative flex min-h-[85svh] items-center py-s5 sm:py-s6">
       <Container className="w-full">
         <div className="mx-auto flex max-w-4xl flex-col items-center text-center">
-          <h1 className="anim-pop whitespace-nowrap font-display text-[56px] leading-none tracking-wide sm:text-[88px] lg:text-[112px]">
+          <h1 className="anim-pop whitespace-nowrap font-hero text-[56px] leading-none tracking-wide sm:text-[88px] lg:text-[112px]">
             <span className="neon-text text-pink-400">JUDY</span>{" "}
             <span className="neon-text text-cyan-400">SHOP</span>
           </h1>

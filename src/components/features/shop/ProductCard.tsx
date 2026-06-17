@@ -65,8 +65,11 @@ export function ProductCard({ product, onSelect }: Props) {
         <h2 className="line-clamp-1 font-display text-[18px] tracking-wide text-fg-light sm:text-[22px]">
           {product.name}
         </h2>
+        {/* Admin-authored short blurb takes priority — falls back to
+            the plain description so legacy products without a short
+            description still render something. */}
         <p className="line-clamp-2 text-[12px] leading-snug text-fg-light-soft sm:text-[13px]">
-          {product.descriptionPlain}
+          {product.shortDescription || product.descriptionPlain}
         </p>
 
         <div className="mt-auto flex items-end justify-between gap-2 pt-2 sm:pt-3">

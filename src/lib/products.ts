@@ -64,6 +64,8 @@ function normalize(p: DbProductFull, locale: Locale): Product {
     shortName: pickI18n(p.shortNameEn, p.shortNameTh, locale) || undefined,
     description,
     descriptionPlain: stripRichText(description),
+    shortDescription:
+      pickI18n(p.shortDescriptionEn, p.shortDescriptionTh, locale) || undefined,
     images: p.images.map((i) => i.url),
     badge: p.badge ? (p.badge.toLowerCase() as Product["badge"]) : undefined,
     comingSoon: p.comingSoon,

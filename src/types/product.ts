@@ -17,6 +17,10 @@ export type Product = {
   /** Plain-text version of `description` — use this for previews,
    *  line-clamp cards, meta descriptions, etc. */
   descriptionPlain: string;
+  /** Short blurb authored separately from the rich description.
+   *  Used as the product-card tagline; falls back to a truncated
+   *  `descriptionPlain` if empty. */
+  shortDescription?: string;
   /** Ordered gallery. images[0] is used as the card thumbnail. */
   images: string[];
   badge?: "hot" | "new" | "sale";

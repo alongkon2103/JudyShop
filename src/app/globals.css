@@ -73,13 +73,13 @@
   --bad:  hsl(0   72% 60%);
 
   /* ── Type ──────────────────────────────────────────────
-     Fallback chain: pick the Latin font first, then the single
-     Thai face we ship (IBM Plex Sans Thai Looped). Browsers do
-     per-glyph fallback, so Latin chars use Lilita / Nunito while
-     Thai chars consistently use IBM Plex — no flash of system
-     Thai and no font drift between headings and body. */
-  --font-display: var(--font-lilita), var(--font-thai), "Fredoka", system-ui, sans-serif;
-  --font-body:    var(--font-body),   var(--font-thai), ui-sans-serif, system-ui, sans-serif;
+     Inter (Latin) + IBM Plex Sans Thai Looped (Thai). Same chain
+     for display and body — visual hierarchy is achieved through
+     size + weight + colour, not through swapping font families.
+     Both faces ship 100% free for commercial use (SIL OFL 1.1 and
+     Apache 2.0 respectively); see app/layout.tsx for the rationale. */
+  --font-display: var(--font-latin), var(--font-thai), system-ui, sans-serif;
+  --font-body:    var(--font-latin), var(--font-thai), system-ui, sans-serif;
 
   /* ── Spacing ─────────────────────────────────────────── */
   --s-1: 4px;

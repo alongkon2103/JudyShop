@@ -56,6 +56,9 @@ const config: Config = {
       fontFamily: {
         display: ["var(--font-display)"],
         sans:    ["var(--font-body)"],
+        /** Reserved for the JUDY SHOP hero wordmark only — see
+         *  app/layout.tsx for the rationale. */
+        hero:    ["var(--font-hero)"],
       },
       spacing: {
         s1: "var(--s-1)",

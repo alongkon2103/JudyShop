@@ -1,31 +1,45 @@
 import type { Metadata } from "next";
-import { Lilita_One, Nunito, IBM_Plex_Sans_Thai_Looped } from "next/font/google";
+import { Inter, IBM_Plex_Sans_Thai_Looped, Lilita_One } from "next/font/google";
 import "./globals.css";
 import { SITE } from "@/constants/site";
 
-const lilita = Lilita_One({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-lilita",
-  display: "swap",
-});
-
-const nunito = Nunito({
+// ── Type stack ─────────────────────────────────────────────────
+//
+// Three faces, all 100% free for commercial use:
+//
+//   - Inter (SIL OFL 1.1) → Latin script for body + general UI.
+//     The de facto standard for readable web copy (Figma, GitHub,
+//     Mozilla all ship it).
+//   - IBM Plex Sans Thai Looped (Apache 2.0) → Thai script. The
+//     looped (วงกลม) characters read more naturally than the modern
+//     straight-line variant; designed to pair with IBM Plex Sans so
+//     it sits cleanly next to Inter on mixed-script pages.
+//   - Lilita One (SIL OFL 1.1) → reserved exclusively for the
+//     "JUDY SHOP" hero wordmark. Its chunky display weight is the
+//     visual signature of the brand. We expose it via its own
+//     `--font-hero` variable so it never bleeds into body text.
+//
+// Browsers do per-glyph fallback, so Latin chars route to Inter and
+// Thai chars to IBM Plex automatically — no manual font switching
+// per element.
+const latin = Inter({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-body",
+  variable: "--font-latin",
   display: "swap",
 });
 
-// Single Thai face for the entire site — looped (วงกลม) characters read
-// more naturally than the modern straight-line variant. We use the same
-// font for both body and display Thai text so headings and paragraphs
-// feel consistent across every page; the Latin fonts (Lilita / Nunito)
-// still provide visual hierarchy for English copy.
-const thaiBody = IBM_Plex_Sans_Thai_Looped({
+const thai = IBM_Plex_Sans_Thai_Looped({
   subsets: ["thai"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-thai",
+  display: "swap",
+});
+
+const hero = Lilita_One({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-hero",
   display: "swap",
 });
 
@@ -47,14 +61,17 @@ export const metadata: Metadata = {
   creator: SITE.name,
   publisher: SITE.name,
   // Social previews — both OG and Twitter consume the same image file
-  // placed at app/opengraph-image.jpg; Next.js auto-emits the right tags.
+  // placed at app/opengraph-image.png; Next.js auto-emits the right tags.
+  // Primary locale is en_US because our largest audience is international
+  // TikTok Live viewers; Thai is exposed as alternateLocale so localised
+  // crawlers (Google Thailand etc.) still pick up the th_TH preview.
   openGraph: {
     type: "website",
     siteName: SITE.name,
     title: SITE.name,
     description: SITE.description,
-    locale: "th_TH",
-    alternateLocale: ["en_US"],
+    locale: "en_US",
+    alternateLocale: ["th_TH"],
     url: SITE_URL,
   },
   twitter: {
@@ -85,11 +102,7 @@ try {
 }
 `;
 
-const FONT_VARS = [
-  lilita.variable,
-  nunito.variable,
-  thaiBody.variable,
-].join(" ");
+const FONT_VARS = [latin.variable, thai.variable, hero.variable].join(" ");
 
 /**
  * Root layout is intentionally minimal: <html>, <body>, fonts and the theme
@@ -98,7 +111,7 @@ const FONT_VARS = [
  */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="th" className={FONT_VARS}>
+    <html lang="en" className={FONT_VARS}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>

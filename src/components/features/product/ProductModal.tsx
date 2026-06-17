@@ -170,7 +170,7 @@ export function ProductModal({ product, open, onClose, cardFeePercent }: Props) 
         <header>
           <h2
             id={titleId}
-            className="font-display text-[28px] uppercase tracking-wide text-fg-light sm:text-[40px]"
+            className="font-display text-[20px] uppercase tracking-wide text-fg-light sm:text-[26px]"
           >
             {product.name}
           </h2>
