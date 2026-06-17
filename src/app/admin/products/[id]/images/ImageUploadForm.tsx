@@ -2,10 +2,15 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
-import { UploadCloud, X } from "lucide-react";
+import { UploadCloud, X, Loader2 } from "lucide-react";
 import { Switch } from "@/components/admin/Switch";
 import { useToast } from "@/components/admin/toast/ToastContext";
 import { createImage } from "../_actions";
+import {
+  IMAGE_HELP_TEXT,
+  IMAGE_TYPES,
+  validateImage,
+} from "@/lib/upload-constraints";
 import { cn } from "@/lib/cn";
 
 function formatSize(bytes: number) {
@@ -84,16 +89,27 @@ export function ImageUploadForm({ productId }: { productId: string }) {
             {file ? file.name : "Choose an image"}
           </p>
           <p className="text-[11px] text-fg-light-soft">
-            {file ? formatSize(file.size) : "JPG / PNG / WebP — up to 6 MB"}
+            {file ? formatSize(file.size) : IMAGE_HELP_TEXT}
           </p>
         </div>
         <input
           ref={fileRef}
           type="file"
           name="file"
-          accept="image/*"
+          accept={IMAGE_TYPES.accept}
           required
-          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+          onChange={(e) => {
+            const picked = e.target.files?.[0] ?? null;
+            if (!picked) { setFile(null); return; }
+            const check = validateImage(picked);
+            if (!check.ok) {
+              toast.error(check.error);
+              e.target.value = "";
+              setFile(null);
+              return;
+            }
+            setFile(picked);
+          }}
           className="absolute inset-0 cursor-pointer opacity-0"
         />
       </div>
@@ -112,9 +128,10 @@ function Submit({ disabled }: { disabled: boolean }) {
     <button
       type="submit"
       disabled={pending || disabled}
-      className="rounded-full bg-pink-500 px-6 py-2.5 text-[12px] font-semibold text-white shadow-[0_2px_0_var(--pink-600)] transition-transform duration-fast ease-spring hover:-translate-y-0.5 active:translate-y-0.5 disabled:opacity-60"
+      className="inline-flex items-center gap-1.5 rounded-full bg-pink-500 px-6 py-2.5 text-[12px] font-semibold text-white shadow-[0_2px_0_var(--pink-600)] transition-transform duration-fast ease-spring hover:-translate-y-0.5 active:translate-y-0.5 disabled:opacity-60"
     >
-      {pending ? "Uploading…" : "Upload image"}
+      {pending && <Loader2 size={13} className="animate-spin" />}
+      {pending ? "กำลังอัพโหลด…" : "Upload image"}
     </button>
   );
 }

@@ -46,12 +46,13 @@ const nextConfig = {
     ],
   },
   experimental: {
-    // Cover 6 MB image uploads + form overhead. Default in Next.js is
-    // 1 MB which silently truncated multipart bodies and made the
-    // announcement/news upload forms hang on `pending` without ever
-    // reaching the server action handler.
+    // 25 MB ceiling — covers the 20 MB image MAX_IMAGE_BYTES (see
+    // src/lib/upload-constraints.ts) plus form overhead. Default in
+    // Next.js is 1 MB, which silently truncated multipart bodies and
+    // made admin upload forms hang on `pending` without ever reaching
+    // the server action handler.
     serverActions: {
-      bodySizeLimit: "8mb",
+      bodySizeLimit: "25mb",
     },
   },
   async headers() {

@@ -2,12 +2,17 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
-import { UploadCloud, X, Trash2 } from "lucide-react";
+import { UploadCloud, X, Trash2, Loader2 } from "lucide-react";
 import { Field, I18nField, inputClass } from "@/components/admin/Form";
 import { Switch } from "@/components/admin/Switch";
 import { useToast } from "@/components/admin/toast/ToastContext";
 import { createAnnouncement, updateAnnouncement } from "./_actions";
 import { toLocalInputValue } from "@/lib/datetime";
+import {
+  IMAGE_HELP_TEXT,
+  IMAGE_TYPES,
+  validateImage,
+} from "@/lib/upload-constraints";
 import { cn } from "@/lib/cn";
 
 function formatSize(n: number) {
@@ -177,15 +182,26 @@ export function AnnouncementForm({ existing }: Props) {
                   : "Choose a poster image"}
             </p>
             <p className="text-[11px] text-fg-light-soft">
-              {file ? formatSize(file.size) : "JPG / PNG / WebP — up to 6 MB"}
+              {file ? formatSize(file.size) : IMAGE_HELP_TEXT}
             </p>
           </div>
           <input
             ref={fileRef}
             type="file"
             name="image"
-            accept="image/*"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            accept={IMAGE_TYPES.accept}
+            onChange={(e) => {
+              const picked = e.target.files?.[0] ?? null;
+              if (!picked) { setFile(null); return; }
+              const check = validateImage(picked);
+              if (!check.ok) {
+                toast.error(check.error);
+                e.target.value = "";
+                setFile(null);
+                return;
+              }
+              setFile(picked);
+            }}
             className="absolute inset-0 cursor-pointer opacity-0"
           />
         </div>
@@ -239,9 +255,10 @@ function Submit({ isEdit }: { isEdit: boolean }) {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-full bg-pink-500 px-6 py-2.5 text-[12px] font-semibold text-white shadow-[0_2px_0_var(--pink-600)] transition-transform duration-fast ease-spring hover:-translate-y-0.5 active:translate-y-0.5 disabled:opacity-60"
+      className="inline-flex items-center gap-1.5 rounded-full bg-pink-500 px-6 py-2.5 text-[12px] font-semibold text-white shadow-[0_2px_0_var(--pink-600)] transition-transform duration-fast ease-spring hover:-translate-y-0.5 active:translate-y-0.5 disabled:opacity-60"
     >
-      {pending ? "Saving…" : isEdit ? "Save changes" : "Create announcement"}
+      {pending && <Loader2 size={13} className="animate-spin" />}
+      {pending ? "กำลังอัพโหลด…" : isEdit ? "Save changes" : "Create announcement"}
     </button>
   );
 }

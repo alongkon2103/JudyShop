@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/admin-session";
 import { logAdmin } from "@/lib/audit";
 import { uploadFile, deleteFileByPublicUrl } from "@/lib/storage";
+import { validateImage } from "@/lib/upload-constraints";
 
 const dateOrNull = (s: FormDataEntryValue | null) => {
   if (typeof s !== "string" || !s.trim()) return null;
@@ -27,12 +28,10 @@ function bumpPaths() {
   revalidatePath("/news");
 }
 
-const MAX_IMAGE_BYTES = 6 * 1024 * 1024;
-
 async function maybeUploadAnnouncementImage(file: File | null): Promise<string | null> {
   if (!file || file.size === 0) return null;
-  if (file.size > MAX_IMAGE_BYTES) throw new Error("Image too large (max 6 MB).");
-  if (!file.type.startsWith("image/")) throw new Error("Only image files are allowed.");
+  const check = validateImage(file);
+  if (!check.ok) throw new Error(check.error);
   const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") ?? "bin";
   const path = `announcements/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
   const res = await uploadFile({ path, file });
