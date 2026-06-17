@@ -53,6 +53,10 @@ export async function getProductBySlug(
 
 function normalize(p: DbProductFull, locale: Locale): Product {
   const description = pickI18n(p.descriptionEn, p.descriptionTh, locale);
+  // Return an empty array when no images exist; ProductCard and
+  // ImageCarousel render a neutral "no image" placeholder in that case.
+  // (Previously we substituted /images/JudyLegend.jpg, which made every
+  // image-less product look like the Judy Legend mascot.)
   return {
     id: p.id,
     slug: p.slug,
@@ -60,7 +64,7 @@ function normalize(p: DbProductFull, locale: Locale): Product {
     shortName: pickI18n(p.shortNameEn, p.shortNameTh, locale) || undefined,
     description,
     descriptionPlain: stripRichText(description),
-    images: p.images.length > 0 ? p.images.map((i) => i.url) : [PLACEHOLDER_IMAGE],
+    images: p.images.map((i) => i.url),
     badge: p.badge ? (p.badge.toLowerCase() as Product["badge"]) : undefined,
     comingSoon: p.comingSoon,
     trialEnabled: p.trialEnabled,
@@ -78,5 +82,3 @@ function normalisePlan(plan: DbProductFull["plans"][number], locale: Locale): Pr
     priceUSD: Number(plan.priceUSD),
   };
 }
-
-const PLACEHOLDER_IMAGE = "/images/JudyLegend.jpg";

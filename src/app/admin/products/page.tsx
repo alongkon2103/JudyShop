@@ -90,9 +90,6 @@ export default async function AdminProductsPage() {
                         <span className="text-[12px] font-medium text-fg-light-mute">· {p.nameTh}</span>
                       </div>
                       <p className="text-[11px] font-medium text-fg-light-mute">/{p.slug}</p>
-                      <p className="mt-1 line-clamp-1 max-w-md text-[12px] text-fg-light-soft">
-                        {p.descriptionEn}
-                      </p>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap gap-1.5">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { ImageOff } from "lucide-react";
 import { ImageWithSkeleton } from "@/components/ui/ImageWithSkeleton";
 import { Badge } from "@/components/ui/Badge";
 import { formatTHB, formatUSD } from "@/lib/format";
@@ -34,14 +35,20 @@ export function ProductCard({ product, onSelect }: Props) {
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-300",
       )}
     >
-      <div className="relative aspect-[5/3] w-full overflow-hidden">
-        <ImageWithSkeleton
-          src={product.images[0]}
-          alt={product.name}
-          fill
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          className="object-cover transition-transform duration-slow ease-spring group-hover/card:scale-110"
-        />
+      <div className="relative aspect-[5/3] w-full overflow-hidden bg-paper-2">
+        {product.images.length > 0 ? (
+          <ImageWithSkeleton
+            src={product.images[0]}
+            alt={product.name}
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            className="object-cover transition-transform duration-slow ease-spring group-hover/card:scale-110"
+          />
+        ) : (
+          <div className="grid h-full w-full place-items-center text-fg-light-mute">
+            <ImageOff size={32} strokeWidth={1.5} aria-hidden />
+          </div>
+        )}
         {product.badge && (
           <div className="absolute right-2 top-2 sm:right-3 sm:top-3">
             <Badge tone={product.badge}>{product.badge}</Badge>

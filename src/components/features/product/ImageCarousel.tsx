@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ImageOff } from "lucide-react";
 import { ImageWithSkeleton } from "@/components/ui/ImageWithSkeleton";
 import { cn } from "@/lib/cn";
 
@@ -48,6 +48,27 @@ export function ImageCarousel({
     const target = ((next % images.length) + images.length) % images.length;
     el.scrollTo({ left: target * el.clientWidth, behavior: "smooth" });
   };
+
+  // No images: render a neutral placeholder. Keeps the modal layout
+  // stable (same aspect ratio) and matches the admin "no image" look so
+  // visitors know an image is *missing* rather than "is" the Judy mascot.
+  if (images.length === 0) {
+    return (
+      <div
+        className={cn(
+          "relative w-full overflow-hidden bg-paper-2",
+          aspectClass,
+          className,
+        )}
+        role="img"
+        aria-label={alt}
+      >
+        <div className="grid h-full w-full place-items-center text-fg-light-mute">
+          <ImageOff size={40} strokeWidth={1.5} aria-hidden />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={cn("group/carousel relative w-full", aspectClass, className)}>

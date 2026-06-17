@@ -191,13 +191,16 @@ describe("getActiveProducts — images", () => {
     expect(r[0]!.images).toEqual(["https://x/1.jpg", "https://x/2.jpg"]);
   });
 
-  it("falls back to the JudyLegend placeholder when no images exist", async () => {
+  it("returns an empty images array when the product has no images", async () => {
+    // Old behaviour substituted JudyLegend.jpg, which made every
+    // image-less product look like the mascot in the shop. Now the
+    // UI renders a neutral 'no image' placeholder instead, so the
+    // contract here is simply: pass through whatever the DB has.
     vi.mocked(db.product.findMany).mockResolvedValueOnce([
       makeRow({ images: [] }) as any,
     ]);
     const r = await getActiveProducts();
-    expect(r[0]!.images).toHaveLength(1);
-    expect(r[0]!.images[0]).toMatch(/JudyLegend\./);
+    expect(r[0]!.images).toEqual([]);
   });
 });
 
