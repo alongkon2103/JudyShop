@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8" />
+<title>ใบเสนอราคา Judyshop v3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&family=Noto+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:    #1a3d72;
+    --navy-2:  #2d5491;
+    --pink:    #d63384;
+    --ink:     #1a1a1a;
+    --ink-soft:#444;
+    --ink-mute:#767676;
+    --border:  #d9d9d9;
+    --border-2:#ececec;
+    --bg-soft: #f5f7fa;
+    --bg-bonus:#fff5e6;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0; padding: 0;
+    font-family: "Noto Sans Thai", "Sarabun", Arial, sans-serif;
+    color: var(--ink);
+    font-size: 10.5pt;
+    line-height: 1.55;
+  }
+
+  /* ── Heading ────────────────────────────────────────────── */
+  .cover-head {
+    text-align: center;
+    padding: 18pt 0;
+    border-bottom: 3pt solid var(--navy);
+    margin-bottom: 14pt;
+  }
+  .cover-head h1 {
+    margin: 0;
+    font-size: 28pt;
+    color: var(--navy);
+    font-weight: 700;
+  }
+  .cover-head .en {
+    font-size: 14pt;
+    color: var(--navy-2);
+    letter-spacing: 0.1em;
+  }
+  .cover-head .sub {
+    font-size: 10pt;
+    color: var(--ink-mute);
+    margin-top: 2pt;
+  }
+
+  /* ── Two-column info boxes ──────────────────────────────── */
+  .info-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10pt;
+    margin-bottom: 14pt;
+  }
+  .info-box {
+    border: 1pt solid var(--border);
+    border-radius: 4pt;
+    padding: 10pt 12pt;
+  }
+  .info-box h3 {
+    margin: 0 0 5pt;
+    font-size: 11pt;
+    color: var(--navy);
+  }
+  .info-box p {
+    margin: 0;
+    font-size: 9.5pt;
+    color: var(--ink-soft);
+    line-height: 1.55;
+  }
+  .info-box strong { color: var(--ink); font-weight: 600; }
+
+  /* ── Section ────────────────────────────────────────────── */
+  h2 {
+    margin: 18pt 0 8pt;
+    font-size: 13pt;
+    color: var(--navy);
+    padding-bottom: 4pt;
+    border-bottom: 1pt solid var(--border);
+  }
+  h2 .en {
+    font-size: 10pt;
+    color: var(--ink-mute);
+    font-weight: 400;
+    margin-left: 6pt;
+  }
+
+  /* ── Project details (definition list) ─────────────────── */
+  dl.proj {
+    margin: 0;
+    display: grid;
+    grid-template-columns: 110pt 1fr;
+    gap: 4pt 12pt;
+  }
+  dl.proj dt {
+    font-weight: 700;
+    color: var(--ink);
+    font-size: 9.5pt;
+  }
+  dl.proj dd {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 9.5pt;
+  }
+
+  /* ── Scope table ────────────────────────────────────────── */
+  table.scope {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8pt 0;
+    page-break-inside: avoid;
+  }
+  table.scope th {
+    background: var(--navy);
+    color: #fff;
+    font-size: 9.5pt;
+    font-weight: 700;
+    text-align: left;
+    padding: 7pt 8pt;
+  }
+  table.scope th.num { width: 8%; text-align: center; }
+  table.scope th.price { width: 14%; text-align: right; }
+  table.scope td {
+    padding: 7pt 8pt;
+    font-size: 9.5pt;
+    border-bottom: 1pt solid var(--border-2);
+    vertical-align: top;
+  }
+  table.scope td.num { text-align: center; color: var(--ink-mute); }
+  table.scope td.price { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+  table.scope tbody tr:nth-child(even) { background: var(--bg-soft); }
+  table.scope tbody tr.bonus { background: var(--bg-bonus); }
+  table.scope tbody tr.bonus td.price { color: #2c7a36; font-weight: 700; }
+  table.scope tfoot td {
+    background: var(--navy);
+    color: #fff;
+    font-weight: 700;
+    font-size: 11pt;
+    padding: 9pt 8pt;
+    border: 0;
+  }
+  table.scope tfoot td.label { text-align: right; }
+
+  /* ── Spec table (detailed) ──────────────────────────────── */
+  table.spec {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 6pt 0;
+    page-break-inside: avoid;
+    font-size: 9pt;
+  }
+  table.spec th, table.spec td {
+    padding: 5pt 7pt;
+    border: 1pt solid var(--border);
+    vertical-align: top;
+    text-align: left;
+  }
+  table.spec th {
+    background: var(--bg-soft);
+    color: var(--navy);
+    font-weight: 700;
+  }
+  table.spec th.num { width: 5%; text-align: center; }
+  table.spec th.cat { width: 11%; }
+  table.spec th.feat { width: 22%; }
+  table.spec td.num { text-align: center; color: var(--ink-mute); }
+  table.spec tr.section-row td {
+    background: var(--navy-2);
+    color: #fff;
+    font-weight: 700;
+    font-size: 10pt;
+  }
+
+  /* ── Payment terms ──────────────────────────────────────── */
+  table.payment {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8pt 0;
+  }
+  table.payment th {
+    background: var(--navy);
+    color: #fff;
+    font-size: 9.5pt;
+    padding: 7pt 8pt;
+    text-align: left;
+  }
+  table.payment th.amount { text-align: right; width: 22%; }
+  table.payment td {
+    padding: 7pt 8pt;
+    border-bottom: 1pt solid var(--border-2);
+    font-size: 9.5pt;
+  }
+  table.payment td.amount {
+    text-align: right;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  table.payment td.label { font-weight: 700; }
+
+  /* ── Conditions ─────────────────────────────────────────── */
+  ol.conditions {
+    margin: 6pt 0;
+    padding-left: 20pt;
+    font-size: 9.5pt;
+    color: var(--ink-soft);
+  }
+  ol.conditions li {
+    margin-bottom: 3pt;
+    padding-left: 4pt;
+  }
+
+  /* ── Tag pills ──────────────────────────────────────────── */
+  .tag {
+    display: inline-block;
+    padding: 1pt 6pt;
+    font-size: 8pt;
+    font-weight: 700;
+    border-radius: 2pt;
+    margin-left: 4pt;
+  }
+  .tag.new   { background: #2c7a36; color: #fff; }
+  .tag.bonus { background: #d29800; color: #fff; }
+
+  /* ── Print ──────────────────────────────────────────────── */
+  @page {
+    size: A4;
+    margin: 12mm 14mm 14mm;
+    @bottom-right {
+      content: "หน้า " counter(page) " / " counter(pages);
+      font-family: "Noto Sans Thai", sans-serif;
+      font-size: 8pt;
+      color: #767676;
+    }
+    @bottom-left {
+      content: "Judyshop · Quotation v3";
+      font-family: "Noto Sans Thai", sans-serif;
+      font-size: 8pt;
+      color: #a0a0a0;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- ─── Header ───────────────────────────────────────────── -->
+<div class="cover-head">
+  <h1>ใบเสนอราคา</h1>
+  <div class="en">QUOTATION</div>
+  <div class="sub">Web Development Services · เวอร์ชัน 3 (รวมการพัฒนาเพิ่มเติม)</div>
+</div>
+
+<!-- ─── Info boxes ───────────────────────────────────────── -->
+<div class="info-row">
+  <div class="info-box">
+    <h3>ผู้รับจ้าง</h3>
+    <p>
+      ชื่อ: อลงกรณ์ จันทร์เที่ยง<br/>
+      ที่อยู่: 123/149 แฟลตปากบึงเคหะร่มเกล้า<br/>
+      ถ.เคหะร่มเกล้า แขวงคลองสองต้นนุ่น<br/>
+      เขตลาดกระบัง กรุงเทพมหานคร 10520<br/>
+      ติดต่อ: <strong>alongkon2103@gmail.com</strong>, <strong>0628189331</strong>
+    </p>
+  </div>
+  <div class="info-box">
+    <h3>ผู้ว่าจ้าง</h3>
+    <p>ชื่อ/บริษัท: <strong>Judyshop</strong></p>
+  </div>
+</div>
+
+<!-- ─── Project Details ──────────────────────────────────── -->
+<h2>รายละเอียดโปรเจกต์ <span class="en">Project Details</span></h2>
+<dl class="proj">
+  <dt>ชื่อโปรเจกต์:</dt>
+  <dd>เว็บไซต์ซื้อขาย Whitelist ร้าน Judyshop และ API สำหรับตรวจสอบ Whitelist</dd>
+
+  <dt>เทคโนโลยี:</dt>
+  <dd>Next.js 14, Prisma, PostgreSQL (Supabase), Stripe, next-intl, Playwright</dd>
+
+  <dt>หน้าเว็บไซต์:</dt>
+  <dd>Home, Shop, Admin Panel (Dashboard / Analytics / Products / Whitelist / Transactions / <strong>Partners</strong> / <strong>Finance</strong> / Announcements / News / Settings / Audit Log)</dd>
+
+  <dt>ระยะเวลา:</dt>
+  <dd><strong>28 วันทำการ</strong> / 28 Business Days (20 วันเริ่มต้น + 8 วันงานเพิ่มเติม)</dd>
+
+  <dt>แก้ไขฟรี:</dt>
+  <dd><strong>15 ครั้ง</strong> / 15 times (10 ครั้งเดิม + 5 ครั้งสำหรับงานเพิ่มเติม)</dd>
+</dl>
+
+<!-- ─── Scope of work ────────────────────────────────────── -->
+<h2>ขอบเขตงาน <span class="en">Scope of Work</span></h2>
+<table class="scope">
+  <thead>
+    <tr>
+      <th class="num">#</th>
+      <th>รายการ</th>
+      <th>รายละเอียด</th>
+      <th class="price">ราคา (฿)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="num">1</td>
+      <td>หน้า Home</td>
+      <td>หน้าหลักของเว็บไซต์</td>
+      <td class="price">700</td>
+    </tr>
+    <tr>
+      <td class="num">2</td>
+      <td>หน้า Shop ซื้อขาย</td>
+      <td>แสดงสินค้า Whitelist (30 วัน / ตลอดชีพ)</td>
+      <td class="price">2,000</td>
+    </tr>
+    <tr>
+      <td class="num">3</td>
+      <td>ระบบชำระเงิน Stripe</td>
+      <td>Payment Gateway ครบวงจร (Card + PromptPay)</td>
+      <td class="price">2,500</td>
+    </tr>
+    <tr>
+      <td class="num">4</td>
+      <td>API /checkwhitelist</td>
+      <td>API ตรวจสอบสถานะ Whitelist สำหรับเกม Roblox</td>
+      <td class="price">1,500</td>
+    </tr>
+    <tr>
+      <td class="num">5</td>
+      <td>Admin Panel</td>
+      <td>Dashboard ยอดขาย, จัดการ Products, Whitelist, Duration, Promotion</td>
+      <td class="price">4,600</td>
+    </tr>
+    <tr>
+      <td class="num">6</td>
+      <td>Database Schema + Prisma Setup</td>
+      <td>ออกแบบฐานข้อมูล PostgreSQL</td>
+      <td class="price">700</td>
+    </tr>
+    <tr>
+      <td class="num">7</td>
+      <td>ระบบ 2 ภาษา (i18n)</td>
+      <td>Thai/English ทุกหน้า, next-intl, ไฟล์ภาษา JSON</td>
+      <td class="price">1,500</td>
+    </tr>
+    <tr class="bonus">
+      <td class="num">8</td>
+      <td>ระบบหุ้นส่วน Partner + Finance Dashboard <span class="tag new">NEW</span></td>
+      <td>
+        จัดการ Partner, แบ่ง % ต่อเกม, Finance Dashboard รายเดือน,
+        Export CSV + PDF, รวม "เงินกลาง" (shared pool) อัตโนมัติ
+      </td>
+      <td class="price">1,000</td>
+    </tr>
+  </tbody>
+  <tfoot>
+    <tr>
+      <td colspan="3" class="label">ราคารวมทั้งสิ้น / Total</td>
+      <td class="price">14,500 ฿</td>
+    </tr>
+  </tfoot>
+</table>
+
+<!-- ─── Bonus features ───────────────────────────────────── -->
+<h2>ฟีเจอร์เพิ่มเติมที่ส่งมอบโดยไม่คิดค่าใช้จ่าย <span class="en">Bonus Features Included</span></h2>
+<table class="scope">
+  <thead>
+    <tr>
+      <th class="num">#</th>
+      <th>รายการ</th>
+      <th>รายละเอียด</th>
+      <th class="price">มูลค่า (฿)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="bonus">
+      <td class="num">A</td>
+      <td>Analytics Dashboard <span class="tag bonus">BONUS</span></td>
+      <td>วิเคราะห์ยอดขายแบบละเอียด: KPI 5 ตัว, Timeline chart (auto daily/monthly), Per-Game breakdown, Card fee tracking, เลือกช่วงวันได้ทุกแบบ</td>
+      <td class="price">รวมแล้ว</td>
+    </tr>
+    <tr class="bonus">
+      <td class="num">B</td>
+      <td>Whitelist Editor + Realtime Search <span class="tag bonus">BONUS</span></td>
+      <td>แก้ไข row, Quick-extend (+1d/+7d/+30d/+90d/+1y), Search ครอบคลุม username/email/label/product/source แบบ debounced realtime</td>
+      <td class="price">รวมแล้ว</td>
+    </tr>
+    <tr class="bonus">
+      <td class="num">C</td>
+      <td>Stripe Email → Whitelist Label อัตโนมัติ <span class="tag bonus">BONUS</span></td>
+      <td>เมื่อมีการซื้อ Stripe จะใส่ "Stripe: customer-email" ใน label ของ row Whitelist ทำให้ Admin ค้นหา + ติดต่อลูกค้าได้ทันที</td>
+      <td class="price">รวมแล้ว</td>
+    </tr>
+    <tr class="bonus">
+      <td class="num">D</td>
+      <td>API checkwhitelist 2-shape Response <span class="tag bonus">BONUS</span></td>
+      <td>เพิ่ม array response (ลูกค้า 1 คนหลายเกม) นอกเหนือจาก single response เดิม — Roblox + Admin tools ใช้ได้</td>
+      <td class="price">รวมแล้ว</td>
+    </tr>
+    <tr class="bonus">
+      <td class="num">E</td>
+      <td>Excel Import Script <span class="tag bonus">BONUS</span></td>
+      <td>นำเข้า Whitelist เก่าจาก xlsx (2,000+ rows ทดสอบแล้ว) + Auto-create placeholder products + Idempotent (รันซ้ำได้)</td>
+      <td class="price">รวมแล้ว</td>
+    </tr>
+    <tr class="bonus">
+      <td class="num">F</td>
+      <td>User &amp; Admin Manual PDF <span class="tag bonus">BONUS</span></td>
+      <td>คู่มือภาษาไทย 38 หน้า ครอบคลุม User / Admin / Roblox API / Deployment / Troubleshooting (Noto Sans Thai embedded)</td>
+      <td class="price">รวมแล้ว</td>
+    </tr>
+    <tr class="bonus">
+      <td class="num">G</td>
+      <td>Deployment Setup &amp; Documentation <span class="tag bonus">BONUS</span></td>
+      <td>ตั้งค่า Windows Server + PM2 (ecosystem.config.js) + IIS Reverse Proxy + Cloudflare Origin Certificate + Stripe webhook production</td>
+      <td class="price">รวมแล้ว</td>
+    </tr>
+    <tr class="bonus">
+      <td class="num">H</td>
+      <td>SEO + Open Graph + Favicon <span class="tag bonus">BONUS</span></td>
+      <td>Metadata ครบ (English-first), Open Graph image + alt text, favicon, Apple touch icon, Twitter Card, Robots, sitemap-ready</td>
+      <td class="price">รวมแล้ว</td>
+    </tr>
+    <tr class="bonus">
+      <td class="num">I</td>
+      <td>Performance Optimizations <span class="tag bonus">BONUS</span></td>
+      <td>Browserslist เป็นเวอร์ชันใหม่ (ตัด polyfills -11KB), Cache headers 1 ปี immutable สำหรับ /_next/static และ /images, Sharp for image optimization</td>
+      <td class="price">รวมแล้ว</td>
+    </tr>
+    <tr class="bonus">
+      <td class="num">J</td>
+      <td>Security Hardening <span class="tag bonus">BONUS</span></td>
+      <td>Success page ownership cookie (กัน link leak), Webhook event dedup (Stripe retry-safe), HttpOnly/SameSite cookies, Admin RBAC ทุก route</td>
+      <td class="price">รวมแล้ว</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ─── Project Specification (page 2) ───────────────────── -->
+<h2>รายละเอียดโปรเจกต์เพิ่มเติม <span class="en">Project Specification</span></h2>
+
+<table class="spec">
+  <thead>
+    <tr>
+      <th class="num">#</th>
+      <th class="cat">หมวด</th>
+      <th class="feat">ฟีเจอร์</th>
+      <th>รายละเอียด</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="section-row"><td colspan="4">หน้า Home</td></tr>
+    <tr><td class="num">1</td><td>UI</td><td>Hero Section</td><td>Banner หลัก, ชื่อร้าน Judyshop, คำโปรย, ปุ่ม CTA "Explore Shop" + "Join Discord"</td></tr>
+    <tr><td class="num">2</td><td>UI</td><td>Features Section</td><td>แนะนำจุดเด่นของร้าน เช่น ระบบอัตโนมัติ, ปลอดภัย, รองรับ 2 ภาษา</td></tr>
+    <tr><td class="num">3</td><td>UI</td><td>Announcement Popup</td><td>ป็อปอัพประกาศจาก Admin พร้อมวันเริ่ม/หมดอายุ</td></tr>
+
+    <tr class="section-row"><td colspan="4">หน้า Shop</td></tr>
+    <tr><td class="num">4</td><td>UI</td><td>Product Listing</td><td>การ์ดสินค้า Whitelist พร้อมราคา, รายละเอียด, สถานะ, ป้าย Badge</td></tr>
+    <tr><td class="num">5</td><td>UI</td><td>Product Detail Modal</td><td>เลือก Plan, วิธีชำระ, กรอก Username, ราคา breakdown</td></tr>
+    <tr><td class="num">6</td><td>UI</td><td>Checkout Flow</td><td>กรอก Username → เลือกแผน → กด Pay Now → Redirect ไป Stripe</td></tr>
+    <tr><td class="num">7</td><td>UI</td><td>Success / Cancel Page</td><td>หน้าผลลัพธ์ + Owner cookie ป้องกัน link leak + Download presets/overlays</td></tr>
+
+    <tr class="section-row"><td colspan="4">ระบบชำระเงิน Stripe</td></tr>
+    <tr><td class="num">8</td><td>API</td><td>Create Checkout Session</td><td>สร้าง Stripe Session พร้อม metadata (productId, planId, username)</td></tr>
+    <tr><td class="num">9</td><td>API</td><td>Webhook Handler</td><td>รับ event checkout.session.completed + async_payment_succeeded + dedup (retry-safe)</td></tr>
+    <tr><td class="num">10</td><td>API</td><td>Whitelist Record</td><td>บันทึก Order + Whitelist พร้อม Stripe Payment ID, email → label</td></tr>
+
+    <tr class="section-row"><td colspan="4">API ตรวจสอบ Whitelist</td></tr>
+    <tr><td class="num">11</td><td>API</td><td>GET /api/checkwhitelist</td><td>รับ query: username (+ gameId/productSlug optional) คืน JSON</td></tr>
+    <tr><td class="num">12</td><td>API</td><td>Dual Response Shape</td><td>มี filter → single object (Roblox), ไม่มี filter → array (admin tools)</td></tr>
+    <tr><td class="num">13</td><td>API</td><td>API Key Auth + Rate Limit</td><td>x-api-key header + constant-time compare + 60 req/min per IP, 600 req/min per key</td></tr>
+
+    <tr class="section-row"><td colspan="4">หน้า Admin Panel</td></tr>
+    <tr><td class="num">14</td><td>Admin</td><td>Dashboard</td><td>ยอดขายรายวัน/รายเดือน, จำนวน Whitelist active, กราฟสรุปรายได้ 30 วัน</td></tr>
+    <tr><td class="num">15</td><td>Admin</td><td>Analytics Dashboard</td><td>Date range picker (preset + custom) · 5 KPI cards · Timeline chart (auto daily/monthly) · Per-game · Per-method · Card fee tracking</td></tr>
+    <tr><td class="num">16</td><td>Admin</td><td>จัดการ Products</td><td>5 แท็บ: Details, Plans, Images, Gift Overlays, Presets, Partners (share %)</td></tr>
+    <tr><td class="num">17</td><td>Admin</td><td>จัดการ Whitelist</td><td>CRUD + Edit modal + Quick extend + Realtime search ทุก field</td></tr>
+    <tr><td class="num">18</td><td>Admin</td><td>Transactions</td><td>รายการชำระเงิน + Refund flow (Stripe + Whitelist revoke) + Audit log</td></tr>
+    <tr><td class="num">19</td><td>Admin</td><td>Partners + Finance</td><td>Partner CRUD, Share allocation per product (sum ≤ 100, เงินกลาง auto), Monthly Finance dashboard, Export CSV + PDF</td></tr>
+    <tr><td class="num">20</td><td>Admin</td><td>Announcements + News</td><td>CRUD + ตั้งเวลาเริ่ม/หมดอายุ + เปิด/ปิดการแสดง</td></tr>
+    <tr><td class="num">21</td><td>Admin</td><td>Audit Log + Settings</td><td>บันทึกการกระทำ Admin ทั้งหมด (immutable) + ตั้งค่าระบบ (Card fee %)</td></tr>
+
+    <tr class="section-row"><td colspan="4">ระบบ 2 ภาษา (i18n)</td></tr>
+    <tr><td class="num">22</td><td>i18n</td><td>next-intl Setup</td><td>Config routing /th และ /en, middleware</td></tr>
+    <tr><td class="num">23</td><td>i18n</td><td>ไฟล์ภาษา JSON</td><td>แยก th.json และ en.json ครอบคลุมทุก text บนทุกหน้า</td></tr>
+    <tr><td class="num">24</td><td>i18n</td><td>Language Switcher</td><td>ปุ่มสลับภาษาในเมนู Navbar</td></tr>
+  </tbody>
+</table>
+
+<!-- ─── Payment Terms ────────────────────────────────────── -->
+<h2>เงื่อนไขการชำระเงิน <span class="en">Payment Terms</span></h2>
+<table class="payment">
+  <thead>
+    <tr>
+      <th>งวดที่ / Installment</th>
+      <th>รายละเอียด / Description</th>
+      <th class="amount">จำนวนเงิน / Amount</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="label">งวดที่ 1 (มัดจำ 30%)</td>
+      <td>ชำระก่อนเริ่มงาน</td>
+      <td class="amount">4,050 ฿</td>
+    </tr>
+    <tr>
+      <td class="label">งวดที่ 2 (ส่วนที่เหลือ 70%)</td>
+      <td>ชำระเมื่อส่งมอบงานเริ่มต้นครบถ้วน (13,500 - 4,050)</td>
+      <td class="amount">9,450 ฿</td>
+    </tr>
+    <tr>
+      <td class="label">งวดที่ 3 (เพิ่มเติม)</td>
+      <td>ชำระเมื่อส่งมอบระบบ Partner + Finance Dashboard</td>
+      <td class="amount">1,000 ฿</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ─── Conditions ───────────────────────────────────────── -->
+<h2>เงื่อนไขและข้อตกลง <span class="en">Terms &amp; Conditions</span></h2>
+<ol class="conditions">
+  <li>ระยะเวลาดำเนินงานรวม 28 วันทำการ (20 + 8) นับจากวันที่ได้รับมัดจำ และลูกค้ายืนยัน Requirement ครบถ้วน</li>
+  <li>แก้ไขฟรี 15 ครั้ง ครอบคลุมการแก้ไขตาม Scope ที่ตกลงไว้ หากเกินหรือนอก Scope คิดค่าใช้จ่ายเพิ่มเติม</li>
+  <li>กรณีลูกค้าตอบกลับช้าเกิน 3 วันทำการในระหว่างดำเนินงาน ระยะเวลาดำเนินงานจะถูกเลื่อนออกไปตามจริง</li>
+  <li>กรณียกเลิกโปรเจกต์หลังชำระมัดจำแล้ว เงินมัดจำไม่สามารถคืนได้</li>
+  <li>ลิขสิทธิ์ Source Code และงานออกแบบทั้งหมดจะโอนให้ผู้ว่าจ้างเมื่อชำระเงินครบถ้วนแล้วเท่านั้น</li>
+  <li>ค่า Hosting, Domain, Database (Supabase), Stripe transaction fees ไม่รวมอยู่ในราคานี้ ผู้ว่าจ้างเป็นผู้รับผิดชอบ</li>
+  <li>ฟีเจอร์เพิ่มเติม (Bonus Features ข้อ A-J) ถูกพัฒนาในระหว่างโปรเจกต์โดยไม่คิดค่าใช้จ่ายเพิ่มเติม</li>
+  <li>การสนับสนุนหลังส่งมอบ: แก้ไข bug ฟรี 30 วันหลังส่งมอบ — หลังจากนั้นคิดค่าใช้จ่ายตามจริง</li>
+</ol>
+
+</body>
+</html>

@@ -45,6 +45,15 @@ const nextConfig = {
       { protocol: "https", hostname: "dummyimage.com" },
     ],
   },
+  experimental: {
+    // Cover 6 MB image uploads + form overhead. Default in Next.js is
+    // 1 MB which silently truncated multipart bodies and made the
+    // announcement/news upload forms hang on `pending` without ever
+    // reaching the server action handler.
+    serverActions: {
+      bodySizeLimit: "8mb",
+    },
+  },
   async headers() {
     return [
       // Security headers on every response.

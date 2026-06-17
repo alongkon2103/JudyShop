@@ -21,6 +21,7 @@
     "postinstall": "prisma generate",
     "audit": "tsx scripts/audit.ts",
     "build:manual": "tsx scripts/build-manual-pdf.ts",
+    "build:quotation": "tsx scripts/build-quotation-pdf.ts",
     "import:whitelist": "tsx scripts/import-whitelist-xlsx.ts"
   },
   "prisma": {
