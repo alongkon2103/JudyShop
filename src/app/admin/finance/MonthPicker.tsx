@@ -8,12 +8,6 @@ type Props = {
   selectedMonth: string;   // "YYYY-MM"
 };
 
-const MONTH_TH = [
-  "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน",
-  "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม",
-  "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม",
-];
-
 /** Navigate via ?month=YYYY-MM — no full reload, lets the server
  *  component re-run with the new range. Prev / Next walk one month. */
 export function MonthPicker({ selectedMonth }: Props) {
@@ -47,19 +41,17 @@ export function MonthPicker({ selectedMonth }: Props) {
       >
         <ChevronLeft size={16} strokeWidth={2.25} />
       </button>
-      <label className="relative inline-flex items-center">
-        <input
-          type="month"
-          value={selectedMonth}
-          onChange={(e) => handleNative(e.target.value)}
-          disabled={pending}
-          className="appearance-none rounded-full border border-line-light bg-paper px-3 py-1.5 text-[12px] font-semibold text-fg-light focus:border-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-400/20 disabled:opacity-60"
-          aria-label="Select month"
-        />
-        <span className="pointer-events-none ml-2 hidden text-[12px] font-semibold text-fg-light sm:inline">
-          {MONTH_TH[m - 1]} {y}
-        </span>
-      </label>
+      {/* Native <input type="month"> renders the locale-formatted label
+          itself (e.g. "มิถุนายน 2026" on Chrome with Thai locale), so we
+          don't add a sibling <span> — that's what caused the duplicate. */}
+      <input
+        type="month"
+        value={selectedMonth}
+        onChange={(e) => handleNative(e.target.value)}
+        disabled={pending}
+        className="appearance-none rounded-full border border-line-light bg-paper px-3 py-1.5 text-[12px] font-semibold text-fg-light focus:border-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-400/20 disabled:opacity-60"
+        aria-label="Select month"
+      />
       <button
         type="button"
         onClick={() => navigateBy(1)}
