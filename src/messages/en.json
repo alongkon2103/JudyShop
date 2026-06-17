@@ -1,0 +1,217 @@
+{
+  "nav": {
+    "home": "Home",
+    "shop": "Shop",
+    "news": "News",
+    "check": "Check status",
+    "admin": "Admin",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
+  },
+  "check": {
+    "title": "Check your whitelist",
+    "subtitle": "Look up your Roblox account to see your access status and expiry.",
+    "usernameLabel": "Roblox username",
+    "usernamePlaceholder": "Enter your Roblox username",
+    "productLabel": "Product",
+    "anyProduct": "Any product",
+    "submit": "Check status",
+    "submitting": "Checking…",
+    "needUsername": "Enter your Roblox username above to check.",
+    "resultActive": "Active",
+    "resultExpired": "Expired",
+    "resultNotFound": "Not found",
+    "lifetime": "Lifetime ∞",
+    "validUntil": "Valid until",
+    "daysLeft": "{n} days remaining",
+    "expiredAgo": "Expired {n} days ago",
+    "expiringSoon": "Expiring soon",
+    "notFoundHint": "No whitelist for this username. Make sure the spelling matches your Roblox username exactly, or purchase access from the shop.",
+    "tooMany": "Too many checks. Please wait a moment and try again.",
+    "multipleHeading": "{n} games found for this username",
+    "multipleHeadingSingle": "1 game found for this username",
+    "activeCount": "{n} active",
+    "expiredCount": "{n} expired"
+  },
+  "site": {
+    "tagline": "Your trusted Interactive games store. Instant delivery, every time."
+  },
+  "home": {
+    "heroKicker": "TikTok Interactive Game Whitelist",
+    "heroTitle": "Judy Shop",
+    "heroSubtitle": "Get instant access to TikTok Interactive games — fast delivery, fair pricing, real support.",
+    "ctaShop": "Browse the shop",
+    "ctaNews": "Read the latest news"
+  },
+  "shop": {
+    "title": "TikTok Interactive Games",
+    "subtitle": "Select a game to see details",
+    "empty": "No products available yet",
+    "emptyHint": "New games will open soon — follow our Discord for updates."
+  },
+  "product": {
+    "from": "From",
+    "selectPlan": "Select a plan",
+    "paymentMethod": "Payment method",
+    "promptpayTitle": "PromptPay",
+    "promptpaySubtitle": "QR via mobile banking (no fee)",
+    "cardTitle": "Card",
+    "cardSubtitleNoFee": "Visa / Master (no fee)",
+    "cardSubtitleFee": "Visa / Master (+{pct}% fee)",
+    "robloxUsername": "Roblox username",
+    "robloxUsernamePlaceholder": "Enter your Roblox username",
+    "robloxUsernameHint": "Enter your exact Roblox username to bind the license key.",
+    "subtotal": "Subtotal",
+    "cardFee": "Card fee · {pct}%",
+    "total": "Total",
+    "payNow": "Pay now",
+    "redirecting": "Redirecting to Stripe…",
+    "selectFirst": "Select a plan and fill in your Roblox username to continue",
+    "comingSoon": "Coming soon",
+    "or": "or",
+    "tryFreeMinutes": "Try free · {minutes} min",
+    "tryingTrial": "Starting trial…",
+    "freeBadge": "FREE",
+    "trialBullet1": "No payment · no card required",
+    "trialBullet2Prefix": "Limited to",
+    "trialBullet2Bold": "1 trial / Roblox account / 24 hours",
+    "trialOpened": "Trial active for {minutes} min — valid until {time}",
+    "enterUsernameFirst": "Enter your Roblox username first",
+    "rbxChecking": "Checking Roblox…",
+    "rbxConfirmHint": "Double-check the name — access binds to this Roblox username",
+    "rbxNotFound": "Roblox username not found",
+    "rbxInvalidFormat": "Roblox username must be 3–20 chars (a–z, 0–9, _)",
+    "rbxNetwork": "Couldn't reach Roblox — try again",
+    "trialErrInvalidUsername": "Enter your Roblox username first",
+    "trialErrProductNotFound": "Product not found",
+    "trialErrProductInactive": "This product isn't available yet",
+    "trialErrTrialDisabled": "Trial mode is off for this product",
+    "trialErrRateLimited": "You've used your trial today — try again tomorrow",
+    "trialErrAlreadyActive": "You already have active access to this product",
+    "trialErrIpRateLimited": "Too many trials from your network. Try again in {seconds}s.",
+    "trialErrGeneric": "Trial failed. Try again later."
+  },
+  "plan": {
+    "lifetime": "Lifetime",
+    "days": "{count, plural, =0 {No days} one {# day} other {# days}}"
+  },
+  "success": {
+    "thankYou": "Thank you!",
+    "processing": "Processing…",
+    "paidMessage": "Payment received — we're adding you to the whitelist now.",
+    "processingMessage": "Stripe is processing your payment — please wait a moment.",
+    "productLabel": "Product",
+    "planLabel": "Plan",
+    "usernameLabel": "Username",
+    "paidLabel": "Paid",
+    "accessUntil": "Access until",
+    "lifetimeBadge": "Lifetime ∞",
+    "pendingWhitelist": "Your whitelist is being saved — refresh this page in a moment.",
+    "strangerTitle": "Order confirmation",
+    "strangerMessage": "If you just completed a purchase, please return from the original browser/device you used to start checkout. Your whitelist is being processed regardless — no action needed.",
+    "backToShop": "Back to shop",
+    "home": "Home",
+    "presetFiles": "Preset files",
+    "giftOverlays": "Gift overlays",
+    "downloadHint": "Click Download to save the image — or click the picture to view full-size.",
+    "saveBtn": "Save",
+    "downloadBtn": "Download"
+  },
+  "cancel": {
+    "title": "Payment cancelled",
+    "message": "No charge was made. You can try again whenever you're ready.",
+    "tryAgain": "Back to shop"
+  },
+  "news": {
+    "title": "News & updates",
+    "subtitle": "Latest announcements from Judy Shop",
+    "empty": "No news yet — check back soon.",
+    "readMore": "Read more",
+    "category": {
+      "update": "Update",
+      "announce": "Announce",
+      "event": "Event",
+      "maintenance": "Maintenance"
+    }
+  },
+  "footer": {
+    "copyright": "© {year} Judy Shop. All rights reserved.",
+    "tagline": "TikTok Interactive Game Whitelist"
+  },
+  "faq": {
+    "title": "FAQ",
+    "subtitle": "Quick answers — buying, renewing, trial, and what to do if something goes wrong.",
+    "sections": {
+      "buying": "Buying",
+      "username": "Roblox username",
+      "renewal": "Renewal & expiry",
+      "trial": "Trial mode",
+      "support": "Refunds & support"
+    },
+    "items": {
+      "howToBuy": {
+        "q": "How do I buy whitelist access?",
+        "a": "Open the Shop, pick a game, choose a plan (e.g. 30 days / Lifetime), type your Roblox username, then pay with PromptPay (Thai QR) or card. Your whitelist activates immediately after payment."
+      },
+      "paymentMethods": {
+        "q": "Which payment methods are accepted?",
+        "a": "PromptPay (no fee) and Visa / Mastercard. Card payments have a small surcharge that's shown before you confirm."
+      },
+      "findUsername": {
+        "q": "Where do I find my Roblox username?",
+        "a": "Open Roblox → tap the profile icon → your @username is right under your display name. The username (not display name) is what we use for whitelist."
+      },
+      "wrongUsername": {
+        "q": "I typed my username wrong — what now?",
+        "a": "When you type the username in checkout, we look it up on Roblox and show your avatar so you can confirm BEFORE paying. If you already paid to the wrong account, contact us on Discord with your Stripe receipt — we can transfer it."
+      },
+      "howToRenew": {
+        "q": "How do I renew?",
+        "a": "Buy the same plan again with the same Roblox username. We extend your whitelist from your current expiry (so you don't lose days for renewing early). If your access already expired, the new plan starts from today."
+      },
+      "checkExpiry": {
+        "q": "How do I check when my access expires?",
+        "a": "Use the Check page — just type your Roblox username. You'll see your status (active / expired) and the exact expiry date."
+      },
+      "trialHow": {
+        "q": "How does the free trial work?",
+        "a": "On any product with trial enabled, click the dashed \"Try free X minutes\" button. We grant whitelist access immediately for the given duration — no payment, no card. After the trial ends, just buy a plan to keep going."
+      },
+      "trialLimit": {
+        "q": "Can I take multiple trials?",
+        "a": "Trials are limited to 1 per Roblox username per 24 hours, per product. This prevents abuse so trial mode stays available."
+      },
+      "refund": {
+        "q": "Do you offer refunds?",
+        "a": "For most cases, yes — within 24 hours of purchase if you haven't used the access yet. Contact us on Discord with your Stripe receipt."
+      },
+      "support": {
+        "q": "How do I contact support?",
+        "a": "Join our Discord (link in the navbar). We're fastest there. Include your Roblox username and Stripe receipt when asking about an order."
+      }
+    },
+    "ctaTitle": "Still need help?",
+    "ctaBody": "Join our Discord — fastest support, plus updates on new games.",
+    "ctaButton": "Join Discord"
+  },
+  "common": {
+    "loading": "Loading…",
+    "error": "Something went wrong",
+    "retry": "Try again",
+    "close": "Close",
+    "joinDiscord": "Join Discord"
+  },
+  "errorPage": {
+    "title": "Whoops!",
+    "subtitle": "Something blew up on our side. Try again in a moment.",
+    "retry": "Try again",
+    "home": "Back to home",
+    "errorIdLabel": "Error ID"
+  },
+  "notFound": {
+    "title": "Lost in space",
+    "subtitle": "We couldn't find the page you're looking for.",
+    "home": "Back to home",
+    "shop": "Browse shop"
+  }
+}

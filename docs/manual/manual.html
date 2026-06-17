@@ -1,0 +1,1021 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8" />
+<title>คู่มือการใช้งาน Judyshop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&family=Noto+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --pink: #d63384;
+    --pink-light: #ffe0ee;
+    --ink: #1a1a1a;
+    --ink-soft: #444;
+    --ink-mute: #767676;
+    --border: #d9d9d9;
+    --border-soft: #ececec;
+    --bg-soft: #faf7f8;
+    --bg-warn: #fff8e1;
+    --bg-info: #eaf4ff;
+    --bg-success: #e9f7ec;
+    --bg-danger: #fce8ec;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    font-family: "Noto Sans Thai", "Sarabun", "Helvetica Neue", Arial, sans-serif;
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 11.5pt;
+  }
+
+  /* ── Page layout ───────────────────────────────────────── */
+  .page {
+    page-break-after: always;
+    padding: 0;
+  }
+  .page:last-child { page-break-after: auto; }
+
+  h1, h2, h3, h4 {
+    font-weight: 700;
+    line-height: 1.35;
+    margin-top: 0;
+  }
+  h1 { font-size: 26pt; color: var(--pink); margin-bottom: 12pt; }
+  h2 { font-size: 18pt; margin: 24pt 0 10pt; padding-bottom: 6pt; border-bottom: 3px solid var(--pink); page-break-after: avoid; }
+  h3 { font-size: 14pt; margin: 18pt 0 6pt; color: var(--pink); page-break-after: avoid; }
+  h4 { font-size: 12pt; margin: 12pt 0 4pt; color: var(--ink); page-break-after: avoid; }
+
+  p { margin: 0 0 8pt; }
+  ul, ol { margin: 0 0 10pt; padding-left: 22pt; }
+  li { margin-bottom: 4pt; }
+  li > ul, li > ol { margin-top: 4pt; }
+
+  strong { font-weight: 700; }
+  code, kbd { font-family: "Noto Sans Mono", "SF Mono", Consolas, monospace; font-size: 0.92em; background: var(--bg-soft); padding: 1pt 5pt; border-radius: 3pt; border: 1px solid var(--border-soft); }
+
+  /* ── Cover page ────────────────────────────────────────── */
+  .cover {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 56pt;
+    background: linear-gradient(135deg, var(--pink-light) 0%, #fff 100%);
+  }
+  .cover-kicker {
+    font-size: 11pt;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--pink);
+    margin-bottom: 12pt;
+  }
+  .cover-title {
+    font-size: 42pt;
+    font-weight: 800;
+    color: var(--ink);
+    line-height: 1.15;
+    margin: 0 0 18pt;
+  }
+  .cover-subtitle {
+    font-size: 14pt;
+    color: var(--ink-soft);
+    max-width: 80%;
+    line-height: 1.6;
+    margin-bottom: 28pt;
+  }
+  .cover-meta {
+    border-top: 2px solid var(--pink);
+    padding-top: 14pt;
+    font-size: 10pt;
+    color: var(--ink-mute);
+  }
+
+  /* ── TOC ───────────────────────────────────────────────── */
+  .toc {
+    padding: 40pt 48pt;
+  }
+  .toc h2 {
+    margin-top: 0;
+  }
+  .toc-section { margin-bottom: 20pt; }
+  .toc-section-title {
+    font-weight: 700;
+    font-size: 13pt;
+    color: var(--pink);
+    margin-bottom: 8pt;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .toc ol {
+    list-style: none;
+    padding-left: 0;
+  }
+  .toc li {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px dotted var(--border);
+    padding: 5pt 0;
+  }
+
+  /* ── Body sections ─────────────────────────────────────── */
+  .body {
+    padding: 32pt 48pt;
+  }
+
+  .section-kicker {
+    font-size: 9pt;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin-bottom: 4pt;
+  }
+
+  /* ── Boxes ─────────────────────────────────────────────── */
+  .box {
+    border-radius: 6pt;
+    padding: 12pt 14pt;
+    margin: 10pt 0 14pt;
+    border-left: 4pt solid var(--pink);
+    background: var(--bg-soft);
+    page-break-inside: avoid;
+  }
+  .box.info     { border-color: #1f7ad8; background: var(--bg-info); }
+  .box.warn     { border-color: #d29800; background: var(--bg-warn); }
+  .box.danger   { border-color: #c0273f; background: var(--bg-danger); }
+  .box.success  { border-color: #2c7a36; background: var(--bg-success); }
+  .box-title {
+    font-weight: 700;
+    margin-bottom: 4pt;
+    font-size: 10.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .box.info .box-title    { color: #1f7ad8; }
+  .box.warn .box-title    { color: #b07a00; }
+  .box.danger .box-title  { color: #c0273f; }
+  .box.success .box-title { color: #2c7a36; }
+  .box p:last-child { margin-bottom: 0; }
+
+  /* ── Tables ────────────────────────────────────────────── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10pt 0 14pt;
+    page-break-inside: avoid;
+    font-size: 10.5pt;
+  }
+  th, td {
+    padding: 7pt 9pt;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th {
+    background: var(--bg-soft);
+    font-weight: 700;
+    font-size: 9.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+  }
+  tr:last-child td { border-bottom: none; }
+
+  /* ── Step list ─────────────────────────────────────────── */
+  .steps {
+    counter-reset: step;
+    list-style: none;
+    padding-left: 0;
+    margin: 12pt 0;
+  }
+  .steps > li {
+    counter-increment: step;
+    position: relative;
+    padding-left: 32pt;
+    margin-bottom: 10pt;
+    page-break-inside: avoid;
+  }
+  .steps > li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 22pt;
+    height: 22pt;
+    border-radius: 50%;
+    background: var(--pink);
+    color: #fff;
+    font-weight: 700;
+    font-size: 11pt;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ── Badges ────────────────────────────────────────────── */
+  .badge {
+    display: inline-block;
+    padding: 1pt 7pt;
+    border-radius: 999pt;
+    font-size: 9pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: var(--pink);
+    color: #fff;
+    margin: 0 2pt;
+  }
+  .badge.green  { background: #2c7a36; }
+  .badge.orange { background: #d29800; }
+  .badge.gray   { background: #767676; }
+  .badge.blue   { background: #1f7ad8; }
+  .badge.red    { background: #c0273f; }
+
+  /* ── Field cards ───────────────────────────────────────── */
+  dl.fields {
+    margin: 8pt 0;
+    padding: 0;
+  }
+  dl.fields dt {
+    font-weight: 700;
+    color: var(--ink);
+    margin-top: 8pt;
+  }
+  dl.fields dd {
+    margin: 0 0 4pt 0;
+    color: var(--ink-soft);
+    padding-left: 12pt;
+    border-left: 2px solid var(--border-soft);
+  }
+
+  /* ── Layouts ───────────────────────────────────────────── */
+  .row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14pt;
+  }
+
+  /* ── Print ─────────────────────────────────────────────── */
+  @page {
+    size: A4;
+    margin: 18mm 16mm 22mm;
+  }
+  @page :first { margin: 0; }
+  @media print {
+    .page { page-break-after: always; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═════════════════════════════════════════════════════════════ -->
+<!--  COVER                                                          -->
+<!-- ═════════════════════════════════════════════════════════════ -->
+<section class="page cover">
+  <div class="cover-kicker">User &amp; Admin Manual · เวอร์ชัน 1.0</div>
+  <h1 class="cover-title">คู่มือการใช้งาน<br/>Judyshop</h1>
+  <p class="cover-subtitle">
+    ร้านขาย Whitelist สำหรับเกม Roblox — รวบรวมวิธีใช้งานทุกหน้าทั้งฝั่งลูกค้าและฝั่งผู้ดูแลระบบ
+    ตั้งแต่การสั่งซื้อ ตรวจสอบสิทธิ์ ไปจนถึงการคืนเงินและจัดการเนื้อหา
+  </p>
+  <div class="cover-meta">
+    เอกสารฉบับนี้สร้างจากซอร์สโค้ดล่าสุด · ครอบคลุม 7 หน้าสาธารณะ + 17 หน้าใน Admin
+  </div>
+</section>
+
+<!-- ═════════════════════════════════════════════════════════════ -->
+<!--  TABLE OF CONTENTS                                              -->
+<!-- ═════════════════════════════════════════════════════════════ -->
+<section class="page toc">
+  <h2>สารบัญ</h2>
+
+  <div class="toc-section">
+    <div class="toc-section-title">ส่วนที่ 1 — สำหรับผู้ใช้ทั่วไป (User)</div>
+    <ol>
+      <li><span>1.1  ภาพรวมและเมนูหลัก (Navbar/Footer)</span><span>หน้า 4</span></li>
+      <li><span>1.2  หน้าแรก (Home)</span><span>หน้า 5</span></li>
+      <li><span>1.3  Shop — เลือกสินค้าและสั่งซื้อ</span><span>หน้า 6</span></li>
+      <li><span>1.4  ขั้นตอนการชำระเงินกับ Stripe</span><span>หน้า 8</span></li>
+      <li><span>1.5  หน้าหลังการชำระเงิน (Success / Cancel)</span><span>หน้า 9</span></li>
+      <li><span>1.6  ตรวจสอบ Whitelist (Check)</span><span>หน้า 11</span></li>
+      <!-- <li><span>1.7  News และ FAQ</span><span>หน้า 12</span></li> -->
+    </ol>
+  </div>
+
+  <div class="toc-section">
+    <div class="toc-section-title">ส่วนที่ 2 — สำหรับผู้ดูแลระบบ (Admin)</div>
+    <ol>
+      <li><span>2.1  Login และโครงสร้างเมนู Admin</span><span>หน้า 14</span></li>
+      <li><span>2.2  Dashboard — ภาพรวม KPI</span><span>หน้า 15</span></li>
+      <li><span>2.3  Products — รายการสินค้า</span><span>หน้า 16</span></li>
+      <li><span>2.4  Products — สร้างใหม่และแก้ไข (5 แท็บ)</span><span>หน้า 17</span></li>
+      <li><span>2.5  Transactions — ออเดอร์และการคืนเงิน</span><span>หน้า 22</span></li>
+      <li><span>2.6  Whitelist — จัดการสิทธิ์เข้าเกม</span><span>หน้า 24</span></li>
+      <li><span>2.7  Announcements — แบนเนอร์แจ้งเตือน</span><span>หน้า 26</span></li>
+      <li><span>2.8  News — บทความข่าว</span><span>หน้า 27</span></li>
+      <li><span>2.9  Settings — ตั้งค่าระบบ</span><span>หน้า 28</span></li>
+      <li><span>2.10 Audit Log — บันทึกการใช้งาน</span><span>หน้า 29</span></li>
+    </ol>
+  </div>
+
+  <div class="toc-section">
+    <div class="toc-section-title">ภาคผนวก</div>
+    <ol>
+      <li><span>A.  ปัญหาที่พบบ่อย (Troubleshooting)</span><span>หน้า 31</span></li>
+      <li><span>B.  คำศัพท์</span><span>หน้า 32</span></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ═════════════════════════════════════════════════════════════ -->
+<!--  PART 1 — USER MANUAL                                           -->
+<!-- ═════════════════════════════════════════════════════════════ -->
+<section class="body">
+
+  <div class="section-kicker">ส่วนที่ 1</div>
+  <h1>คู่มือสำหรับผู้ใช้ทั่วไป</h1>
+  <p>เนื้อหาในส่วนนี้สำหรับลูกค้าที่ต้องการเรียนรู้วิธีซื้อ Whitelist, ตรวจสอบสิทธิ์เข้าเกม, อ่านข่าวสาร และคำถามที่พบบ่อย — ใช้ได้ทุกอุปกรณ์ (มือถือ / แท็บเล็ต / คอมพิวเตอร์)</p>
+
+  <!-- 1.1 Navbar ───────────────────────────────────────── -->
+  <h2>1.1 ภาพรวมและเมนูหลัก</h2>
+
+  <h3>แถบเมนูด้านบน (Navbar)</h3>
+  <p>ติดอยู่ที่ด้านบนของทุกหน้า เลื่อนตามขึ้น/ลงไม่หาย ประกอบด้วย:</p>
+  <ul>
+    <li><strong>โลโก้ Judyshop</strong> (ซ้ายสุด) — คลิกเพื่อกลับหน้าแรก</li>
+    <li><strong>เมนูหลัก</strong>: Home · Shop · News — เมนูที่กำลังเปิดอยู่จะมีจุดสีชมพูเล็กๆ ใต้ชื่อ</li>
+    <li><strong>ปุ่มสลับภาษา</strong> TH / EN — ปุ่มสีชมพูคือภาษาที่เลือกอยู่ คลิกอีกปุ่มเพื่อสลับ (URL จะเปลี่ยนเป็น <code>/en/...</code> เมื่ออยู่ภาษาอังกฤษ)</li>
+    <li><strong>ปุ่มเปลี่ยนธีม</strong> สว่าง/มืด</li>
+    <li><strong>ไอคอน Discord</strong> และโซเชียลอื่น — เปิดในแท็บใหม่</li>
+  </ul>
+
+  <div class="box info">
+    <div class="box-title">บนมือถือ</div>
+    <p>เมนู Home/Shop/News จะซ่อนอยู่ในปุ่ม Hamburger (สามขีด) ทางขวา — แตะเพื่อเปิด Drawer แบบเลื่อนลงมา</p>
+  </div>
+
+  <h3>Footer ด้านล่าง</h3>
+  <p>เลื่อนสุดหน้าจะเจอ Footer ประกอบด้วย:</p>
+  <ul>
+    <li>ลิขสิทธิ์ © ปีปัจจุบัน</li>
+    <li>ลิงก์ <strong>Check Whitelist</strong></li>
+    <li>ไอคอนโซเชียล</li>
+  </ul>
+
+  <!-- 1.2 Home ─────────────────────────────────────────── -->
+  <h2>1.2 หน้าแรก (Home)</h2>
+
+  <p>หน้าแรกของเว็บไซต์ที่ <code>/</code> หรือ <code>/en</code></p>
+
+  <h3>สิ่งที่จะเห็น</h3>
+  <ul>
+    <li><strong>โลโก้ JUDY SHOP ขนาดใหญ่</strong> มี Effect เรืองแสง (สีชมพู + ฟ้า)</li>
+    <li><strong>คำโปรย</strong> ใต้โลโก้</li>
+    <li>ปุ่ม <span class="badge">Shop Now</span> — ไปที่หน้า Shop</li>
+    <li>ปุ่ม <span class="badge gray">Join Discord</span> — เปิด Discord ในแท็บใหม่</li>
+    <li><strong>Mascot</strong> น้อง Judy ลอยขยับเบาๆ ที่ด้านล่าง</li>
+  </ul>
+
+  <h3>ป็อปอัพประกาศ (ถ้ามี)</h3>
+  <p>เมื่อแอดมินตั้งค่า Announcement ไว้ ป็อปอัพจะแสดงทันทีที่เปิดหน้าแรก:</p>
+  <ul>
+    <li>มี <strong>3 รูปแบบ</strong>: รูปภาพอย่างเดียว · ข้อความอย่างเดียว · ทั้งรูปและข้อความ</li>
+    <li>ปิดได้ 2 วิธี: กดปุ่ม <strong>X</strong> (มุมขวาบน) หรือคลิกพื้นที่มืดด้านหลัง</li>
+    <li>ป็อปอัพจะแสดง<strong>ทุกครั้งที่เข้าหน้านี้</strong> (ไม่จำว่าปิดไปแล้ว) — ทำให้ลูกค้าไม่พลาดประกาศสำคัญ</li>
+  </ul>
+
+  <!-- 1.3 Shop ─────────────────────────────────────────── -->
+  <h2>1.3 Shop — เลือกสินค้าและสั่งซื้อ</h2>
+
+  <p>หน้ารวมสินค้าทั้งหมดที่ <code>/shop</code></p>
+
+  <h3>หน้า Shop หลัก</h3>
+  <ul>
+    <li><strong>หัวเรื่อง SHOP</strong> พร้อมคำบรรยายใต้หัวเรื่อง</li>
+    <li><strong>กริดสินค้า</strong>: มือถือ 2 คอลัมน์ · แท็บเล็ต 3 · คอมพิวเตอร์ 4</li>
+  </ul>
+
+  <h3>การ์ดสินค้าแต่ละใบแสดง</h3>
+  <ul>
+    <li>รูปสินค้า (สัดส่วน 5:3) — เคลื่อนซูมเล็กน้อยเมื่อ hover</li>
+    <li>ป้ายแบดจ์มุมขวาบน เช่น <span class="badge red">HOT</span> <span class="badge blue">NEW</span> <span class="badge orange">SALE</span> (ถ้ามี)</li>
+    <li>ถ้ายังไม่เปิดขาย จะมีแถบทาบ <strong>Coming Soon</strong> ทับ และคลิกไม่ได้</li>
+    <li>ชื่อสินค้า + คำบรรยายสั้น (2 บรรทัด)</li>
+    <li>ราคาเริ่มต้น <strong>From ฿XXX / $XX</strong> (ราคาแผนถูกสุด)</li>
+  </ul>
+
+  <h3>เมื่อคลิกสินค้า — ป็อปอัพรายละเอียดสินค้า</h3>
+  <ol class="steps">
+    <li><strong>ดูรูปสินค้า</strong> — เลื่อนซ้าย/ขวาในแกลเลอรีเพื่อดูภาพหลายภาพ</li>
+    <li><strong>เลือกแพ็กเกจ</strong> — แท็บแต่ละอัน เช่น "30 วัน", "60 วัน", "ตลอดชีพ" — แต่ละแท็บแสดงราคาและระยะเวลา</li>
+    <li><strong>เลือกวิธีชำระเงิน</strong> — มี 2 ตัวเลือก:
+      <ul>
+        <li><strong>PromptPay</strong> — สแกน QR ไม่มีค่าธรรมเนียม</li>
+        <li><strong>บัตรเครดิต</strong> — มีค่าธรรมเนียมเพิ่ม (ถ้าตั้งค่าไว้) — แสดงในใบเสร็จย่อย</li>
+      </ul>
+    </li>
+    <li><strong>กรอก Roblox Username</strong> — ใส่ให้ตรงเป๊ะกับชื่อในเกม (พิมพ์ใหญ่/เล็กก็ได้)</li>
+    <li><strong>กดปุ่ม Pay Now</strong> — ระบบจะพาไปหน้าชำระเงินของ Stripe</li>
+  </ol>
+
+  <div class="box danger">
+    <div class="box-title">สำคัญ — ใส่ username ให้ถูก</div>
+    <p>Whitelist จะถูกผูกกับ username ที่กรอกในขั้นตอนนี้เท่านั้น ถ้ากรอกผิดเกมจะยังไม่อนุญาตให้เข้า — ต้องติดต่อแอดมินเพื่อแก้ไข</p>
+  </div>
+
+  <h3>ปุ่มทดลองใช้งานฟรี (ถ้าเปิดให้ทดลอง)</h3>
+  <p>บางสินค้ามีปุ่ม <span class="badge">Try free</span> — กดเพื่อทดลองใช้งานฟรีไม่กี่นาที (ไม่ต้องชำระเงิน):</p>
+  <ul>
+    <li>ต้องกรอก username ก่อน</li>
+    <li><strong>1 username ทดลองได้ 1 ครั้งต่อ 24 ชั่วโมง</strong></li>
+    <li>ถ้าทดลองสำเร็จจะขึ้นแบนเนอร์สีเขียวบอกเวลาหมดอายุ</li>
+    <li>ถ้า error จะขึ้นแบนเนอร์สีแดง พร้อมเหตุผล เช่น "ทดลองไปแล้วในช่วง 24 ชม. นี้"</li>
+  </ul>
+
+  <!-- 1.4 Stripe Checkout ──────────────────────────────── -->
+  <h2>1.4 ขั้นตอนการชำระเงินกับ Stripe</h2>
+
+  <p>เมื่อกด <strong>Pay Now</strong> ระบบจะส่งคุณไปที่หน้าเว็บของ Stripe (ผู้ให้บริการรับชำระเงิน) — สังเกตว่า URL จะเปลี่ยนเป็น <code>checkout.stripe.com</code></p>
+
+  <h3>ถ้าเลือก PromptPay</h3>
+  <ol class="steps">
+    <li>หน้า Stripe จะแสดง <strong>QR Code</strong> — เปิดแอปธนาคารบนมือถือแล้วสแกน</li>
+    <li>ตรวจสอบยอดเงินและกดยืนยันในแอปธนาคาร</li>
+    <li>เมื่อจ่ายเงินสำเร็จ Stripe จะพาคุณกลับมาที่หน้า Success ของ Judyshop อัตโนมัติ</li>
+  </ol>
+  <div class="box warn">
+    <div class="box-title">PromptPay อาจใช้เวลายืนยันสักครู่</div>
+    <p>หลังจ่ายแล้วบางครั้ง Whitelist จะยังไม่เพิ่มทันที — รอสักครู่แล้วกด Refresh หน้า Success</p>
+  </div>
+
+  <h3>ถ้าเลือกบัตรเครดิต/เดบิต</h3>
+  <ol class="steps">
+    <li>กรอกหมายเลขบัตร · วันหมดอายุ · CVV</li>
+    <li>กดปุ่ม Pay</li>
+    <li>ธนาคารอาจให้ยืนยัน OTP — กรอกรหัสที่ได้รับทาง SMS</li>
+    <li>เมื่อสำเร็จจะพากลับมาหน้า Success ทันที</li>
+  </ol>
+
+  <h3>ถ้ายกเลิกหรือปิดหน้า</h3>
+  <p>ระหว่างอยู่หน้า Stripe คุณสามารถกดปุ่ม <strong>← Back</strong> ของ Stripe หรือปิดแท็บได้ — จะถูกพาไปหน้า Cancel ของ Judyshop และ<strong>ไม่มีการเรียกเก็บเงิน</strong></p>
+
+  <!-- 1.5 Success / Cancel ─────────────────────────────── -->
+  <h2>1.5 หน้าหลังการชำระเงิน</h2>
+
+  <h3>หน้า Success — ชำระเงินสำเร็จ</h3>
+  <p>URL: <code>/success?session_id=cs_xxx...</code></p>
+
+  <h4>ส่วนบน — สรุปคำสั่งซื้อ</h4>
+  <ul>
+    <li>ไอคอนถูกใหญ่ (เครื่องหมายติ๊ก) สีชมพู</li>
+    <li>ข้อความ <strong>"ขอบคุณค่ะ!"</strong> หรือ "Thank you!"</li>
+    <li>ตารางสรุป: ชื่อสินค้า · แผน · Username · ยอดที่ชำระ · ใช้งานได้ถึง (วันที่ หรือ "ตลอดชีพ ∞")</li>
+  </ul>
+
+  <h4>ส่วนล่าง — ไฟล์ที่ดาวน์โหลดได้ (ถ้ามี)</h4>
+  <ul>
+    <li><strong>Preset Files</strong> — ไฟล์ตั้งค่าสำหรับโปรแกรมต่างๆ — คลิกปุ่ม Download เพื่อเซฟ</li>
+    <li><strong>Gift Overlays</strong> — รูปภาพ Gift Box หลายภาพ — คลิกปุ่ม Save แต่ละชิ้น หรือคลิกที่รูปเพื่อดูขนาดใหญ่</li>
+  </ul>
+
+  <div class="box info">
+    <div class="box-title">หากเปิดลิงก์ Success จากเบราว์เซอร์อื่น</div>
+    <p>ระบบรู้ว่าคุณไม่ใช่ผู้สั่งซื้อ — จะไม่แสดงรายละเอียดและไม่ให้ดาวน์โหลด เพื่อความปลอดภัย ให้กลับมาเปิดลิงก์จากเบราว์เซอร์เครื่องเดิมที่ใช้สั่งซื้อ</p>
+  </div>
+
+  <h4>ถ้ายังไม่เห็นรายการสั่งซื้อ</h4>
+  <ul>
+    <li>Stripe อาจกำลังประมวลผลอยู่ — รอ 10–30 วินาทีแล้วกด Refresh</li>
+    <li>ถ้าเกิน 5 นาทียังไม่เห็น — ติดต่อแอดมินทาง Discord พร้อมแคป Session ID</li>
+  </ul>
+
+  <h3>หน้า Cancel — ยกเลิกการชำระเงิน</h3>
+  <p>URL: <code>/cancel</code></p>
+  <ul>
+    <li>ไอคอน X สีเทา</li>
+    <li>ข้อความยืนยันว่า<strong>ไม่มีการเรียกเก็บเงิน</strong></li>
+    <li>ปุ่ม <span class="badge">Try Again</span> กลับไปหน้า Shop · ปุ่ม Home กลับหน้าแรก</li>
+  </ul>
+
+  <!-- 1.6 Check ────────────────────────────────────────── -->
+  <h2>1.6 ตรวจสอบ Whitelist (Check)</h2>
+
+  <p>หน้าตรวจสอบสิทธิ์เข้าเกมที่ <code>/check</code></p>
+
+  <h3>วิธีใช้</h3>
+  <ol class="steps">
+    <li>กรอก <strong>Roblox Username</strong></li>
+    <li>เลือก <strong>สินค้า</strong> ที่ต้องการเช็ค (หรือเลือก "Any product" เพื่อค้นทุกสินค้า)</li>
+    <li>กด <span class="badge">ค้นหา</span></li>
+  </ol>
+
+  <h3>ผลลัพธ์ที่เป็นไปได้</h3>
+  <table>
+    <tr><th>สถานะ</th><th>ไอคอน</th><th>ความหมาย</th></tr>
+    <tr><td><span class="badge green">ACTIVE</span></td><td>เครื่องหมายติ๊กเขียว</td><td>มีสิทธิ์เข้าเกม — แสดงวันหมดอายุและจำนวนวันที่เหลือ</td></tr>
+    <tr><td><span class="badge gray">EXPIRED</span></td><td>นาฬิกาทราย</td><td>เคยมีสิทธิ์แต่หมดอายุแล้ว — แสดงวันที่หมดอายุ</td></tr>
+    <tr><td><span>ไม่พบ</span></td><td>ไอคอนแดง</td><td>ไม่มีข้อมูล username นี้ในระบบ</td></tr>
+    <tr><td><span class="badge orange">LIFETIME</span></td><td>∞ ตลอดชีพ</td><td>ใช้งานได้ตลอดชีพ</td></tr>
+  </table>
+
+  <div class="box info">
+    <div class="box-title">URL แชร์ได้</div>
+    <p>หลังค้นหา URL จะมีพารามิเตอร์ เช่น <code>/check?username=xxx&amp;productId=yyy</code> — คัดลอกแชร์ให้คนอื่นเห็นผลเดียวกันได้</p>
+  </div>
+
+  <!-- 1.7 News + FAQ ──────────────────────────────────── -->
+  <h2>1.7 News</h2>
+
+  <h3>News — ข่าวสารและประกาศ</h3>
+  <p>หน้าที่ <code>/news</code> รวมข่าวจากแอดมิน เช่น อัพเดทใหม่ · กิจกรรม · ปิดปรับปรุง</p>
+  <ul>
+    <li>การ์ดข่าวเรียงจากใหม่ → เก่า</li>
+    <li>แต่ละข่าวมี: ป้ายหมวด (Update / Announce / Event / Maintenance), หัวข้อ, สรุปสั้น, วันที่</li>
+    <li>คลิกการ์ดเพื่ออ่านรายละเอียดเต็ม (ถ้ามี)</li>
+  </ul>
+
+  <!-- <h3>FAQ — คำถามที่พบบ่อย</h3>
+  <p>หน้าที่ <code>/faq</code> รวม 5 หมวดคำถาม:</p>
+  <ul>
+    <li><strong>Buying</strong> — วิธีซื้อ · วิธีการชำระเงิน</li>
+    <li><strong>Username</strong> — หา Roblox username ตรงไหน · ถ้ากรอกผิดทำยังไง</li>
+    <li><strong>Renewal</strong> — ต่ออายุยังไง · เช็ควันหมดอายุ</li>
+    <li><strong>Trial</strong> — เงื่อนไขทดลองฟรี</li>
+    <li><strong>Support</strong> — นโยบายคืนเงิน · ติดต่อทีมงาน</li>
+  </ul> -->
+  <p>แต่ละหัวข้อคลิกเพื่อขยายดูคำตอบ (Accordion) — ปุ่ม "Join Discord" ที่ด้านล่างสำหรับติดต่อทีมงานโดยตรง</p>
+
+</section>
+
+<!-- ═════════════════════════════════════════════════════════════ -->
+<!--  PART 2 — ADMIN MANUAL                                          -->
+<!-- ═════════════════════════════════════════════════════════════ -->
+<section class="body">
+
+  <div class="section-kicker">ส่วนที่ 2</div>
+  <h1>คู่มือสำหรับผู้ดูแลระบบ (Admin)</h1>
+  <p>ส่วนนี้สำหรับแอดมินที่ใช้หลังบ้านในการจัดการสินค้า · ออเดอร์ · Whitelist · ประกาศ · ข่าวสาร · ตั้งค่าระบบ และตรวจสอบ Audit Log</p>
+
+  <div class="box warn">
+    <div class="box-title">การเข้าถึง</div>
+    <p>เข้าได้เฉพาะ Admin เท่านั้น — เปิด <code>/admin</code> แล้วระบบจะพาไปหน้า Login อัตโนมัติ Session อยู่ได้ 8 ชั่วโมงก่อนต้อง Login ใหม่</p>
+  </div>
+
+  <!-- 2.1 Login ────────────────────────────────────────── -->
+  <h2>2.1 Login และโครงสร้างเมนู Admin</h2>
+
+  <h3>หน้า Login</h3>
+  <p>URL: <code>/admin/login</code></p>
+  <ul>
+    <li>กรอก <strong>อีเมล</strong> และ <strong>รหัสผ่าน</strong></li>
+    <li>กดปุ่ม <span class="badge blue">Sign in</span></li>
+    <li>เข้าได้สำเร็จจะพาไปหน้า Dashboard</li>
+    <li>ถ้าผิด — ขึ้นกล่องสีแดงพร้อมข้อความ</li>
+  </ul>
+  <div class="box info">
+    <p>ถ้า Login อยู่แล้วแต่เปิดหน้านี้อีกครั้ง ระบบจะรีไดเรกต์ไป Dashboard อัตโนมัติ</p>
+  </div>
+
+  <h3>โครงสร้างเมนู Admin</h3>
+
+  <h4>แถบบน (Top Bar)</h4>
+  <ul>
+    <li>โลโก้ "Judy Shop Admin" (ซ้าย) — คลิกกลับ Dashboard</li>
+    <li>อีเมลของแอดมินที่กำลัง login</li>
+    <li>ปุ่ม <strong>View site</strong> — เปิดหน้าร้านจริงในแท็บใหม่</li>
+    <li>ปุ่มเปลี่ยนธีม (สว่าง/มืด)</li>
+    <li>ปุ่ม <strong>Logout</strong> — ออกจากระบบ</li>
+  </ul>
+
+  <h4>แถบข้างซ้าย (Sidebar)</h4>
+  <ul>
+    <li><strong>Overview</strong>: Dashboard</li>
+    <li><strong>Catalogue</strong>: Products</li>
+    <li><strong>Operations</strong>: Whitelist · Transactions · Announcements · News</li>
+    <li><strong>System</strong>: Audit Log · Settings</li>
+  </ul>
+  <p>บนมือถือ Sidebar จะซ่อนอยู่ในปุ่ม Hamburger ที่ Top Bar</p>
+
+  <!-- 2.2 Dashboard ────────────────────────────────────── -->
+  <h2>2.2 Dashboard — ภาพรวม KPI</h2>
+
+  <p>URL: <code>/admin</code> — หน้าหลักของ Admin แสดงตัวเลขสำคัญใน 30 วันล่าสุด เปรียบเทียบกับช่วง 30 วันก่อนหน้า</p>
+
+  <h3>แถว KPI ด้านบน (4 การ์ด)</h3>
+  <table>
+    <tr><th>การ์ด</th><th>แสดงอะไร</th></tr>
+    <tr><td><strong>Revenue</strong></td><td>ยอดขายรวม (THB) · % การเปลี่ยนแปลงเทียบช่วงก่อน</td></tr>
+    <tr><td><strong>Paid Orders</strong></td><td>จำนวนออเดอร์ที่จ่ายเงินแล้ว · เทียบช่วงก่อน</td></tr>
+    <tr><td><strong>New Customers</strong></td><td>ลูกค้าใหม่ · เทียบช่วงก่อน</td></tr>
+    <tr><td><strong>Active Whitelist</strong></td><td>สิทธิ์เข้าเกมที่ยังใช้งานได้ · แสดงสัดส่วน Lifetime vs Timed</td></tr>
+  </table>
+
+  <h3>กราฟและตารางด้านล่าง</h3>
+  <ul>
+    <li><strong>Revenue trend chart</strong> — กราฟเส้นแสดงยอดขายรายวัน 30 วัน</li>
+    <li><strong>Top Products</strong> — กราฟแท่งแนวนอน 5–10 อันดับสินค้าขายดี (ยอดและจำนวนออเดอร์)</li>
+    <li><strong>Whitelist Breakdown</strong> — กราฟวงกลม: Lifetime · Active · Expired</li>
+    <li><strong>Order Status</strong> — กราฟวงกลม: Paid · Pending · Failed · Refunded</li>
+    <li><strong>Recent Orders</strong> — 8 ออเดอร์ล่าสุด คลิก "View all →" ไปหน้า Transactions</li>
+  </ul>
+
+  <!-- 2.3 Products List ────────────────────────────────── -->
+  <h2>2.3 Products — รายการสินค้า</h2>
+
+  <p>URL: <code>/admin/products</code></p>
+
+  <h3>หัวหน้า + ปุ่ม</h3>
+  <ul>
+    <li>หัวเรื่อง: <strong>Products</strong></li>
+    <li>คำอธิบาย: "เกม / Whitelist ทั้งหมดในร้าน — คลิก Edit เพื่อจัดการรายละเอียด, Plan, รูปภาพ และไฟล์ Preset"</li>
+    <li>ปุ่มมุมขวาบน <span class="badge">+ New product</span></li>
+  </ul>
+
+  <h3>คอลัมน์ในตาราง</h3>
+  <table>
+    <tr><th>คอลัมน์</th><th>แสดง</th></tr>
+    <tr><td>Image</td><td>thumbnail สินค้า หรือ placeholder เทาถ้ายังไม่มีรูป</td></tr>
+    <tr><td>Product</td><td>ชื่อ (EN) ตัวหนา · ชื่อ (TH) ตัวเล็ก · slug เช่น <code>/judy-legend</code> · คำบรรยายสั้น</td></tr>
+    <tr><td>Status</td><td>Badge: <span class="badge green">Active</span> หรือ <span class="badge gray">Hidden</span> · ป้าย <span class="badge orange">Soon</span> ถ้ายังไม่เปิดขาย · custom badge เช่น HOT/NEW/SALE</td></tr>
+    <tr><td>Items</td><td>ตัวเลข Plans · Images · Gifts · Files · WL (Whitelist)</td></tr>
+    <tr><td>Actions</td><td>ปุ่ม <strong>Edit</strong> และ <strong>Trash</strong> (ลบ)</td></tr>
+  </table>
+
+  <h3>ลบสินค้า</h3>
+  <p>กดไอคอนถังขยะ → กล่องยืนยัน "Delete '[ชื่อสินค้า]'?" → กดยืนยัน → ระบบจะลบ:</p>
+  <ul>
+    <li>ตัวสินค้า</li>
+    <li>Plans · Images · Gift Overlays · Presets ทั้งหมด</li>
+    <li>Whitelist ที่ผูกกับสินค้านั้น</li>
+  </ul>
+
+  <div class="box danger">
+    <div class="box-title">ลบแล้วกู้คืนไม่ได้</div>
+    <p>การลบเป็น Cascade delete — ข้อมูลที่เชื่อมโยงหายหมด ถ้าต้องการแค่ซ่อนจากร้านให้ใช้ Toggle "Active" แทน</p>
+  </div>
+
+  <!-- 2.4 New + Edit Product ──────────────────────────── -->
+  <h2>2.4 Products — สร้างใหม่และแก้ไข</h2>
+
+  <h3>สร้างสินค้าใหม่</h3>
+  <p>URL: <code>/admin/products/new</code> — Form กรอกข้อมูลพื้นฐาน</p>
+
+  <h4>ฟอร์มประกอบด้วย</h4>
+  <dl class="fields">
+    <dt>Slug</dt>
+    <dd>คีย์ที่ใช้ใน URL เช่น <code>judy-legend</code> — ตัวเล็กและขีดกลางเท่านั้น (ถ้าเว้นว่างจะสร้างจากชื่ออัตโนมัติ)</dd>
+    <dt>Game ID</dt>
+    <dd>Roblox game ID หรือ URL เกม — ระบบดึงเลขออกมาเอง</dd>
+    <dt>Badge</dt>
+    <dd>เลือกได้: ไม่มี / HOT / NEW / SALE</dd>
+    <dt>Display order</dt>
+    <dd>เลข 0–99999 ยิ่งน้อยยิ่งแสดงก่อน</dd>
+    <dt>Active / Coming soon</dt>
+    <dd>สลับเปิด-ปิดและสถานะ Coming Soon</dd>
+    <dt>Name (EN) + Name (TH)</dt>
+    <dd>ชื่อเต็ม — ใช้แสดงในการ์ดสินค้า</dd>
+    <dt>Short Name (EN) + Short Name (TH)</dt>
+    <dd>ชื่อย่อ — สำหรับที่แคบ</dd>
+    <dt>Description (EN) + Description (TH)</dt>
+    <dd>คำบรรยายเต็ม — Rich text editor รองรับ Bold/Italic/Link</dd>
+    <dt>Short Description (EN) + Short Description (TH)</dt>
+    <dd>คำโปรยสั้น — ใช้ในการ์ดสินค้า</dd>
+  </dl>
+  <p>กดปุ่ม <span class="badge green">Create product</span> → ระบบสร้างและพาไปหน้า Edit อัตโนมัติ</p>
+
+  <h3>แก้ไขสินค้า (5 แท็บ)</h3>
+  <p>URL: <code>/admin/products/[id]</code> — มี 5 แท็บให้สลับ:</p>
+
+  <h4>แท็บ 1 — Details</h4>
+  <p>เหมือนฟอร์มสร้างใหม่ + ตัวเลือกพิเศษ:</p>
+  <ul>
+    <li><strong>Trial Enabled</strong> — เปิด/ปิดให้ลูกค้ากดทดลองฟรี</li>
+    <li><strong>Trial Minutes</strong> — ระยะเวลาทดลอง เช่น 10 นาที</li>
+  </ul>
+  <p>กด <span class="badge">Save</span> — ขึ้น Toast "Product updated ✓"</p>
+
+  <h4>แท็บ 2 — Images</h4>
+  <ul>
+    <li><strong>อัพโหลด</strong>: drag-and-drop หรือคลิกเลือกไฟล์ — ใส่ Alt text (EN/TH) ได้</li>
+    <li><strong>รายการรูป</strong>: ตัวเลขลำดับซ้าย + Thumbnail + URL + ปุ่มขึ้น/ลงเพื่อจัดลำดับ</li>
+    <li><strong>Set as thumbnail</strong> — กำหนดให้รูปนี้เป็นรูปหลัก (ปุ่มดาวฟ้า)</li>
+    <li><strong>Delete</strong> — ลบรูป (มี Confirm dialog)</li>
+  </ul>
+  <div class="box info">
+    <p>รูปแรกในรายการคือรูปที่ลูกค้าเห็นในการ์ดสินค้าที่หน้า Shop</p>
+  </div>
+
+  <h4>แท็บ 3 — Plans</h4>
+  <p>กำหนดราคาและระยะเวลาให้กับสินค้า — ลูกค้าจะเลือกแผนตรงนี้ตอนซื้อ</p>
+
+  <dl class="fields">
+    <dt>Label (EN) + Label (TH)</dt>
+    <dd>ชื่อแผน เช่น "30 Days", "Lifetime", "ตลอดชีพ"</dd>
+    <dt>Duration (days)</dt>
+    <dd>ระยะเวลาเป็นวัน — ติ๊ก <strong>Lifetime</strong> เพื่อใช้งานตลอดชีพแทน</dd>
+    <dt>Price (THB) + Price (USD)</dt>
+    <dd>ราคาบาทและดอลลาร์ — ติ๊ก <strong>Auto USD</strong> ให้ระบบคำนวณ USD จาก THB อัตโนมัติ</dd>
+    <dt>Active toggle</dt>
+    <dd>ปิดเพื่อซ่อนแผนนี้ชั่วคราว (ไม่ต้องลบ)</dd>
+  </dl>
+
+  <div class="box warn">
+    <div class="box-title">ต้องมีอย่างน้อย 1 plan</div>
+    <p>สินค้าที่ไม่มี active plan เลย จะ<strong>ไม่แสดงในร้าน</strong>โดยอัตโนมัติ (ขายไม่ได้)</p>
+  </div>
+
+  <h4>แท็บ 4 — Overlays (Gift Boxes)</h4>
+  <p>รูปประดับ Gift Box สำหรับใช้ในเกม:</p>
+  <ul>
+    <li>อัพโหลดรูป PNG/JPG พร้อมตั้งชื่อ Gift (EN+TH)</li>
+    <li>เรียงลำดับด้วยปุ่มขึ้น/ลง</li>
+    <li>Active toggle เปิด/ปิดแสดง</li>
+    <li>ลบได้พร้อม Confirm dialog</li>
+  </ul>
+
+  <h4>แท็บ 5 — Presets</h4>
+  <p>ไฟล์ตั้งค่าให้ลูกค้าดาวน์โหลด (เช่น config สำหรับ OBS):</p>
+  <dl class="fields">
+    <dt>อัพโหลดไฟล์</dt>
+    <dd>Drag-and-drop หรือคลิกเลือก — ระบบเก็บชื่อไฟล์และขนาดอัตโนมัติ</dd>
+    <dt>Name (EN)</dt>
+    <dd>ชื่อ Preset ที่ลูกค้าเห็น</dd>
+    <dt>Target Program</dt>
+    <dd>ระบุโปรแกรมที่ใช้ เช่น "OBS", "Streamlabs" (ไม่บังคับ)</dd>
+    <dt>Active toggle</dt>
+    <dd>ปิดเพื่อหยุดให้ดาวน์โหลด</dd>
+  </dl>
+  <p>ปุ่ม <strong>Open</strong> แต่ละแถวเปิดไฟล์ในแท็บใหม่เพื่อตรวจสอบ</p>
+
+  <!-- 2.5 Transactions ────────────────────────────────── -->
+  <h2>2.5 Transactions — ออเดอร์และการคืนเงิน</h2>
+
+  <p>URL: <code>/admin/transactions</code> — รายการออเดอร์ทั้งหมดและการคืนเงิน</p>
+
+  <h3>ตัวกรอง (Filter)</h3>
+  <p>แถวปุ่ม Pill ด้านบน: <span class="badge gray">All</span> <span class="badge green">PAID</span> <span class="badge orange">PENDING</span> <span class="badge gray">FAILED</span> <span class="badge">REFUNDED</span> — คลิกเพื่อกรอง</p>
+
+  <h3>คอลัมน์ในตาราง</h3>
+  <table>
+    <tr><th>คอลัมน์</th><th>ความหมาย</th></tr>
+    <tr><td>Status</td><td>Badge สี: PAID (เขียว) / PENDING (ส้ม) / FAILED (เทา) / REFUNDED (ชมพู)</td></tr>
+    <tr><td>Product · Plan</td><td>ชื่อสินค้า (ตัวหนา) + ชื่อแผน</td></tr>
+    <tr><td>User</td><td>Roblox username (ฟอนต์ Mono)</td></tr>
+    <tr><td>Method</td><td>Card หรือ PromptPay</td></tr>
+    <tr><td>Amount</td><td>ยอด ฿ พร้อมเครื่องหมายสกุลเงิน</td></tr>
+    <tr><td>Stripe</td><td>Payment Intent ID — hover ดูเต็ม</td></tr>
+    <tr><td>Date</td><td>วันที่และเวลา</td></tr>
+    <tr><td>Actions</td><td>ปุ่ม <strong>Refund</strong> (เฉพาะออเดอร์ PAID ที่มี Stripe ID)</td></tr>
+  </table>
+
+  <p>50 แถวต่อหน้า · มี Pagination ด้านล่าง</p>
+
+  <h3>ขั้นตอนการคืนเงิน (Refund)</h3>
+  <ol class="steps">
+    <li>คลิกปุ่ม <span class="badge">Refund</span> ที่แถวออเดอร์</li>
+    <li>กล่องยืนยันจะเปิดขึ้น พร้อมรายละเอียดออเดอร์:
+      <ul>
+        <li>Product · Plan · Username · Amount · Payment ID · Order ID</li>
+        <li>กล่องสีชมพูบอกผลลัพธ์: เงินคืนเข้า Card/PromptPay (1–10 วันทำการ) · Whitelist ถูกตัดทันที · Order เปลี่ยนเป็น REFUNDED + Audit log</li>
+      </ul>
+    </li>
+    <li>กรอก <strong>เหตุผล</strong> (ไม่บังคับ แต่แนะนำ — สูงสุด 500 ตัวอักษร) เช่น "ลูกค้าจ่ายผิด username", "ขอคืนเอง"</li>
+    <li>กด <span class="badge">Confirm refund</span> — หรือ <strong>Cancel</strong>/กด ESC เพื่อยกเลิก</li>
+    <li>เมื่อสำเร็จ Toast เขียวขึ้น: "Refund issued · Stripe refunded · whitelist revoked · order marked REFUNDED"</li>
+  </ol>
+
+  <div class="box danger">
+    <div class="box-title">การคืนเงินทำกลับไม่ได้</div>
+    <p>เมื่อยืนยันแล้วระบบจะคืนเงินจริงผ่าน Stripe และตัด Whitelist ทันที — ตรวจสอบให้แน่ใจก่อนกด Confirm</p>
+  </div>
+
+  <h3>ข้อผิดพลาดที่อาจเจอ และวิธีแก้</h3>
+  <table>
+    <tr><th>Error</th><th>วิธีแก้</th></tr>
+    <tr><td>DB unreachable</td><td>ฐานข้อมูล (Supabase) ปิดอยู่ — เปิด Supabase Dashboard ให้กลับมาทำงาน</td></tr>
+    <tr><td>No payment intent</td><td>Order ไม่มี payment_intent — คืนเงินผ่าน Stripe Dashboard ตรงๆ แล้ว mark REFUNDED ในระบบ</td></tr>
+    <tr><td>Stripe rejected</td><td>Stripe ปฏิเสธ — ตรวจ Payment Intent ใน Stripe Dashboard</td></tr>
+    <tr><td>Order not paid</td><td>คืนเฉพาะออเดอร์ที่ PAID เท่านั้น</td></tr>
+    <tr><td>Already refunded</td><td>คืนไปแล้วก่อนหน้า</td></tr>
+  </table>
+
+  <!-- 2.6 Whitelist ───────────────────────────────────── -->
+  <h2>2.6 Whitelist — จัดการสิทธิ์เข้าเกม</h2>
+
+  <p>URL: <code>/admin/whitelist</code> — เพิ่ม/ลบ/ต่ออายุ Whitelist แบบ Manual</p>
+
+  <h3>ฟอร์มเพิ่ม Whitelist (แผงบน)</h3>
+  <dl class="fields">
+    <dt>Product</dt>
+    <dd>เลือกสินค้า (Dropdown) — บังคับ</dd>
+    <dt>Roblox Username</dt>
+    <dd>username แบบเป๊ะ (ตัวพิมพ์ใหญ่/เล็กไม่แมตเตอร์) สูงสุด 100 ตัว — บังคับ</dd>
+    <dt>Duration (days)</dt>
+    <dd>จำนวนวันที่ใช้งานได้ 1–36,500 — ปิดถ้าติ๊ก Lifetime</dd>
+    <dt>Label</dt>
+    <dd>โน้ตภายในที่เฉพาะแอดมินเห็น เช่น "promo", "refund", "VIP" (สูงสุด 200 ตัว ไม่บังคับ)</dd>
+    <dt>Lifetime toggle</dt>
+    <dd>เปิดเพื่อให้ใช้งานตลอดชีพ (ไม่มีวันหมด)</dd>
+  </dl>
+  <p>กด <span class="badge green">Add to whitelist</span> เพื่อบันทึก</p>
+
+  <h3>ค้นหาและกรอง</h3>
+  <ul>
+    <li>ช่อง <strong>Search</strong> — ค้นหา username (ไม่สนใจตัวพิมพ์ใหญ่/เล็ก)</li>
+    <li>Dropdown <strong>Product</strong> — กรองตามสินค้า</li>
+    <li>ปุ่ม <strong>Apply</strong> และ <strong>Reset</strong></li>
+  </ul>
+
+  <h3>คอลัมน์ในตาราง</h3>
+  <table>
+    <tr><th>คอลัมน์</th><th>ความหมาย</th></tr>
+    <tr><td>User · Product</td><td>Username (Mono) + ชื่อสินค้า</td></tr>
+    <tr><td>Status</td><td><span class="badge">Lifetime</span> / <span class="badge green">Active</span> / <span class="badge gray">Expired</span></td></tr>
+    <tr><td>Source</td><td><span class="badge blue">STRIPE</span> (จากการซื้อ) หรือ <span class="badge">MANUAL</span> (Admin เพิ่ม)</td></tr>
+    <tr><td>Added</td><td>วันที่เพิ่ม</td></tr>
+    <tr><td>Expires</td><td>วันที่หมดอายุ + จำนวนวันที่เหลือ (สีเขียวถ้าเหลือ >7 วัน, สีส้มถ้าเหลือ 1–7 วัน, สีแดงถ้าหมดแล้ว) หรือ "Lifetime ∞"</td></tr>
+    <tr><td>Label</td><td>โน้ตภายในหรือ "—"</td></tr>
+    <tr><td>Actions</td><td>ปุ่มลบ (X สีแดง)</td></tr>
+  </table>
+
+  <div class="box warn">
+    <div class="box-title">การลบ Whitelist ตัดสิทธิ์ทันที</div>
+    <p>กดลบแล้วลูกค้าจะเข้าเกมไม่ได้ภายในไม่กี่วินาที — ใช้ระมัดระวัง สำหรับเคสคืนเงินใช้ปุ่ม Refund ที่หน้า Transactions จะเหมาะกว่า (จะคืนเงินจริงด้วย)</p>
+  </div>
+
+  <!-- 2.7 Announcements ───────────────────────────────── -->
+  <h2>2.7 Announcements — แบนเนอร์แจ้งเตือน</h2>
+
+  <p>URL: <code>/admin/announcements</code> — จัดการป็อปอัพที่แสดงในหน้าแรก</p>
+
+  <h3>สร้าง/แก้ไข</h3>
+  <dl class="fields">
+    <dt>Message (EN) + Message (TH)</dt>
+    <dd>ข้อความ Textarea สูงสุด 500 ตัวอักษร — เว้นว่างได้ถ้ามีรูปอย่างเดียว</dd>
+    <dt>Image</dt>
+    <dd>อัพโหลด JPG/PNG/WebP สูงสุด 6 MB — มี Preview ลบได้ด้วยปุ่ม Remove</dd>
+    <dt>Start Date</dt>
+    <dd>วันเวลาเริ่มแสดง (datetime-local) — เว้นว่างจะใช้เวลาปัจจุบัน</dd>
+    <dt>End Date</dt>
+    <dd>วันเวลาสิ้นสุด — เว้นว่างคือไม่มีกำหนด</dd>
+    <dt>Priority</dt>
+    <dd>0–999 ยิ่งสูงยิ่งแสดงก่อนถ้ามีหลายตัว Active พร้อมกัน</dd>
+    <dt>Active toggle</dt>
+    <dd>เปิด/ปิดการแสดง</dd>
+  </dl>
+
+  <h3>ตารางรายการ</h3>
+  <table>
+    <tr><th>คอลัมน์</th><th>ความหมาย</th></tr>
+    <tr><td>Image</td><td>thumbnail หรือ placeholder</td></tr>
+    <tr><td>Message</td><td>ข้อความ EN ตัวหนา + TH ใต้ — หรือ "— image only —"</td></tr>
+    <tr><td>Window</td><td>วันเริ่ม → วันสิ้นสุด</td></tr>
+    <tr><td>Status</td><td><span class="badge green">Live</span> · <span class="badge orange">Scheduled</span> · <span class="badge gray">Off</span></td></tr>
+    <tr><td>Actions</td><td>Toggle Active · Edit · Delete</td></tr>
+  </table>
+
+  <p>หัวหน้าแสดงตัวนับ: "X live now · Y total"</p>
+
+  <!-- 2.8 News ────────────────────────────────────────── -->
+  <h2>2.8 News — บทความข่าว</h2>
+
+  <p>URL: <code>/admin/news</code> — จัดการบทความที่แสดงในหน้า <code>/news</code></p>
+
+  <h3>ฟอร์มสร้าง/แก้ไข</h3>
+  <dl class="fields">
+    <dt>Title (EN) + Title (TH)</dt>
+    <dd>หัวข้อข่าว สูงสุด 160 ตัว — บังคับ</dd>
+    <dt>Excerpt (EN) + Excerpt (TH)</dt>
+    <dd>คำโปรย Textarea สูงสุด 500 ตัว (ไม่บังคับ) — แสดงในการ์ดข่าว</dd>
+    <dt>Cover Image</dt>
+    <dd>รูปปก JPG/PNG/WebP สูงสุด 6 MB</dd>
+    <dt>Category</dt>
+    <dd>เลือก 1 หมวด: <span class="badge blue">Update</span> · <span class="badge">Announce</span> · <span class="badge green">Event</span> · <span class="badge orange">Maintenance</span></dd>
+    <dt>Published At</dt>
+    <dd>วันที่เผยแพร่ (datetime-local) — ปกติจะใช้เวลาปัจจุบัน</dd>
+    <dt>Published toggle</dt>
+    <dd>เปิดเพื่อแสดงในหน้า /news</dd>
+  </dl>
+
+  <h3>ตารางรายการ</h3>
+  <p>แสดง: รูป · หัวข้อ + Excerpt · Category · Published At · Status · Actions (Toggle Published · Edit · Delete)</p>
+
+  <!-- 2.9 Settings ───────────────────────────────────── -->
+  <h2>2.9 Settings — ตั้งค่าระบบ</h2>
+
+  <p>URL: <code>/admin/settings</code> — ตั้งค่าระดับเว็บไซต์</p>
+
+  <h3>Credit Card Surcharge (%)</h3>
+  <ul>
+    <li>กรอกตัวเลข 0–100 (ทศนิยม 2 หลัก) เช่น <code>2.5</code></li>
+    <li>ใช้กับการชำระด้วยบัตรเครดิตเท่านั้น — PromptPay ไม่เก็บ</li>
+    <li>มี <strong>Live Preview</strong> ด้านล่าง: ใช้ตะกร้าตัวอย่าง ฿1,000 แสดงยอดที่ลูกค้าจะจ่ายจริง</li>
+  </ul>
+  <p>กด <span class="badge green">Save</span> — ใช้ผลทันทีกับ checkout ครั้งถัดไป</p>
+
+  <!-- 2.10 Audit Log ─────────────────────────────────── -->
+  <h2>2.10 Audit Log — บันทึกการใช้งาน</h2>
+
+  <p>URL: <code>/admin/audit</code> — บันทึกทุกการกระทำของ Admin (ไม่สามารถลบหรือแก้)</p>
+
+  <h3>ค้นหาและกรอง</h3>
+  <ul>
+    <li><strong>Search</strong> — ค้นหา email, action name, target ID</li>
+    <li><strong>Action Filter</strong> — Dropdown action ทั้งหมด เช่น <code>refund_order</code>, <code>delete_announcement</code></li>
+    <li>ปุ่ม <strong>Filter</strong> และ <strong>Reset</strong></li>
+  </ul>
+
+  <h3>คอลัมน์</h3>
+  <table>
+    <tr><th>คอลัมน์</th><th>ความหมาย</th></tr>
+    <tr><td>When</td><td>วันเวลาแบบเต็มมีวินาที</td></tr>
+    <tr><td>Admin</td><td>อีเมลของแอดมินที่ทำ (หรือ "system" ถ้าระบบทำเอง)</td></tr>
+    <tr><td>Action</td><td>ชื่อ action เช่น <code>refund_order</code>, <code>toggle_announcement_active</code></td></tr>
+    <tr><td>Target</td><td>เป้าหมายรูปแบบ TYPE:ID เช่น <code>order:abc123</code></td></tr>
+    <tr><td>Payload</td><td>รายละเอียดเป็น JSON เช่น เหตุผลคืนเงิน, ค่าก่อน/หลังแก้ไข</td></tr>
+    <tr><td>IP</td><td>IP ของแอดมินตอนทำ</td></tr>
+  </table>
+
+  <h3>ตัวอย่างที่บันทึก</h3>
+  <ul>
+    <li>คืนเงิน → <code>refund_order</code> + payload เก็บเหตุผล, ยอด, Stripe ID</li>
+    <li>ลบ Announcement → <code>delete_announcement</code> + target ID</li>
+    <li>เพิ่ม Whitelist → <code>create_whitelist</code> + username, ระยะเวลา, label</li>
+    <li>แก้ Settings → <code>update_settings</code> + ค่าก่อน/หลัง</li>
+  </ul>
+
+  <div class="box info">
+    <div class="box-title">Audit Log ไม่สามารถแก้ไขหรือลบได้</div>
+    <p>บันทึกถาวรสำหรับ accountability และ Compliance — ทุกการกระทำของแอดมินถูกบันทึกอัตโนมัติ</p>
+  </div>
+
+</section>
+
+<!-- ═════════════════════════════════════════════════════════════ -->
+<!--  APPENDIX                                                       -->
+<!-- ═════════════════════════════════════════════════════════════ -->
+<section class="body">
+
+  <div class="section-kicker">ภาคผนวก</div>
+  <h1>ปัญหาที่พบบ่อยและคำศัพท์</h1>
+
+  <h2>A. Troubleshooting</h2>
+
+  <h3>ฝั่งลูกค้า</h3>
+  <table>
+    <tr><th>ปัญหา</th><th>วิธีแก้</th></tr>
+    <tr><td>จ่ายเงินแล้วแต่ Whitelist ไม่เพิ่ม</td><td>รอ 1–5 นาทีแล้ว Refresh หน้า Success ถ้ายังไม่ได้ติดต่อ Discord พร้อม Session ID</td></tr>
+    <tr><td>กรอก username ผิด</td><td>ติดต่อแอดมินใน Discord — ระบบไม่ให้แก้เอง</td></tr>
+    <tr><td>ใช้ทดลองฟรีไม่ได้</td><td>ใช้ไปแล้วใน 24 ชม. ที่ผ่านมา หรือสินค้าไม่เปิด trial — รอ 24 ชม. แล้วลองใหม่</td></tr>
+    <tr><td>เกมไม่ให้เข้าทั้งที่มี Whitelist</td><td>ตรวจ username ในเกมว่าตรงกับที่ซื้อ · เช็ควันหมดอายุที่ <code>/check</code></td></tr>
+    <tr><td>เปิดลิงก์ Success แล้วไม่เห็นรายละเอียด</td><td>เปิดผิดเบราว์เซอร์ — ต้องเปิดจากเครื่องเดียวกับที่สั่งซื้อ</td></tr>
+  </table>
+
+  <h3>ฝั่ง Admin</h3>
+  <table>
+    <tr><th>ปัญหา</th><th>วิธีแก้</th></tr>
+    <tr><td>Refund ขึ้น "DB unreachable"</td><td>Supabase อาจถูกพัก (free tier) — เปิด Supabase Dashboard ให้กลับมาทำงาน</td></tr>
+    <tr><td>Refund ขึ้น "No payment intent"</td><td>Order ไม่มี payment_intent — ทำใน Stripe Dashboard แล้วค่อยมา mark REFUNDED</td></tr>
+    <tr><td>สินค้าไม่ขึ้นในร้าน</td><td>ตรวจ Active toggle · ตรวจว่ามี active plan อย่างน้อย 1 อัน</td></tr>
+    <tr><td>Image upload ไม่ขึ้น</td><td>ไฟล์ต้องไม่เกิน 6 MB และเป็น JPG/PNG/WebP</td></tr>
+    <tr><td>Announcement ตั้งแล้วไม่ขึ้น</td><td>ตรวจ Start Date / End Date / Active toggle</td></tr>
+  </table>
+
+  <h2>B. คำศัพท์</h2>
+  <dl class="fields">
+    <dt>Whitelist</dt>
+    <dd>รายชื่อ username ที่มีสิทธิ์เข้าเกม — ระบบเช็คทุกครั้งที่ลูกค้าจะเข้าเล่น</dd>
+    <dt>Plan</dt>
+    <dd>แพ็กเกจราคา/ระยะเวลาของสินค้าตัวหนึ่ง เช่น 30 วัน · 60 วัน · ตลอดชีพ</dd>
+    <dt>PromptPay</dt>
+    <dd>ระบบรับชำระเงินผ่าน QR Code ของธนาคารไทย</dd>
+    <dt>Stripe</dt>
+    <dd>ผู้ให้บริการ Payment Gateway — รับชำระเงินทั้งบัตรเครดิตและ PromptPay</dd>
+    <dt>Session ID</dt>
+    <dd>รหัสคำสั่งซื้อจาก Stripe (เริ่มด้วย <code>cs_</code>) — ใช้อ้างอิงเมื่อมีปัญหา</dd>
+    <dt>Payment Intent</dt>
+    <dd>รหัสการชำระเงินจาก Stripe (เริ่มด้วย <code>pi_</code>) — สำหรับ refund</dd>
+    <dt>Audit Log</dt>
+    <dd>บันทึกถาวรของการกระทำของแอดมิน เพื่อ accountability</dd>
+    <dt>Trial</dt>
+    <dd>การทดลองใช้งานสินค้าฟรีในระยะเวลาสั้นๆ ก่อนซื้อจริง</dd>
+    <dt>Whitelist Source</dt>
+    <dd>ที่มา: STRIPE (จากการซื้อ), MANUAL (Admin เพิ่ม), PROMO, TRIAL, REFUND_REVERT (คืนเงินแล้ว)</dd>
+  </dl>
+
+  <div class="box info">
+    <div class="box-title">ติดต่อทีมงาน</div>
+    <p>หากมีคำถามเพิ่มเติมหรือพบปัญหา ติดต่อทีมงานได้ที่ Discord ของ Judyshop (ลิงก์อยู่ใน Footer ของเว็บไซต์)</p>
+  </div>
+
+</section>
+
+</body>
+</html>

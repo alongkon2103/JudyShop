@@ -1,0 +1,217 @@
+{
+  "nav": {
+    "home": "หน้าหลัก",
+    "shop": "ร้านค้า",
+    "news": "ข่าวสาร",
+    "check": "เช็คสิทธิ์",
+    "admin": "แอดมิน",
+    "openMenu": "เปิดเมนู",
+    "closeMenu": "ปิดเมนู"
+  },
+  "check": {
+    "title": "ตรวจสอบสิทธิ์ของคุณ",
+    "subtitle": "ใส่ Roblox username ของคุณเพื่อดูสถานะการใช้งานและวันหมดอายุ",
+    "usernameLabel": "Roblox username",
+    "usernamePlaceholder": "ใส่ Roblox username ของคุณ",
+    "productLabel": "เลือกเกม",
+    "anyProduct": "ทุกเกม",
+    "submit": "ตรวจสอบ",
+    "submitting": "กำลังตรวจสอบ…",
+    "needUsername": "กรอก Roblox username ด้านบนเพื่อตรวจสอบสิทธิ์",
+    "resultActive": "ใช้งานได้",
+    "resultExpired": "หมดอายุแล้ว",
+    "resultNotFound": "ไม่พบสิทธิ์",
+    "lifetime": "ตลอดชีพ ∞",
+    "validUntil": "ใช้งานได้ถึง",
+    "daysLeft": "เหลืออีก {n} วัน",
+    "expiredAgo": "หมดอายุไปแล้ว {n} วัน",
+    "expiringSoon": "ใกล้หมดอายุ",
+    "notFoundHint": "ไม่พบสิทธิ์สำหรับ username นี้ — ลองตรวจสอบการสะกดให้ตรงกับ Roblox หรือซื้อสิทธิ์เพิ่มที่หน้า Shop",
+    "tooMany": "ตรวจสอบบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่อีกครั้ง",
+    "multipleHeading": "พบ {n} เกมสำหรับ username นี้",
+    "multipleHeadingSingle": "พบ 1 เกมสำหรับ username นี้",
+    "activeCount": "ใช้งานได้ {n}",
+    "expiredCount": "หมดอายุ {n}"
+  },
+  "site": {
+    "tagline": "ร้านค้าเกม TikTok Interactive ที่คุณวางใจ ส่งทันทีหลังชำระเงิน"
+  },
+  "home": {
+    "heroKicker": "ไวลิสต์เกม TikTok Interactive",
+    "heroTitle": "Judy Shop",
+    "heroSubtitle": "เปิดสิทธิ์เข้าเกม TikTok Interactive ส่งทันที ราคาเป็นมิตร พร้อมซัพพอร์ตจริง",
+    "ctaShop": "ดูสินค้า",
+    "ctaNews": "อ่านข่าวล่าสุด"
+  },
+  "shop": {
+    "title": "TikTok Interactive Games",
+    "subtitle": "เลือกเกมเพื่อดูรายละเอียด",
+    "empty": "ยังไม่มีสินค้า",
+    "emptyHint": "เร็วๆ นี้จะมีเกมเปิดจำหน่าย — ติดตามใน Discord ของเราเพื่อรับข่าวสาร"
+  },
+  "product": {
+    "from": "เริ่มต้น",
+    "selectPlan": "เลือกแพ็กเกจ",
+    "paymentMethod": "ช่องทางชำระเงิน",
+    "promptpayTitle": "พร้อมเพย์",
+    "promptpaySubtitle": "QR ผ่าน Mobile Banking (ไม่มีค่าธรรมเนียม)",
+    "cardTitle": "บัตรเครดิต/เดบิต",
+    "cardSubtitleNoFee": "Visa / Master (ไม่มีค่าธรรมเนียม)",
+    "cardSubtitleFee": "Visa / Master (+{pct}% ค่าธรรมเนียม)",
+    "robloxUsername": "ชื่อผู้ใช้ Roblox",
+    "robloxUsernamePlaceholder": "ใส่ชื่อผู้ใช้ Roblox ของคุณ",
+    "robloxUsernameHint": "ใส่ Roblox username ให้ตรงเพื่อผูกสิทธิ์ใช้งาน",
+    "subtotal": "ยอดรวม",
+    "cardFee": "ค่าธรรมเนียมบัตร · {pct}%",
+    "total": "ยอดสุทธิ",
+    "payNow": "ชำระเงิน",
+    "redirecting": "กำลังไปที่ Stripe…",
+    "selectFirst": "เลือกแพ็กเกจและกรอก Roblox username เพื่อดำเนินการต่อ",
+    "comingSoon": "เร็วๆ นี้",
+    "or": "หรือ",
+    "tryFreeMinutes": "ทดลองฟรี · {minutes} นาที",
+    "tryingTrial": "กำลังเปิดทดลอง…",
+    "freeBadge": "ฟรี",
+    "trialBullet1": "ไม่ต้องจ่ายเงิน · ไม่ต้องผูกบัตร",
+    "trialBullet2Prefix": "จำกัด",
+    "trialBullet2Bold": "1 ครั้ง / Roblox account / 24 ชั่วโมง",
+    "trialOpened": "เปิด {minutes} นาทีให้แล้ว — ใช้ได้จนถึง {time}",
+    "enterUsernameFirst": "กรอกชื่อ Roblox ก่อน",
+    "rbxChecking": "กำลังเช็ค Roblox…",
+    "rbxConfirmHint": "ตรวจชื่ออีกที — สิทธิ์จะผูกกับ Roblox username นี้",
+    "rbxNotFound": "ไม่พบ Roblox username นี้",
+    "rbxInvalidFormat": "Roblox username ต้อง 3–20 ตัว (a–z, 0–9, _)",
+    "rbxNetwork": "เช็ค Roblox ไม่ติด ลองอีกครั้ง",
+    "trialErrInvalidUsername": "กรอกชื่อ Roblox ก่อน",
+    "trialErrProductNotFound": "ไม่พบสินค้านี้",
+    "trialErrProductInactive": "สินค้านี้ยังไม่เปิดให้ใช้งาน",
+    "trialErrTrialDisabled": "สินค้านี้ไม่มีโหมดทดลอง",
+    "trialErrRateLimited": "คุณใช้สิทธิ์ทดลองวันนี้ไปแล้ว ลองอีกครั้งพรุ่งนี้",
+    "trialErrAlreadyActive": "คุณมีสิทธิ์เข้าใช้สินค้านี้อยู่แล้ว",
+    "trialErrIpRateLimited": "เปิดทดลองถี่ไป รออีก {seconds} วินาทีลองใหม่",
+    "trialErrGeneric": "เปิดทดลองไม่สำเร็จ ลองอีกครั้ง"
+  },
+  "plan": {
+    "lifetime": "ตลอดชีพ",
+    "days": "{count} วัน"
+  },
+  "success": {
+    "thankYou": "ขอบคุณค่ะ!",
+    "processing": "กำลังประมวลผล…",
+    "paidMessage": "ชำระเงินสำเร็จ — ระบบกำลังเพิ่ม Whitelist ให้คุณ",
+    "processingMessage": "Stripe กำลังประมวลผลการชำระเงิน — โปรดรอสักครู่",
+    "productLabel": "สินค้า",
+    "planLabel": "แพ็กเกจ",
+    "usernameLabel": "ชื่อผู้ใช้",
+    "paidLabel": "ยอดที่ชำระ",
+    "accessUntil": "ใช้งานได้ถึง",
+    "lifetimeBadge": "ตลอดชีพ ∞",
+    "pendingWhitelist": "Whitelist กำลังถูกบันทึก — refresh หน้านี้สักครู่",
+    "strangerTitle": "ยืนยันคำสั่งซื้อ",
+    "strangerMessage": "ถ้าคุณเพิ่งชำระเงินเสร็จ กรุณากลับมาที่หน้านี้จากบราวเซอร์/อุปกรณ์ที่คุณใช้สั่งซื้อ Whitelist กำลังถูกประมวลผลให้อยู่แล้ว — ไม่ต้องทำอะไรเพิ่ม",
+    "backToShop": "กลับไปที่ร้าน",
+    "home": "หน้าหลัก",
+    "presetFiles": "ไฟล์ Preset",
+    "giftOverlays": "ภาพ Gift Overlay",
+    "downloadHint": "คลิกปุ่ม Download เพื่อบันทึกรูป — หรือคลิกที่รูปเพื่อเปิดดูขนาดเต็ม",
+    "saveBtn": "บันทึก",
+    "downloadBtn": "ดาวน์โหลด"
+  },
+  "cancel": {
+    "title": "ยกเลิกการชำระเงิน",
+    "message": "ยังไม่มีการเรียกเก็บเงิน คุณสามารถลองใหม่ได้ตลอด",
+    "tryAgain": "กลับไปที่ร้าน"
+  },
+  "news": {
+    "title": "ข่าวสาร & อัพเดต",
+    "subtitle": "ประกาศและอัปเดตล่าสุดจาก Judy Shop",
+    "empty": "ยังไม่มีข่าวสาร — กลับมาดูใหม่ได้เร็วๆ นี้",
+    "readMore": "อ่านต่อ",
+    "category": {
+      "update": "อัปเดต",
+      "announce": "ประกาศ",
+      "event": "อีเวนต์",
+      "maintenance": "ปิดปรับปรุง"
+    }
+  },
+  "footer": {
+    "copyright": "© {year} Judy Shop สงวนลิขสิทธิ์",
+    "tagline": "ไวลิสต์เกม TikTok Interactive"
+  },
+  "faq": {
+    "title": "คำถามที่พบบ่อย",
+    "subtitle": "ตอบสั้นๆ ครบทุกเรื่อง — ซื้อยังไง, ต่ออายุ, ทดลองใช้, และถ้ามีปัญหาทำยังไง",
+    "sections": {
+      "buying": "วิธีซื้อ",
+      "username": "Roblox username",
+      "renewal": "ต่ออายุ / วันหมดอายุ",
+      "trial": "ทดลองใช้ฟรี",
+      "support": "คืนเงิน / ติดต่อเรา"
+    },
+    "items": {
+      "howToBuy": {
+        "q": "ซื้อยังไง?",
+        "a": "เข้าหน้า Shop → เลือกเกม → เลือกแพลน (เช่น 30 วัน / ตลอดชีพ) → กรอก Roblox username → จ่ายผ่าน PromptPay (QR) หรือบัตร. ระบบเปิด whitelist ให้ทันทีหลังจ่ายเงิน"
+      },
+      "paymentMethods": {
+        "q": "รับชำระเงินทางไหน?",
+        "a": "PromptPay (ไม่มีค่าธรรมเนียม) และบัตร Visa / Mastercard. บัตรมีค่าธรรมเนียมเล็กน้อยซึ่งจะแสดงก่อนยืนยันการชำระ"
+      },
+      "findUsername": {
+        "q": "Roblox username ดูตรงไหน?",
+        "a": "เปิดแอป Roblox → แตะรูปโปรไฟล์ → @username จะอยู่ใต้ display name. ใช้ตัว username (ไม่ใช่ display name) ในการเปิด whitelist"
+      },
+      "wrongUsername": {
+        "q": "กรอก username ผิดทำยังไง?",
+        "a": "ตอนกรอก username ระบบจะเช็คจาก Roblox แล้วโชว์รูปอวตาร์ให้ยืนยัน**ก่อน**จ่ายเงิน. ถ้าจ่ายไปแล้วเข้าผิด account ทักเข้ามาที่ Discord พร้อมส่งใบเสร็จ Stripe — เราย้ายให้ได้"
+      },
+      "howToRenew": {
+        "q": "ต่ออายุยังไง?",
+        "a": "ซื้อแพลนเดิมด้วย username เดิม — ระบบจะต่อจากวันหมดอายุปัจจุบัน (ไม่หายไปแม้ต่อก่อนหมด). ถ้าเลยวันหมดแล้ว นับใหม่จากวันนี้"
+      },
+      "checkExpiry": {
+        "q": "เช็ควันหมดอายุยังไง?",
+        "a": "เข้าหน้า Check → กรอก Roblox username → ดูสถานะ (active / expired) และวันหมดอายุ"
+      },
+      "trialHow": {
+        "q": "ทดลองฟรีใช้ยังไง?",
+        "a": "ในสินค้าที่เปิด trial — กดปุ่ม \"ทดลองฟรี X นาที\" (เส้นประ). ระบบเปิด whitelist ให้ทันทีตามนาทีที่กำหนด ไม่ต้องจ่าย ไม่ต้องผูกบัตร. หมดแล้วซื้อแพลนเพื่อใช้ต่อได้"
+      },
+      "trialLimit": {
+        "q": "ทดลองได้กี่ครั้ง?",
+        "a": "1 ครั้ง / Roblox username / 24 ชั่วโมง / สินค้า — เพื่อกัน abuse ให้ระบบยังเปิดทดลองได้ต่อไป"
+      },
+      "refund": {
+        "q": "คืนเงินได้ไหม?",
+        "a": "ส่วนใหญ่ได้ — ภายใน 24 ชม. หลังซื้อและยังไม่ได้ใช้สิทธิ์. ทักเข้ามาที่ Discord พร้อมใบเสร็จ Stripe"
+      },
+      "support": {
+        "q": "ติดต่อยังไง?",
+        "a": "เข้า Discord (ลิงก์ใน navbar). เร็วที่สุดที่นั่น. แจ้ง Roblox username + ใบเสร็จ Stripe มาด้วยเมื่อถามเรื่องคำสั่งซื้อ"
+      }
+    },
+    "ctaTitle": "ติดปัญหาอยู่?",
+    "ctaBody": "เข้า Discord ของเรา — ตอบเร็วสุด + มีข่าวเกมใหม่ๆ ด้วย",
+    "ctaButton": "เข้าร่วม Discord"
+  },
+  "common": {
+    "loading": "กำลังโหลด…",
+    "error": "เกิดข้อผิดพลาด",
+    "retry": "ลองอีกครั้ง",
+    "close": "ปิด",
+    "joinDiscord": "เข้าร่วม Discord"
+  },
+  "errorPage": {
+    "title": "อ้าว!",
+    "subtitle": "เกิดข้อผิดพลาดบางอย่าง ลองอีกครั้งสักครู่",
+    "retry": "ลองใหม่",
+    "home": "กลับหน้าแรก",
+    "errorIdLabel": "รหัส error"
+  },
+  "notFound": {
+    "title": "หลงทาง",
+    "subtitle": "ไม่พบหน้าที่คุณกำลังหา",
+    "home": "กลับหน้าแรก",
+    "shop": "ไปร้านค้า"
+  }
+}

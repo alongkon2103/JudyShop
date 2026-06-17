@@ -1,0 +1,536 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================================================
+   DESIGN TOKENS — Kawaii Arcade
+   Matches the original /Design references: chunky balloon
+   display type, violet neon canvas, lavender sticker cards,
+   pink + cyan duotone accent on the JUDY SHOP wordmark.
+   ========================================================= */
+:root {
+  /* ── Page canvas (deep violet, slightly warm) ─────────── */
+  --bg-1000: hsl(265 55%  4%);   /* deepest */
+  --bg-900:  hsl(265 50%  8%);   /* base canvas */
+  --bg-800:  hsl(265 42% 13%);   /* raised surface */
+  --bg-700:  hsl(265 35% 20%);
+
+  /* ── Raised surface (cards, modal) — dark variant on dark canvas.
+        `--paper` is the surface a card sits on; in dark theme it is
+        a raised dark, in light theme it is white. Components don't
+        need to know which mode they're in. */
+  --paper:    hsl(265 38% 14%);
+  --paper-2:  hsl(265 50%  9%);   /* sunken inputs / inner pills */
+  --paper-3:  hsl(265 45% 22%);
+
+  /* ── Text on dark canvas ─────────────────────────────── */
+  /* mute tokens bumped to 68/65 lightness so 11-12px hint text on
+     paper/paper-2 clears WCAG AA (4.5:1). The previous 58/55 values
+     hit ~3:1 — readable for most, hard for low-contrast vision. */
+  --on-dark:        hsl(285 28% 96%);
+  --on-dark-soft:   hsl(285 20% 80%);
+  --on-dark-mute:   hsl(285 14% 68%);
+
+  /* ── Text on raised surface (--paper). Dark mode = light text. ── */
+  --on-light:        hsl(285 28% 96%);
+  --on-light-soft:   hsl(285 20% 78%);
+  --on-light-mute:   hsl(285 14% 65%);
+
+  /* ── Lines / borders ─────────────────────────────────── */
+  --line-dark:    hsl(285 35% 55% / 0.22);
+  --line-dark-2:  hsl(285 35% 55% / 0.12);
+  --line-light:   hsl(265 60% 65% / 0.20);   /* neon-violet hairline on dark cards */
+  --line-light-2: hsl(265 60% 65% / 0.10);
+
+  /* ── Brand palette (used as accents, glow) ─────────────
+   *
+   * pink-500 is the "primary action" colour (solid button bg + accent
+   * text). It MUST hit AA contrast (4.5:1) against white text so we
+   * can use it as a button background without breaking a11y.
+   *
+   *   hsl(330 88% 46%) on white → 4.79 : 1   ✓ AA small text
+   *   hsl(330 88% 46%) on hsl(265 38% 14%) → 3.1 : 1  ✓ AA large
+   *
+   * Don't lighten pink-500 without re-running the audit. */
+  --pink-300: hsl(330 95% 82%);
+  --pink-400: hsl(330 92% 72%);
+  --pink-500: hsl(330 88% 46%);
+  --pink-600: hsl(330 92% 36%);
+
+  --cyan-300: hsl(195 95% 80%);
+  --cyan-400: hsl(195 90% 68%);
+  --cyan-500: hsl(195 88% 55%);
+
+  --violet-300: hsl(265 85% 78%);
+  --violet-400: hsl(265 80% 68%);
+  --violet-500: hsl(265 72% 58%);
+  --violet-600: hsl(265 68% 46%);
+  --violet-700: hsl(265 60% 36%);
+
+  /* ── Status ──────────────────────────────────────────── */
+  --ok:   hsl(150 55% 52%);
+  --warn: hsl(28  92% 60%);
+  --bad:  hsl(0   72% 60%);
+
+  /* ── Type ──────────────────────────────────────────────
+     Fallback chain: pick the Latin font first, then the Thai
+     font. Browsers do per-glyph fallback, so Latin chars use
+     Lilita / Nunito while Thai chars use Mali / IBM Plex Sans
+     Thai Looped — no flash of system-font Thai. */
+  --font-display: var(--font-lilita), var(--font-thai-display), "Fredoka", system-ui, sans-serif;
+  --font-body:    var(--font-body),   var(--font-thai),         ui-sans-serif, system-ui, sans-serif;
+
+  /* ── Spacing ─────────────────────────────────────────── */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 14px;
+  --s-4: 22px;
+  --s-5: 36px;
+  --s-6: 56px;
+  --s-7: 88px;
+  --s-8: 140px;
+
+  /* ── Radii — bubbly, kawaii ──────────────────────────── */
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 22px;
+  --r-xl: 32px;
+  --r-pill: 9999px;
+
+  /* ── Motion ──────────────────────────────────────────── */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --t-fast: 0.18s;
+  --t-base: 0.28s;
+  --t-slow: 0.44s;
+
+  /* ── Theme-aware assets ──────────────────────────────── */
+  /* overlay strength bumped 0.55 → 0.65: wallpaper still visible
+     enough to feel atmospheric, but busy parts of the image stop
+     fighting with body text underneath. */
+  --bg-image: url('/images/BackgroundDark.jpg');
+  --bg-overlay: hsl(265 50% 4% / 0.65);
+}
+
+/* =========================================================
+   LIGHT THEME — pastel kawaii sky.
+   ========================================================= */
+[data-theme="light"] {
+  color-scheme: light;
+
+  /* Canvas (pastel cream with pink hint) */
+  --bg-1000: hsl(330 45% 90%);
+  --bg-900:  hsl(330 55% 96%);
+  --bg-800:  hsl(290 30% 92%);
+  --bg-700:  hsl(285 22% 84%);
+
+  /* Surface — pure white cards */
+  --paper:    hsl(0   0% 100%);
+  --paper-2:  hsl(310 25% 97%);
+  --paper-3:  hsl(290 18% 92%);
+
+  /* Text — note: "on-dark" tokens now hold dark colors for the
+     now-light canvas. Variable names refer to which surface they
+     belong to, not the color value.
+     mute tokens darkened (55→42, 50→40) so small text on white cards
+     and the pastel canvas passes WCAG AA. */
+  --on-dark:        hsl(265 55% 14%);
+  --on-dark-soft:   hsl(265 38% 32%);
+  --on-dark-mute:   hsl(265 22% 42%);
+
+  --on-light:       hsl(265 55% 12%);
+  --on-light-soft:  hsl(265 34% 28%);
+  --on-light-mute:  hsl(265 20% 40%);
+
+  /* Lines — darker tints for visibility on light bg */
+  --line-dark:    hsl(265 30% 25% / 0.18);
+  --line-dark-2:  hsl(265 30% 25% / 0.10);
+  --line-light:   hsl(265 30% 25% / 0.16);
+  --line-light-2: hsl(265 30% 25% / 0.08);
+
+  /* Accents — slightly punchier for visibility on light bg */
+  --pink-300: hsl(330 88% 78%);
+  --pink-400: hsl(330 85% 65%);
+  --pink-500: hsl(330 78% 55%);
+  --pink-600: hsl(330 72% 45%);
+
+  --cyan-300: hsl(195 88% 70%);
+  --cyan-400: hsl(195 82% 55%);
+  --cyan-500: hsl(195 78% 45%);
+
+  --violet-300: hsl(265 70% 70%);
+  --violet-400: hsl(265 65% 58%);
+  --violet-500: hsl(265 60% 48%);
+  --violet-600: hsl(265 55% 38%);
+  --violet-700: hsl(265 50% 28%);
+
+  /* Theme-aware assets */
+  /* light overlay 0.35 → 0.50 so the pastel wallpaper recedes more
+     and text + cards pop forward. */
+  --bg-image: url('/images/BackgroundLigh.jpg');
+  --bg-overlay: hsl(0 0% 100% / 0.50);
+}
+
+/* =========================================================
+   BASE
+   ========================================================= */
+@layer base {
+  :root { color-scheme: dark; }
+
+  html, body {
+    background: var(--bg-900);
+    color: var(--on-dark);
+    font-family: var(--font-body);
+  }
+
+  body {
+    background-color: var(--bg-900);
+    min-height: 100svh;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    /* Thai needs more line-height than Latin (tall vowel/tone marks)
+       so the default 1.5 is a good baseline that helps both scripts. */
+    line-height: 1.55;
+    transition: background-color var(--t-base) var(--ease-out), color var(--t-base) var(--ease-out);
+  }
+
+  /* Slightly bump tiny body text on the public site so Thai marks
+     stay readable. Doesn't apply inside .admin-canvas. */
+  :where(:not(.admin-canvas) p) {
+    line-height: 1.6;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.005em;
+  }
+
+  ::selection {
+    background: var(--pink-400);
+    color: var(--bg-1000);
+  }
+}
+
+/* =========================================================
+   COMPONENTS
+   ========================================================= */
+@layer components {
+  /* The single neon glow — used ONLY on the JUDY SHOP wordmark. */
+  .neon-text {
+    text-shadow:
+      0 0 12px hsl(330 95% 80% / 0.55),
+      0 0 28px hsl(265 85% 72% / 0.45),
+      0 0 56px hsl(195 90% 70% / 0.30);
+  }
+  [data-theme="light"] .neon-text {
+    text-shadow:
+      0 1px 0 hsl(0 0% 100%),
+      0 0 10px hsl(330 90% 70% / 0.4),
+      0 0 22px hsl(265 80% 65% / 0.25);
+  }
+
+  /* Theme-aware fixed background image layer. */
+  .app-bg {
+    background-image: var(--bg-image);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: opacity var(--t-slow) var(--ease-out);
+  }
+  .app-bg-overlay {
+    background-color: var(--bg-overlay);
+    transition: background-color var(--t-base) var(--ease-out);
+  }
+
+  /* Theme-aware soft tint utilities for chips/buttons that need to be
+     visible on BOTH dark canvas and light canvas. */
+  .tint-soft        { background-color: hsl(0 0% 100% / 0.10); }
+  .tint-soft-strong { background-color: hsl(0 0% 100% / 0.14); }
+  .tint-soft-hover:hover { background-color: hsl(0 0% 100% / 0.20); }
+  [data-theme="light"] .tint-soft        { background-color: hsl(265 45% 25% / 0.08); }
+  [data-theme="light"] .tint-soft-strong { background-color: hsl(265 45% 25% / 0.12); }
+  [data-theme="light"] .tint-soft-hover:hover { background-color: hsl(265 45% 25% / 0.16); }
+
+  /* Glass pill — Navbar bar (theme-aware via [data-theme] overrides). */
+  .glass {
+    background: hsl(265 40% 14% / 0.55);
+    border: 1px solid var(--line-dark);
+    backdrop-filter: blur(12px) saturate(140%);
+  }
+  [data-theme="light"] .glass {
+    background: hsl(0 0% 100% / 0.72);
+    border: 1px solid hsl(265 30% 25% / 0.14);
+    box-shadow: 0 4px 22px -8px hsl(265 40% 30% / 0.18);
+  }
+
+  /* Admin canvas + panel — minimal surfaces, no chunky shadow, no kawaii lift.
+     Used inside /admin so the management UI feels clean and dense.
+     Scoped font override: Inter for both display + body so admin reads as a
+     clean management UI, not the playful kawaii public site. */
+  .admin-canvas {
+    background: var(--bg-900);
+    color: var(--on-dark);
+    min-height: 100svh;
+    --font-display: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    --font-body:    var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-body);
+    font-feature-settings: "cv11", "ss01", "tnum";
+  }
+  .admin-surface {
+    /* one step deeper than canvas — used by top bar / sidebar */
+    background: var(--bg-1000);
+  }
+  .panel {
+    background: var(--paper);
+    color: var(--on-light);
+    border: 1px solid var(--line-light);
+    transition: border-color var(--t-fast) var(--ease-out),
+                background-color var(--t-fast) var(--ease-out);
+  }
+
+  /* Raised "sticker" surface used by ProductCard + Modal. */
+  .sticker {
+    background: var(--paper);
+    border: 1px solid var(--line-light);
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 100% / 0.04),
+      0 18px 36px -18px hsl(0 0% 0% / 0.55);
+  }
+  [data-theme="light"] .sticker {
+    background: var(--paper);
+    border: 1px solid hsl(265 20% 25% / 0.10);
+    box-shadow:
+      0 2px 0 hsl(0 0% 0% / 0.03),
+      0 12px 28px -16px hsl(265 30% 30% / 0.22);
+  }
+
+  /* ── Accessibility · light-theme accent contrast ───────────────
+     pink-400 / cyan-400 sit at ~2.5:1 on white surfaces → fail WCAG AA
+     for small text. In light theme we shift them one step darker so
+     accent text on white cards still reads. Dark theme is fine.
+     Admin canvas is permanently dark, so we exclude it.
+  */
+  [data-theme="light"] :not(.admin-canvas) .text-pink-400 {
+    color: rgb(219 39 119); /* pink-600 */
+  }
+  [data-theme="light"] :not(.admin-canvas) .text-pink-300 {
+    color: rgb(236 72 153); /* pink-500 */
+  }
+  [data-theme="light"] :not(.admin-canvas) .text-cyan-400 {
+    color: rgb(8 145 178);  /* cyan-600 */
+  }
+  [data-theme="light"] :not(.admin-canvas) .text-cyan-300 {
+    color: rgb(14 116 144); /* cyan-700 */
+  }
+
+  /* ── Rich-text content — site-controlled prose styling ────────────
+     Used to render the admin TipTap output (Product.description, etc.)
+     on public pages. All colors / spacing come from here so admins
+     CANNOT override them via the editor — TipTap's HTML carries only
+     formatting tags (after `sanitizeRichText()` strips `style`/`class`).
+  */
+  .prose-judy {
+    color: var(--on-light);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  .prose-judy > * + * { margin-top: 0.85em; }
+  .prose-judy h2 {
+    font-family: var(--font-display);
+    font-size: 22px;
+    line-height: 1.2;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    color: var(--on-light);
+    margin-top: 1.4em;
+  }
+  .prose-judy h3 {
+    font-family: var(--font-display);
+    font-size: 17px;
+    line-height: 1.3;
+    color: var(--on-light);
+    margin-top: 1.2em;
+  }
+  .prose-judy strong { color: var(--on-light); font-weight: 800; }
+  .prose-judy em     { font-style: italic; }
+  .prose-judy s      { text-decoration: line-through; opacity: 0.7; }
+  .prose-judy a {
+    color: var(--pink-500);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    text-decoration-thickness: 1.5px;
+    text-decoration-color: hsl(330 80% 60% / 0.5);
+    transition: color var(--t-fast) ease, text-decoration-color var(--t-fast) ease;
+  }
+  .prose-judy a:hover {
+    color: var(--pink-400);
+    text-decoration-color: var(--pink-400);
+  }
+  .prose-judy ul,
+  .prose-judy ol {
+    padding-left: 1.4em;
+  }
+  .prose-judy ul { list-style: disc; }
+  .prose-judy ol { list-style: decimal; }
+  .prose-judy li + li { margin-top: 0.35em; }
+  .prose-judy li::marker { color: var(--pink-400); }
+  .prose-judy blockquote {
+    padding: 0.6em 1em;
+    border-left: 3px solid var(--pink-400);
+    background: hsl(330 80% 50% / 0.05);
+    border-radius: 0 var(--r-sm) var(--r-sm) 0;
+    color: var(--on-light-soft);
+    font-style: italic;
+  }
+  .prose-judy hr {
+    border: none;
+    border-top: 1px dashed var(--line-light);
+    margin: 1.5em 0;
+  }
+  /* Tight variant for admin editor pane — same look, smaller spacing. */
+  .prose-editor {
+    color: var(--on-light);
+    font-family: var(--font-body);
+    line-height: 1.55;
+  }
+  .prose-editor > * + * { margin-top: 0.6em; }
+  .prose-editor h2 { font-family: var(--font-display); font-size: 20px; }
+  .prose-editor h3 { font-family: var(--font-display); font-size: 16px; }
+  .prose-editor strong { font-weight: 800; }
+  .prose-editor ul, .prose-editor ol { padding-left: 1.4em; }
+  .prose-editor ul { list-style: disc; }
+  .prose-editor ol { list-style: decimal; }
+  .prose-editor li::marker { color: var(--pink-400); }
+  .prose-editor blockquote {
+    padding: 0.4em 0.8em;
+    border-left: 3px solid var(--pink-400);
+    color: var(--on-light-soft);
+  }
+  .prose-editor a { color: var(--pink-500); text-decoration: underline; }
+  /* Placeholder for empty editor (TipTap is-editor-empty hook). */
+  .prose-editor p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    color: var(--on-light-mute);
+    float: left;
+    height: 0;
+    pointer-events: none;
+  }
+
+  /* Themed scrollbar */
+  .scrollbar-themed {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(265 50% 55% / 0.55) transparent;
+  }
+  .scrollbar-themed::-webkit-scrollbar      { width: 10px; height: 10px; }
+  .scrollbar-themed::-webkit-scrollbar-track{ background: transparent; }
+  .scrollbar-themed::-webkit-scrollbar-thumb{
+    background: hsl(265 50% 55% / 0.55);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    border-radius: 999px;
+  }
+  .scrollbar-themed::-webkit-scrollbar-thumb:hover{
+    background: hsl(265 60% 65% / 0.8);
+    background-clip: padding-box;
+  }
+
+  /* Skeleton loader — solid tinted block with soft pulse (no gradient). */
+  .skeleton-shimmer {
+    background: hsl(265 50% 55% / 0.18);
+    animation: skeletonPulse 1.4s ease-in-out infinite;
+  }
+
+  /* Smooth interactive transitions inside /admin — applied broadly so
+     individual components don't have to remember to add them. Tables,
+     panels, links and buttons all benefit. */
+  .admin-canvas table tbody tr {
+    transition: background-color var(--t-fast) var(--ease-out);
+  }
+  .admin-canvas a,
+  .admin-canvas button {
+    transition:
+      background-color var(--t-fast) var(--ease-out),
+      color            var(--t-fast) var(--ease-out),
+      border-color     var(--t-fast) var(--ease-out),
+      transform        var(--t-fast) var(--ease-spring);
+  }
+  .admin-canvas .panel {
+    transition:
+      background-color var(--t-fast) var(--ease-out),
+      border-color     var(--t-fast) var(--ease-out);
+  }
+
+  /* Quicker page-enter for admin — feels snappier in a management UI. */
+  .admin-canvas main.anim-fade-up {
+    animation-duration: var(--t-base);
+  }
+}
+
+/* =========================================================
+   UTILITIES
+   ========================================================= */
+@layer utilities {
+  .anim-fade-up    { opacity:0; transform:translateY(14px); animation: fadeUp   var(--t-slow) var(--ease-out) forwards; }
+  .anim-fade-in    { opacity:0;                              animation: fadeIn  var(--t-base) ease-out forwards; }
+  .anim-scale-in   { opacity:0; transform:scale(0.96);       animation: scaleIn var(--t-base) var(--ease-out) forwards; }
+  .anim-pop        { opacity:0; transform:scale(0.88);       animation: pop     0.55s  var(--ease-spring) forwards; }
+  .anim-spring     { opacity:0; transform:scale(0.9);        animation: spring  var(--t-base) var(--ease-spring) forwards; }
+  .anim-slide-down     { opacity:0; transform:translateY(-12px); animation: slideDown var(--t-base) var(--ease-out) forwards; }
+  .anim-slide-in-right { opacity:0; transform:translateX(24px);  animation: slideInRight var(--t-base) var(--ease-out) forwards; }
+  .anim-slide-out-right{                                          animation: slideOutRight var(--t-base) var(--ease-out) forwards; }
+  .anim-floating   { animation: floating 4s ease-in-out infinite; }
+  .anim-breathing  { animation: breathing 3s ease-in-out infinite; }
+  .anim-shake      { animation: shake 0.4s ease-in-out; }
+  .anim-progress   { transform-origin:left; transform:scaleX(0); animation: progressFill 1.1s var(--ease-out) forwards; }
+  .anim-checkmark-pop { animation: checkmarkPop 0.35s var(--ease-spring) forwards; }
+
+  .anim-delay-100 { animation-delay: 0.10s; }
+  .anim-delay-200 { animation-delay: 0.20s; }
+  .anim-delay-300 { animation-delay: 0.30s; }
+  .anim-delay-400 { animation-delay: 0.40s; }
+  .anim-delay-500 { animation-delay: 0.50s; }
+  .anim-delay-700 { animation-delay: 0.70s; }
+}
+
+/* =========================================================
+   KEYFRAMES
+   ========================================================= */
+@keyframes fadeUp    { to { opacity:1; transform:translateY(0); } }
+@keyframes fadeIn    { to { opacity:1; } }
+@keyframes scaleIn   { to { opacity:1; transform:scale(1); } }
+@keyframes pop {
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes spring    { to { opacity:1; transform:scale(1); } }
+@keyframes slideDown { to { opacity:1; transform:translateY(0); } }
+@keyframes slideInRight  { to { opacity:1; transform:translateX(0); } }
+@keyframes slideOutRight { to { opacity:0; transform:translateX(24px); } }
+@keyframes floating  { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-10px); } }
+@keyframes breathing { 0%,100% { transform:scale(1); }     50% { transform:scale(1.04); } }
+@keyframes shake {
+  0%,100% { transform:translateX(0); }
+  20% { transform:translateX(-7px); }
+  40% { transform:translateX(7px); }
+  60% { transform:translateX(-4px); }
+  80% { transform:translateX(4px); }
+}
+@keyframes progressFill { to { transform: scaleX(1); } }
+@keyframes skeletonPulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
+}
+@keyframes checkmarkPop {
+  0%   { opacity:0; transform:scale(0); }
+  70%  { opacity:1; transform:scale(1.25); }
+  100% { opacity:1; transform:scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+  .skeleton-shimmer { animation: none; opacity: 0.4; }
+}

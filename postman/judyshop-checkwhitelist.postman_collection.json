@@ -1,0 +1,382 @@
+{
+  "info": {
+    "_postman_id": "judyshop-checkwhitelist-2026-06-08",
+    "name": "Judy Shop · /api/checkwhitelist",
+    "description": "ทดสอบ public Whitelist API ที่ Roblox game server เรียกใช้\n\n## วิธีใช้\n1. Import collection นี้เข้า Postman\n2. แก้ค่า variables ที่ collection (Variables tab):\n   - `baseUrl`  — http://localhost:3000 หรือ URL prod ของคุณ\n   - `apiKey`   — ค่าจาก .env (WHITELIST_API_KEY)\n   - `username` — Roblox username ที่จะเช็ค\n   - `productSlug` / `gameId` — สำหรับเช็คเฉพาะสินค้านั้น (ออปชั่น)\n3. กด Run ทั้ง collection หรือยิงทีละ request\n\n## ลำดับที่แนะนำ\n1. **Active by username** — เช็คว่ามีสิทธิ์ active\n2. **Active by gameId** — เช็คโดย Roblox PlaceId (เหมือนที่ game server เรียก)\n3. **Trial user** — หลังกด \"ทดลองใช้\" ในหน้าเว็บ ตรวจที่นี่จะเห็น `source=trial`, `trial=true`, `duration=trial`\n4. **Not found** — username ที่ไม่มีในระบบ\n5. **Error cases** — สำหรับเช็ค auth + rate-limit",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl",     "value": "http://localhost:3000", "type": "string" },
+    { "key": "apiKey",      "value": "REPLACE_WITH_WHITELIST_API_KEY_FROM_DOTENV", "type": "string" },
+    { "key": "username",    "value": "judy_player", "type": "string" },
+    { "key": "productSlug", "value": "demo-game", "type": "string" },
+    { "key": "gameId",      "value": "12345678", "type": "string" }
+  ],
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      { "key": "key",   "value": "x-api-key", "type": "string" },
+      { "key": "value", "value": "{{apiKey}}", "type": "string" },
+      { "key": "in",    "value": "header",    "type": "string" }
+    ]
+  },
+  "event": [
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Default collection-level assertions — applied to every request.",
+          "pm.test('Response has JSON body', () => pm.response.json());",
+          "pm.test('cache-control = no-store', () => {",
+          "  pm.expect(pm.response.headers.get('cache-control')).to.eql('no-store');",
+          "});"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "✅ Active checks",
+      "item": [
+        {
+          "name": "Active by username only",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/checkwhitelist?username={{username}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkwhitelist"],
+              "query": [
+                { "key": "username", "value": "{{username}}" }
+              ]
+            },
+            "description": "เช็คชื่อนี้ในทุก product. จะดูแถวที่ best-match (lifetime ก่อน, expireDate ล่าสุด)"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('Has status field', () => pm.expect(b).to.have.property('status'));",
+                  "pm.test('status is active|expired|not_found', () => {",
+                  "  pm.expect(['active','expired','not_found']).to.include(b.status);",
+                  "});",
+                  "pm.test('Has source + trial fields', () => {",
+                  "  pm.expect(b).to.have.property('source');",
+                  "  pm.expect(b).to.have.property('trial');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Active by username + productSlug",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/checkwhitelist?username={{username}}&productSlug={{productSlug}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkwhitelist"],
+              "query": [
+                { "key": "username",    "value": "{{username}}" },
+                { "key": "productSlug", "value": "{{productSlug}}" }
+              ]
+            },
+            "description": "จำกัดเฉพาะ product ที่ slug=…"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "if (b.status !== 'not_found') {",
+                  "  pm.test('product.slug matches request', () => {",
+                  "    pm.expect(b.product.slug).to.eql(pm.collectionVariables.get('productSlug'));",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Active by gameId (Roblox PlaceId)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/checkwhitelist?username={{username}}&gameId={{gameId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkwhitelist"],
+              "query": [
+                { "key": "username", "value": "{{username}}" },
+                { "key": "gameId",   "value": "{{gameId}}" }
+              ]
+            },
+            "description": "นี่คือรูปแบบที่ Roblox game server เรียกตอน user เข้าเกม (PlaceId = game.PlaceId ใน Lua)"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "if (b.status === 'active' && b.product) {",
+                  "  pm.test('product.game_id matches request', () => {",
+                  "    pm.expect(String(b.product.game_id)).to.eql(pm.collectionVariables.get('gameId'));",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🧪 Trial-specific",
+      "item": [
+        {
+          "name": "Trial user (source=trial, duration=trial)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/checkwhitelist?username={{username}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkwhitelist"],
+              "query": [
+                { "key": "username", "value": "{{username}}" }
+              ]
+            },
+            "description": "วิธีทดสอบ:\n1. ในหน้าเว็บ (เปิด product modal ที่ enabled trial) — กดปุ่ม \"ทดลองใช้ 10 นาที\"\n2. ภายใน 10 นาที ยิง request นี้ → ควรเห็น:\n   - status=active\n   - source=trial\n   - trial=true\n   - duration=trial\n3. หลัง 10 นาที → status=expired (แต่ source ยังเป็น trial)"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "if (b.trial === true) {",
+                  "  pm.test('Trial user: source=trial', () => pm.expect(b.source).to.eql('trial'));",
+                  "  pm.test('Trial user: duration=trial', () => pm.expect(b.duration).to.eql('trial'));",
+                  "  console.log('Trial expires_at:', b.expires_at);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🚫 Negative cases",
+      "item": [
+        {
+          "name": "Not found — random username",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/checkwhitelist?username=ghost_user_does_not_exist_42",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkwhitelist"],
+              "query": [
+                { "key": "username", "value": "ghost_user_does_not_exist_42" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('status=not_found', () => pm.expect(b.status).to.eql('not_found'));",
+                  "pm.test('source=null when not found', () => pm.expect(b.source).to.be.null);",
+                  "pm.test('trial=false when not found', () => pm.expect(b.trial).to.be.false);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "❌ Auth / validation errors",
+      "item": [
+        {
+          "name": "401 — Missing x-api-key",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/checkwhitelist?username={{username}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkwhitelist"],
+              "query": [{ "key": "username", "value": "{{username}}" }]
+            },
+            "description": "ลบ header x-api-key (ใช้ noauth ที่ request level เพื่อ override collection auth)"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));",
+                  "const b = pm.response.json();",
+                  "pm.test('error mentions api key', () => {",
+                  "  pm.expect(b.error.toLowerCase()).to.match(/api key/);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "401 — Wrong x-api-key",
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                { "key": "key",   "value": "x-api-key", "type": "string" },
+                { "key": "value", "value": "definitely-wrong-key-1234", "type": "string" },
+                { "key": "in",    "value": "header",    "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/checkwhitelist?username={{username}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkwhitelist"],
+              "query": [{ "key": "username", "value": "{{username}}" }]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "400 — Missing username query",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/checkwhitelist",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkwhitelist"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "const b = pm.response.json();",
+                  "pm.test('error mentions username', () => {",
+                  "  pm.expect(b.error.toLowerCase()).to.match(/username/);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "400 — Username too long (>100 chars)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/checkwhitelist?username=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkwhitelist"],
+              "query": [
+                {
+                  "key": "username",
+                  "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🔥 Rate-limit demo (manual)",
+      "item": [
+        {
+          "name": "Hammer once — see Retry-After when 429 returns",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/checkwhitelist?username={{username}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkwhitelist"],
+              "query": [{ "key": "username", "value": "{{username}}" }]
+            },
+            "description": "ยิงทาง Postman Runner รอบเดียวที่ count > 60 ในหน่ายต่อ IP จะได้ 429.\n\nหรือใช้ Runner: เลือก request นี้, Iterations=80, Delay=0ms → ดู response 60 ตัวแรก 200 OK และ ~20 ตัวสุดท้าย 429"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 429) {",
+                  "  pm.test('Has Retry-After header', () => {",
+                  "    pm.expect(pm.response.headers.get('Retry-After')).to.exist;",
+                  "  });",
+                  "  console.log('Hit rate limit. Retry-After:', pm.response.headers.get('Retry-After'), 'seconds');",
+                  "} else {",
+                  "  pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

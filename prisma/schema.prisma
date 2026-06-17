@@ -1,0 +1,387 @@
+// ────────────────────────────────────────────────────────────
+//  Judy Shop — Prisma schema
+//  Supabase Postgres (pooler for runtime, direct URL for migrate)
+//
+//  i18n strategy: every customer-facing text field has paired
+//  `<field>En` and `<field>Th` columns. Both required for content
+//  consistency unless explicitly optional.
+// ────────────────────────────────────────────────────────────
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ── Catalogue ─────────────────────────────────────────────────
+
+model Product {
+  id   String @id @default(cuid())
+  /// URL-friendly key, e.g. "judy-legend". Single-language, used in routes & external API.
+  slug String @unique
+
+  // i18n display fields
+  nameEn             String
+  nameTh             String
+  shortNameEn        String?
+  shortNameTh        String?
+  descriptionEn      String  @db.Text
+  descriptionTh      String  @db.Text
+  shortDescriptionEn String?
+  shortDescriptionTh String?
+
+  badge        ProductBadge?
+  /// Roblox place/game ID this whitelist applies to.
+  gameId       String?
+  isActive     Boolean       @default(true)
+  comingSoon   Boolean       @default(false)
+  /// Smaller value = appears first.
+  displayOrder Int           @default(0)
+
+  /// Allow visitors to claim a short timed trial (no payment) for this product.
+  trialEnabled Boolean @default(false)
+  /// Trial duration in minutes. Only honoured when trialEnabled=true.
+  trialMinutes Int     @default(10)
+
+  images       ProductImage[]
+  plans        Plan[]
+  orders       Order[]
+  whitelist    Whitelist[]
+  giftOverlays GiftOverlay[]
+  presets      Preset[]
+  trialUsage   TrialUsage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, displayOrder])
+}
+
+enum ProductBadge {
+  HOT
+  NEW
+  SALE
+}
+
+model ProductImage {
+  id           String  @id @default(cuid())
+  productId    String
+  url          String
+  altEn        String?
+  altTh        String?
+  displayOrder Int     @default(0)
+  /// First-pick image for grids. Only one per product should be true.
+  isThumbnail  Boolean @default(false)
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([productId, displayOrder])
+}
+
+model Plan {
+  id        String @id @default(cuid())
+  productId String
+
+  // i18n
+  labelEn String
+  labelTh String
+
+  /// Length of access in days. NULL when isLifetime.
+  durationDays Int?
+  isLifetime   Boolean @default(false)
+  /// Baht price (supports satang via 2-decimal precision).
+  priceTHB     Decimal @db.Decimal(10, 2)
+  /// USD equivalent — display only. Can be auto-derived from priceTHB.
+  priceUSD     Decimal @db.Decimal(10, 2)
+  /// When true, priceUSD is automatically refreshed from the FX rate.
+  /// When false, the admin set it manually.
+  usdAuto      Boolean @default(true)
+  isActive     Boolean @default(true)
+  displayOrder Int     @default(0)
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orders  Order[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId, displayOrder])
+}
+
+// ── Whitelist (mirrors legacy whitelist.xlsx schema) ─────────
+// Original columns: ID | Username | Expire Date | Label | Added At | Added By
+// Admin-only notes are not localised.
+
+model Whitelist {
+  id         String          @id @default(cuid())
+  productId  String
+  username   String
+  expireDate DateTime?
+  isLifetime Boolean         @default(false)
+  /// Admin note (legacy "Label" column). Single language.
+  label      String?
+  source     WhitelistSource @default(STRIPE)
+  addedBy    String?
+  addedAt    DateTime        @default(now())
+
+  product Product @relation(fields: [productId], references: [id])
+  order   Order?  @relation(fields: [orderId], references: [id])
+  orderId String? @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([productId, username])
+  @@index([username])
+  @@index([productId, expireDate])
+}
+
+enum WhitelistSource {
+  STRIPE
+  MANUAL
+  PROMO
+  REFUND_REVERT
+  TRIAL
+}
+
+/// Append-only journal of admin mutations.
+/// Written by helpers in src/lib/audit.ts after every action so we can
+/// answer "who deleted this whitelist entry?" / "who issued that refund?"
+/// later. Never updated, never deleted by the app.
+model AuditLog {
+  id          String   @id @default(cuid())
+  /// Admin's session sub (= AdminUser.id). Null only for system events.
+  actorId     String?
+  /// Snapshot of the admin's email at action time so renames are durable.
+  actorEmail  String?
+  /// Free-form action key, e.g. "product.update", "order.refund", "whitelist.delete".
+  action      String
+  /// Optional pointer to the affected row (productId / orderId / etc).
+  targetType  String?
+  targetId    String?
+  /// Arbitrary JSON payload — diff, new values, reason. Capped client-side.
+  payload     Json?
+  /// Best-effort IP at action time.
+  ip          String?
+
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([actorId, createdAt])
+  @@index([action, createdAt])
+  @@index([targetType, targetId])
+}
+
+/// One row per trial start, used to rate-limit "1 trial per username per 24h".
+/// We don't delete these rows when the customer later purchases — the
+/// Whitelist row might churn but the history must survive.
+model TrialUsage {
+  id         String   @id @default(cuid())
+  productId  String
+  username   String
+  ip         String?
+  userAgent  String?  @db.Text
+  startedAt  DateTime @default(now())
+  expiresAt  DateTime
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId, username, startedAt])
+  @@index([username, startedAt])
+}
+
+// ── Orders / Transactions ─────────────────────────────────────
+
+model Order {
+  id            String        @id @default(cuid())
+  productId     String
+  planId        String
+  username      String
+  amount        Decimal       @db.Decimal(10, 2)
+  currency      String        @default("THB")
+  paymentMethod PaymentMethod
+  status        OrderStatus   @default(PENDING)
+
+  stripeSessionId String? @unique
+  stripePaymentId String?
+
+  product   Product    @relation(fields: [productId], references: [id])
+  plan      Plan       @relation(fields: [planId], references: [id])
+  whitelist Whitelist?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([username])
+  @@index([status, createdAt])
+}
+
+enum PaymentMethod {
+  PROMPTPAY
+  CARD
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+// ── Announcement banner (admin-managed popup on Home) ────────
+// Either / both `messageEn|Th` and `imageUrl` can be set — the popup
+// shows whichever the admin provides (poster-only is allowed).
+
+model Announcement {
+  id        String    @id @default(cuid())
+  messageEn String?   @db.Text
+  messageTh String?   @db.Text
+  imageUrl  String?
+  startDate DateTime  @default(now())
+  endDate   DateTime?
+  isActive  Boolean   @default(true)
+  priority  Int       @default(0)
+
+  createdBy String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, startDate, endDate])
+}
+
+// ── News (separate from Announcement — articles on /news) ────
+
+model News {
+  id          String       @id @default(cuid())
+  category    NewsCategory @default(ANNOUNCE)
+  titleEn     String
+  titleTh     String
+  excerptEn   String?      @db.Text
+  excerptTh   String?      @db.Text
+  imageUrl    String?
+  publishedAt DateTime     @default(now())
+  isPublished Boolean      @default(true)
+
+  createdBy String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isPublished, publishedAt])
+}
+
+enum NewsCategory {
+  UPDATE
+  ANNOUNCE
+  EVENT
+  MAINTENANCE
+}
+
+// ── Gift overlays (images shown for each TikTok gift) ─────────
+
+model GiftOverlay {
+  id        String @id @default(cuid())
+  productId String
+
+  // i18n display name (TikTok gift e.g. "Rose" / "ดอกกุหลาบ").
+  giftNameEn String
+  giftNameTh String
+
+  imageUrl     String
+  altEn        String?
+  altTh        String?
+  displayOrder Int     @default(0)
+  isActive     Boolean @default(true)
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId, displayOrder])
+}
+
+// ── Presets (downloadable config files for external programs) ─
+
+model Preset {
+  id        String @id @default(cuid())
+  productId String
+
+  // i18n
+  nameEn        String
+  nameTh        String
+  descriptionEn String?
+  descriptionTh String?
+
+  /// Public download URL or Supabase Storage path.
+  fileUrl       String
+  fileName      String
+  mimeType      String?
+  fileSize      Int?
+  /// Which program this preset targets (e.g. "OBS", "Streamlabs", "vMix").
+  targetProgram String?
+  /// Version string for the preset (e.g. "1.0.2").
+  version       String?
+  displayOrder  Int     @default(0)
+  isActive      Boolean @default(true)
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId, displayOrder])
+}
+
+// ── Site settings (singleton row, id="singleton") ─────────────
+
+model Setting {
+  /// Always "singleton" — the table holds exactly one row.
+  id             String   @id
+  /// Percentage added to the cart total when paying by credit card.
+  /// e.g. 3.00 → +3 % surcharge. PromptPay is not surcharged.
+  cardFeePercent Decimal  @default(0) @db.Decimal(5, 2)
+  updatedAt      DateTime @updatedAt
+  updatedBy      String?
+}
+
+// ── Stripe webhook dedup ──────────────────────────────────────
+// Stripe redelivers the same event for up to ~3 days on non-2xx
+// responses, so the webhook handler must reject replays. We INSERT
+// one row per successfully-processed event id; the primary key
+// rejects duplicates atomically, so Stripe's retries return 200 OK
+// no-ops instead of re-running fulfilment side-effects.
+
+model WebhookEvent {
+  /// Stripe's `evt_…` id. Globally unique per event.
+  id         String   @id
+  /// e.g. "checkout.session.completed". Recorded for ops debugging only —
+  /// dedup decisions are made on `id` alone.
+  type       String
+  /// When we first processed it. Useful to audit "did this event ever
+  /// reach us" during a Stripe vs DB reconciliation.
+  receivedAt DateTime @default(now())
+
+  @@index([type, receivedAt])
+}
+
+// ── Admin user (single-admin pattern for now) ─────────────────
+
+model AdminUser {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String?
+  isActive     Boolean   @default(true)
+  lastLoginAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
