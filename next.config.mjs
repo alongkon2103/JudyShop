@@ -47,9 +47,26 @@ const nextConfig = {
   },
   async headers() {
     return [
+      // Security headers on every response.
       {
         source: "/:path*",
         headers: securityHeaders,
+      },
+      // Static assets bundled by Next.js are content-hashed in the URL,
+      // so we can safely tell CDNs and browsers to keep them forever.
+      {
+        source: "/_next/static/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+      // Repo-shipped images in /public/images/ (logos, backgrounds, etc.)
+      // don't change between deploys, so 1 year cache + immutable.
+      {
+        source: "/images/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
       },
     ];
   },

@@ -1,8 +1,24 @@
 export const SITE = {
   name: "Judy Shop",
-  tagline: "Your trusted Interactive games store instant delivery, every time.",
+  /** Short, customer-facing tagline used under the hero + as og:site_name. */
+  tagline: "ร้านจำหน่ายสิทธิ์ Whitelist สำหรับเกม TikTok Interactive",
+  /** Default meta description (appears in search results + share previews). */
   description:
-    "Judy Shop — สิทธิ์เข้าเกม TikTok Interactive พร้อมส่งทันทีหลังชำระเงิน",
+    "Judy Shop — ร้านจำหน่ายสิทธิ์ Whitelist สำหรับเกม TikTok Interactive อย่างเป็นทางการ ส่งมอบสิทธิ์ทันทีหลังชำระเงิน รองรับการชำระเงินผ่าน PromptPay และบัตรเครดิตอย่างปลอดภัย",
+  /** English variant — used when locale=en or for international SEO. */
+  descriptionEn:
+    "Judy Shop — Official whitelist storefront for TikTok Interactive games. Instant access on payment, with secure PromptPay and credit card checkout.",
+  keywords: [
+    "TikTok Interactive",
+    "Roblox",
+    "Whitelist",
+    "Judy Shop",
+    "Judy Legend",
+    "Judy Jump",
+    "TikTok Live เกม",
+    "ซื้อ Whitelist",
+    "PromptPay",
+  ],
   discordUrl: "https://discord.gg/ERV8KqRztF",
   tiktokUrl: "https://www.tiktok.com/@judyshop_th",
 } as const;

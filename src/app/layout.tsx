@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Lilita_One, Nunito, IBM_Plex_Sans_Thai_Looped, Mali } from "next/font/google";
+import { Lilita_One, Nunito, IBM_Plex_Sans_Thai_Looped } from "next/font/google";
 import "./globals.css";
 import { SITE } from "@/constants/site";
 
@@ -17,9 +17,11 @@ const nunito = Nunito({
   display: "swap",
 });
 
-// Thai body font — looped (วงกลม) characters read more naturally than the
-// modern straight-line variant. Acts as a separate family in the fallback
-// chain so Latin chars keep using Nunito while Thai chars get this.
+// Single Thai face for the entire site — looped (วงกลม) characters read
+// more naturally than the modern straight-line variant. We use the same
+// font for both body and display Thai text so headings and paragraphs
+// feel consistent across every page; the Latin fonts (Lilita / Nunito)
+// still provide visual hierarchy for English copy.
 const thaiBody = IBM_Plex_Sans_Thai_Looped({
   subsets: ["thai"],
   weight: ["400", "500", "600", "700"],
@@ -27,18 +29,50 @@ const thaiBody = IBM_Plex_Sans_Thai_Looped({
   display: "swap",
 });
 
-// Thai display font — chunky + slightly playful to pair with Lilita One,
-// since Lilita has no Thai glyphs.
-const thaiDisplay = Mali({
-  subsets: ["thai"],
-  weight: ["500", "600", "700"],
-  variable: "--font-thai-display",
-  display: "swap",
-});
+// Absolute base used to resolve every relative URL inside the metadata
+// tree (og:image, twitter:image, alternates.canonical, etc.). Picked from
+// NEXT_PUBLIC_SITE_URL when present so prod and preview render different
+// previews, falls back to the production hostname.
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
+  "https://judygamestudio.com";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: { default: SITE.name, template: `%s — ${SITE.name}` },
   description: SITE.description,
+  applicationName: SITE.name,
+  keywords: [...SITE.keywords],
+  authors: [{ name: SITE.name }],
+  creator: SITE.name,
+  publisher: SITE.name,
+  // Social previews — both OG and Twitter consume the same image file
+  // placed at app/opengraph-image.jpg; Next.js auto-emits the right tags.
+  openGraph: {
+    type: "website",
+    siteName: SITE.name,
+    title: SITE.name,
+    description: SITE.description,
+    locale: "th_TH",
+    alternateLocale: ["en_US"],
+    url: SITE_URL,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE.name,
+    description: SITE.description,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  category: "shopping",
 };
 
 /** Inline pre-paint script — applies saved theme to <html> before body renders. */
@@ -55,7 +89,6 @@ const FONT_VARS = [
   lilita.variable,
   nunito.variable,
   thaiBody.variable,
-  thaiDisplay.variable,
 ].join(" ");
 
 /**

@@ -73,12 +73,13 @@
   --bad:  hsl(0   72% 60%);
 
   /* ── Type ──────────────────────────────────────────────
-     Fallback chain: pick the Latin font first, then the Thai
-     font. Browsers do per-glyph fallback, so Latin chars use
-     Lilita / Nunito while Thai chars use Mali / IBM Plex Sans
-     Thai Looped — no flash of system-font Thai. */
-  --font-display: var(--font-lilita), var(--font-thai-display), "Fredoka", system-ui, sans-serif;
-  --font-body:    var(--font-body),   var(--font-thai),         ui-sans-serif, system-ui, sans-serif;
+     Fallback chain: pick the Latin font first, then the single
+     Thai face we ship (IBM Plex Sans Thai Looped). Browsers do
+     per-glyph fallback, so Latin chars use Lilita / Nunito while
+     Thai chars consistently use IBM Plex — no flash of system
+     Thai and no font drift between headings and body. */
+  --font-display: var(--font-lilita), var(--font-thai), "Fredoka", system-ui, sans-serif;
+  --font-body:    var(--font-body),   var(--font-thai), ui-sans-serif, system-ui, sans-serif;
 
   /* ── Spacing ─────────────────────────────────────────── */
   --s-1: 4px;
