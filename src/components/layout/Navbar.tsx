@@ -6,16 +6,16 @@ import { ChevronRight, Menu, X } from "lucide-react";
 import { Link, usePathname } from "@/i18n/routing";
 import { cn } from "@/lib/cn";
 import { Logo } from "./Logo";
-import { SocialIcons } from "./SocialIcons";
 import { ThemeToggle } from "./ThemeToggle";
 import { LocaleSwitcher } from "./LocaleSwitcher";
 
 /** Hard-coded route paths — labels resolved per-locale via translations. */
 const NAV = [
-  { key: "home",  href: "/" },
-  { key: "shop",  href: "/shop" },
+  { key: "home",    href: "/" },
+  { key: "shop",    href: "/shop" },
   // { key: "check", href: "/check" },
-  { key: "news",  href: "/news" },
+  { key: "news",    href: "/news" },
+  { key: "contact", href: "/contact" },
 ] as const;
 
 export function Navbar() {
@@ -68,7 +68,6 @@ export function Navbar() {
             <div className="flex items-center gap-2 lg:ml-auto">
               <LocaleSwitcher />
               <ThemeToggle />
-              <SocialIcons className="hidden sm:flex" />
               <button
                 type="button"
                 aria-label={open ? t("closeMenu") : t("openMenu")}
@@ -121,10 +120,9 @@ export function Navbar() {
               })}
             </ul>
 
-            {/* Drawer footer: locale + socials so mobile users have access too */}
-            <div className="tint-soft flex items-center justify-between gap-3 border-t border-line-dark-2 px-4 py-3">
+            {/* Drawer footer: locale only — social links live on /contact now. */}
+            <div className="tint-soft flex items-center justify-end gap-3 border-t border-line-dark-2 px-4 py-3">
               <LocaleSwitcher forceVisible />
-              <SocialIcons />
             </div>
           </div>
         )}

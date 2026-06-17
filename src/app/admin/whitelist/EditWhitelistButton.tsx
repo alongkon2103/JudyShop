@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
-import { Pencil, Plus, RotateCcw } from "lucide-react";
+import { Pencil, Plus, Minus, RotateCcw, Trash2 } from "lucide-react";
 import { Switch } from "@/components/admin/Switch";
 import { Portal } from "@/components/admin/Portal";
 import { useToast } from "@/components/admin/toast/ToastContext";
 import { toLocalInputValue } from "@/lib/datetime";
 import { cn } from "@/lib/cn";
-import { updateWhitelist } from "./_actions";
+import { deleteWhitelist, updateWhitelist } from "./_actions";
 
 type Props = {
   id: string;
@@ -51,6 +51,7 @@ export function EditWhitelistButton({
 }: Props) {
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
+  const [confirmRemove, setConfirmRemove] = useState(false);
   const toast = useToast();
   const cancelRef = useRef<HTMLButtonElement>(null);
 
@@ -62,6 +63,9 @@ export function EditWhitelistButton({
     initialExpireIso ? toLocalInputValue(new Date(initialExpireIso)) : "",
   );
   const [label, setLabel] = useState(initialLabel ?? "");
+  // Custom-step number, stored as the raw input string so the user can
+  // type freely (incl. an empty box while editing). Coerced to int on use.
+  const [customStep, setCustomStep] = useState("5");
 
   useEffect(() => {
     if (!open) return;
@@ -69,6 +73,8 @@ export function EditWhitelistButton({
     setLifetime(initialLifetime);
     setExpireLocal(initialExpireIso ? toLocalInputValue(new Date(initialExpireIso)) : "");
     setLabel(initialLabel ?? "");
+    setConfirmRemove(false);
+    setCustomStep("5");
     cancelRef.current?.focus();
     // Lock page scroll while the modal is open so background content
     // doesn't move under the user's interaction with the dialog.
@@ -95,6 +101,26 @@ export function EditWhitelistButton({
   };
 
   const resetToNow = () => setExpireLocal(toLocalInputValue(new Date()));
+
+  // Apply ±customStep to whichever date is in the picker. Same baseline
+  // rule as extendBy: empty picker → "now" so the offset is meaningful.
+  const applyCustom = (sign: 1 | -1) => {
+    const n = Math.abs(parseInt(customStep, 10));
+    if (!Number.isFinite(n) || n <= 0) return;
+    extendBy(sign * n);
+  };
+
+  const handleDelete = () => {
+    startTransition(async () => {
+      try {
+        await deleteWhitelist(id);
+        toast.success(`Removed ${username}`);
+        setOpen(false);
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Failed to remove");
+      }
+    });
+  };
 
   const handleSave = () => {
     const fd = new FormData();
@@ -224,30 +250,74 @@ export function EditWhitelistButton({
                 />
               </label>
 
-              {/* Quick extend buttons */}
+              {/* Quick adjust — two clean rows, no loud colours.
+                    Row 1: utility "Now" + 5 preset extend chips (soft pink).
+                    Row 2: a single stepper for any custom value, with ± to
+                           apply either direction. Subtracting odd amounts
+                           (refund 3 days, etc.) goes here — no need for a
+                           full mirror row of minus presets cluttering the
+                           panel. */}
               {!lifetime && (
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={resetToNow}
-                    disabled={pending}
-                    className="inline-flex items-center gap-1 rounded-full border border-line-light bg-paper-2 px-3 py-1.5 text-[11px] font-semibold text-fg-light-soft hover:bg-paper hover:text-fg-light disabled:opacity-60"
-                  >
-                    <RotateCcw size={11} strokeWidth={2.25} />
-                    Set to now
-                  </button>
-                  {QUICK_EXTENDS.map((q) => (
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center gap-1.5">
                     <button
-                      key={q.days}
                       type="button"
-                      onClick={() => extendBy(q.days)}
+                      onClick={resetToNow}
                       disabled={pending}
-                      className="inline-flex items-center gap-0.5 rounded-full border border-pink-500/40 bg-pink-500/5 px-3 py-1.5 text-[11px] font-semibold text-pink-400 hover:bg-pink-500/15 disabled:opacity-60"
+                      title="Reset expiry to right now"
+                      className="inline-flex items-center gap-1 rounded-full border border-line-light bg-paper-2 px-3 py-1.5 text-[11px] font-semibold text-fg-light-soft hover:bg-paper hover:text-fg-light disabled:opacity-60"
                     >
-                      <Plus size={10} strokeWidth={2.5} />
-                      {q.label.replace("+", "")}
+                      <RotateCcw size={11} strokeWidth={2.25} />
+                      Now
                     </button>
-                  ))}
+                    {QUICK_EXTENDS.map((q) => (
+                      <button
+                        key={q.days}
+                        type="button"
+                        onClick={() => extendBy(q.days)}
+                        disabled={pending}
+                        className="inline-flex items-center gap-0.5 rounded-full border border-pink-500/30 bg-pink-500/[0.06] px-3 py-1.5 text-[11px] font-semibold text-pink-400/90 hover:border-pink-500/50 hover:bg-pink-500/[0.12] disabled:opacity-60"
+                      >
+                        <Plus size={10} strokeWidth={2.5} />
+                        {q.label.replace("+", "")}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Custom stepper — one compact pill: [−] [ N ] days [+]. */}
+                  <div className="inline-flex items-center gap-1 rounded-full border border-line-light bg-paper-2 p-1">
+                    <button
+                      type="button"
+                      onClick={() => applyCustom(-1)}
+                      disabled={pending}
+                      aria-label="Subtract custom days"
+                      className="grid h-7 w-7 place-items-center rounded-full text-fg-light-soft hover:bg-paper hover:text-fg-light disabled:opacity-60"
+                    >
+                      <Minus size={12} strokeWidth={2.5} />
+                    </button>
+                    <input
+                      type="number"
+                      inputMode="numeric"
+                      min={1}
+                      max={9999}
+                      value={customStep}
+                      onChange={(e) => setCustomStep(e.target.value)}
+                      disabled={pending}
+                      placeholder="5"
+                      aria-label="Custom days"
+                      className="w-12 bg-transparent text-center text-[12px] font-semibold text-fg-light focus:outline-none disabled:opacity-60 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                    />
+                    <span className="px-1 text-[11px] font-semibold text-fg-light-mute">days</span>
+                    <button
+                      type="button"
+                      onClick={() => applyCustom(1)}
+                      disabled={pending}
+                      aria-label="Add custom days"
+                      className="grid h-7 w-7 place-items-center rounded-full text-pink-400 hover:bg-pink-500/15 disabled:opacity-60"
+                    >
+                      <Plus size={12} strokeWidth={2.5} />
+                    </button>
+                  </div>
                 </div>
               )}
 
@@ -268,25 +338,67 @@ export function EditWhitelistButton({
               </label>
             </div>
 
-            {/* Footer */}
-            <div className="flex items-center justify-end gap-2 border-t border-line-light bg-paper-2/60 px-s4 py-3 sm:px-s5">
-              <button
-                ref={cancelRef}
-                type="button"
-                onClick={() => setOpen(false)}
-                disabled={pending}
-                className="rounded-full border border-line-light px-4 py-2 text-[12px] font-semibold text-fg-light-soft hover:bg-paper hover:text-fg-light disabled:opacity-60"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={pending}
-                className="inline-flex items-center gap-1.5 rounded-full bg-pink-500 px-5 py-2 text-[12px] font-extrabold uppercase tracking-[0.1em] text-white shadow-[0_2px_0_var(--pink-600)] transition-transform duration-fast ease-spring hover:-translate-y-0.5 active:translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
-              >
-                {pending ? "Saving…" : "Save changes"}
-              </button>
+            {/* Footer — inline confirm replaces the normal buttons when the
+                admin clicks Remove, so we don't stack a second modal on top
+                of this one. */}
+            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line-light bg-paper-2/60 px-s4 py-3 sm:px-s5">
+              {confirmRemove ? (
+                <>
+                  <p className="min-w-0 flex-1 text-[12px] text-fg-light-soft">
+                    Remove <span className="font-mono font-semibold text-fg-light">{username}</span>?
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setConfirmRemove(false)}
+                      disabled={pending}
+                      className="rounded-full border border-line-light px-4 py-2 text-[12px] font-semibold text-fg-light-soft hover:bg-paper hover:text-fg-light disabled:opacity-60"
+                    >
+                      Back
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleDelete}
+                      disabled={pending}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(0_75%_55%)] px-5 py-2 text-[12px] font-extrabold uppercase tracking-[0.1em] text-white shadow-[0_2px_0_hsl(0_75%_38%)] transition-transform duration-fast ease-spring hover:-translate-y-0.5 active:translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+                    >
+                      <Trash2 size={13} strokeWidth={2.5} />
+                      {pending ? "Removing…" : "Confirm remove"}
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmRemove(true)}
+                    disabled={pending}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-[hsl(0_75%_55%/0.4)] bg-[hsl(0_75%_55%/0.06)] px-4 py-2 text-[12px] font-semibold text-[hsl(0_75%_55%)] hover:bg-[hsl(0_75%_55%/0.14)] disabled:opacity-60"
+                  >
+                    <Trash2 size={13} strokeWidth={2.25} />
+                    Remove
+                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      ref={cancelRef}
+                      type="button"
+                      onClick={() => setOpen(false)}
+                      disabled={pending}
+                      className="rounded-full border border-line-light px-4 py-2 text-[12px] font-semibold text-fg-light-soft hover:bg-paper hover:text-fg-light disabled:opacity-60"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSave}
+                      disabled={pending}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-pink-500 px-5 py-2 text-[12px] font-extrabold uppercase tracking-[0.1em] text-white shadow-[0_2px_0_var(--pink-600)] transition-transform duration-fast ease-spring hover:-translate-y-0.5 active:translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+                    >
+                      {pending ? "Saving…" : "Save changes"}
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
           </div>

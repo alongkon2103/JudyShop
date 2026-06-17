@@ -13,6 +13,7 @@ import {
   IMAGE_TYPES,
   validateImage,
 } from "@/lib/upload-constraints";
+import { maybeShrinkImage, formatMB } from "@/lib/image-resize";
 import { cn } from "@/lib/cn";
 
 function formatSize(n: number) {
@@ -65,6 +66,17 @@ export function NewsForm({ existing }: Props) {
     (existing?.imageUrl && !removed ? existing.imageUrl : null);
 
   const action = async (formData: FormData) => {
+    // Auto-shrink large covers before they hit the server action.
+    const picked = formData.get("image");
+    if (picked instanceof File && picked.size > 0) {
+      const res = await maybeShrinkImage(picked);
+      if (res.changed) {
+        formData.set("image", res.file);
+        toast.info(
+          `ย่อขนาดอัตโนมัติ ${formatMB(res.originalBytes)} → ${formatMB(res.finalBytes)}`,
+        );
+      }
+    }
     try {
       if (isEdit && existing) {
         await updateNews(existing.id, formData);

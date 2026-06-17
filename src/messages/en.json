@@ -4,6 +4,7 @@
     "shop": "Shop",
     "news": "News",
     "check": "Check status",
+    "contact": "Contact",
     "admin": "Admin",
     "openMenu": "Open menu",
     "closeMenu": "Close menu"
@@ -213,5 +214,29 @@
     "subtitle": "We couldn't find the page you're looking for.",
     "home": "Back to home",
     "shop": "Browse shop"
+  },
+  "contact": {
+    "title": "Get in touch",
+    "subtitle": "Need help with an order, a renewal, or just want to say hi? Pick the channel you prefer — we usually reply within a few hours.",
+    "discord": {
+      "label": "Discord",
+      "detail": "Join the community server — fastest for live chat with staff.",
+      "cta": "Open Discord"
+    },
+    "tiktok": {
+      "label": "TikTok",
+      "detail": "Follow for news, announcements, and sneak peeks at upcoming games.",
+      "cta": "Open TikTok"
+    },
+    "youtube": {
+      "label": "YouTube",
+      "detail": "Full gameplay videos, tutorials, and event highlights.",
+      "cta": "Open YouTube"
+    },
+    "email": {
+      "label": "Email",
+      "detail": "For business enquiries, partnerships, and press.",
+      "cta": "Send email"
+    }
   }
 }

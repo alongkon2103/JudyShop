@@ -1,7 +1,6 @@
 import { useTranslations } from "next-intl";
 import { Container } from "@/components/ui/Container";
 import { Link } from "@/i18n/routing";
-import { SocialIcons } from "./SocialIcons";
 
 export function Footer() {
   const t = useTranslations("footer");
@@ -23,8 +22,10 @@ export function Footer() {
           <Link href="/check" className="transition-colors hover:text-fg-dark">
             {tNav("check")}
           </Link>
+          <Link href="/contact" className="transition-colors hover:text-fg-dark">
+            {tNav("contact")}
+          </Link>
         </nav>
-        <SocialIcons />
       </Container>
     </footer>
   );

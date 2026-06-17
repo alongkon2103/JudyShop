@@ -12,6 +12,7 @@ import {
   IMAGE_TYPES,
   validateImage,
 } from "@/lib/upload-constraints";
+import { maybeShrinkImage, formatMB } from "@/lib/image-resize";
 import { cn } from "@/lib/cn";
 
 function formatSize(bytes: number) {
@@ -43,6 +44,19 @@ export function OverlayForm({ productId }: { productId: string }) {
   };
 
   const action = async (formData: FormData) => {
+    // Auto-shrink the overlay before submit. Gift boxes rely on
+    // transparency, so keep PNG output (preferJpeg=false) — we still
+    // get metadata stripping + dimension cap.
+    const picked = formData.get("file");
+    if (picked instanceof File && picked.size > 0) {
+      const res = await maybeShrinkImage(picked, { preferJpeg: false });
+      if (res.changed) {
+        formData.set("file", res.file);
+        toast.info(
+          `ย่อขนาดอัตโนมัติ ${formatMB(res.originalBytes)} → ${formatMB(res.finalBytes)}`,
+        );
+      }
+    }
     try {
       await createOverlay(productId, formData);
       toast.success("Overlay uploaded");

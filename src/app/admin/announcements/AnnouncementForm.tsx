@@ -13,6 +13,7 @@ import {
   IMAGE_TYPES,
   validateImage,
 } from "@/lib/upload-constraints";
+import { maybeShrinkImage, formatMB } from "@/lib/image-resize";
 import { cn } from "@/lib/cn";
 
 function formatSize(n: number) {
@@ -97,6 +98,18 @@ export function AnnouncementForm({ existing }: Props) {
 
   const action = async (formData: FormData) => {
     normaliseLocalDates(formData);
+    // Auto-shrink large images in the browser — strips metadata that
+    // sometimes confuses Cloudflare WAF and keeps mobile uploads fast.
+    const picked = formData.get("image");
+    if (picked instanceof File && picked.size > 0) {
+      const res = await maybeShrinkImage(picked);
+      if (res.changed) {
+        formData.set("image", res.file);
+        toast.info(
+          `ย่อขนาดอัตโนมัติ ${formatMB(res.originalBytes)} → ${formatMB(res.finalBytes)}`,
+        );
+      }
+    }
     try {
       if (isEdit && existing) {
         await updateAnnouncement(existing.id, formData);

@@ -11,6 +11,7 @@ import {
   IMAGE_TYPES,
   validateImage,
 } from "@/lib/upload-constraints";
+import { maybeShrinkImage, formatMB } from "@/lib/image-resize";
 import { cn } from "@/lib/cn";
 
 function formatSize(bytes: number) {
@@ -42,6 +43,17 @@ export function ImageUploadForm({ productId }: { productId: string }) {
   };
 
   const action = async (formData: FormData) => {
+    // Auto-shrink product photos before upload — JPEG is fine here.
+    const picked = formData.get("file");
+    if (picked instanceof File && picked.size > 0) {
+      const res = await maybeShrinkImage(picked);
+      if (res.changed) {
+        formData.set("file", res.file);
+        toast.info(
+          `ย่อขนาดอัตโนมัติ ${formatMB(res.originalBytes)} → ${formatMB(res.finalBytes)}`,
+        );
+      }
+    }
     try {
       await createImage(productId, formData);
       toast.success("Image uploaded");

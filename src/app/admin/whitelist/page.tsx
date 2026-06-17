@@ -31,10 +31,45 @@ function fmtDate(d: Date | null) {
   });
 }
 
-function daysUntil(d: Date | null, now: Date): number | null {
+/**
+ * Human-friendly "time until" / "time ago" label that scales the unit
+ * down to seconds/minutes/hours when the gap is < a day. The old
+ * implementation used `Math.ceil(ms / day)` which rounded a 5-minute
+ * trial up to "1d left" — clearly wrong.
+ *
+ * Returns null for `d == null` (no expiry stored).
+ */
+function timeUntil(
+  d: Date | null,
+  now: Date,
+): { label: string; tone: "expired" | "soon" | "ok" } | null {
   if (!d) return null;
   const ms = d.getTime() - now.getTime();
-  return Math.ceil(ms / (24 * 60 * 60 * 1000));
+  const past = ms < 0;
+  const abs = Math.abs(ms);
+
+  const MIN = 60_000;
+  const HOUR = 60 * MIN;
+  const DAY = 24 * HOUR;
+
+  let label: string;
+  if (abs < MIN) {
+    const s = Math.max(1, Math.floor(abs / 1000));
+    label = `${s}s`;
+  } else if (abs < HOUR) {
+    label = `${Math.floor(abs / MIN)}m`;
+  } else if (abs < DAY) {
+    label = `${Math.floor(abs / HOUR)}h`;
+  } else {
+    label = `${Math.floor(abs / DAY)}d`;
+  }
+
+  const tone: "expired" | "soon" | "ok" = past
+    ? "expired"
+    : abs <= 7 * DAY
+      ? "soon"
+      : "ok";
+  return { label: past ? `${label} ago` : `${label} left`, tone };
 }
 
 type SearchParams = { q?: string; product?: string; page?: string };
@@ -133,7 +168,7 @@ export default async function WhitelistPage({
               <tbody className="divide-y divide-line-light text-fg-light">
                 {rows.map((row) => {
                   const active = row.isLifetime || (row.expireDate ? row.expireDate > now : false);
-                  const days = daysUntil(row.expireDate, now);
+                  const remaining = timeUntil(row.expireDate, now);
                   return (
                     <tr key={row.id} className="align-middle hover:bg-paper-2/30">
                       <td className="px-4 py-3">
@@ -162,18 +197,18 @@ export default async function WhitelistPage({
                         ) : row.expireDate ? (
                           <span className={active ? "text-fg-light" : "text-fg-light-mute line-through"}>
                             {fmtDate(row.expireDate)}
-                            {days !== null && (
+                            {remaining && (
                               <span
                                 className={
                                   "ml-1.5 text-[11px] " +
-                                  (days < 0
+                                  (remaining.tone === "expired"
                                     ? "text-[hsl(0_70%_50%)]"
-                                    : days <= 7
+                                    : remaining.tone === "soon"
                                       ? "text-[hsl(28_85%_42%)]"
                                       : "text-fg-light-mute")
                                 }
                               >
-                                ({days < 0 ? `${-days}d ago` : `${days}d left`})
+                                ({remaining.label})
                               </span>
                             )}
                           </span>

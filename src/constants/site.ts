@@ -32,6 +32,8 @@ export const SITE = {
   ],
   discordUrl: "https://discord.gg/ERV8KqRztF",
   tiktokUrl: "https://www.tiktok.com/@judyshop_th",
+  youtubeUrl: "https://www.youtube.com/@JUDYSHOP-TH",
+  supportEmail: "judyshop0330@gmail.com",
 } as const;
 
 export const NAV_ITEMS = [
