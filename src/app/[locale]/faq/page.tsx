@@ -41,7 +41,7 @@ const SECTIONS = [
   {
     key: "support",
     icon: LifeBuoy,
-    items: ["refund", "support"] as const,
+    items: ["support"] as const,
   },
 ] as const;
 

@@ -147,7 +147,7 @@
       "username": "Roblox username",
       "renewal": "Renewal & expiry",
       "trial": "Trial mode",
-      "support": "Refunds & support"
+      "support": "Support"
     },
     "items": {
       "howToBuy": {
@@ -164,7 +164,7 @@
       },
       "wrongUsername": {
         "q": "I typed my username wrong — what now?",
-        "a": "When you type the username in checkout, we look it up on Roblox and show your avatar so you can confirm BEFORE paying. If you already paid to the wrong account, contact us on Discord with your Stripe receipt — we can transfer it."
+        "a": "If you already paid to the wrong account, contact us on Discord with your Stripe receipt — we can transfer it."
       },
       "howToRenew": {
         "q": "How do I renew?",
@@ -181,10 +181,6 @@
       "trialLimit": {
         "q": "Can I take multiple trials?",
         "a": "Trials are limited to 1 per Roblox username per 24 hours, per product. This prevents abuse so trial mode stays available."
-      },
-      "refund": {
-        "q": "Do you offer refunds?",
-        "a": "For most cases, yes — within 24 hours of purchase if you haven't used the access yet. Contact us on Discord with your Stripe receipt."
       },
       "support": {
         "q": "How do I contact support?",

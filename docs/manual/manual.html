@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8" />
-<title>คู่มือการใช้งาน Judyshop · เวอร์ชัน 2</title>
+<title>คู่มือการใช้งาน Judyshop · เวอร์ชัน 3</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&family=Noto+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -170,7 +170,7 @@
       color: #767676;
     }
     @top-right {
-      content: "Judyshop · คู่มือการใช้งาน v2";
+      content: "Judyshop · คู่มือการใช้งาน v3";
       font-family: "Noto Sans Thai", sans-serif;
       font-size: 8.5pt;
       color: #a0a0a0;
@@ -194,7 +194,7 @@
     การเชื่อมต่อกับเกม Roblox ไปจนถึงการ Deploy บน Windows Server
   </p>
   <div class="cover-meta">
-    <strong>เวอร์ชัน 2</strong> · ครอบคลุม 6 หน้า Public + 11 หน้า Admin + Roblox API + Deployment<br/>
+    <strong>เวอร์ชัน 3</strong> · ครอบคลุม 7 หน้า Public + 11 หน้า Admin + Roblox API + Deployment<br/>
     เอกสารฉบับนี้สร้างจากซอร์สโค้ดล่าสุด · จัดทำโดยทีมพัฒนา
   </div>
 </section>
@@ -212,6 +212,7 @@
       <li><span class="toc-num">1.4</span>การชำระเงินผ่าน Stripe</li>
       <li><span class="toc-num">1.5</span>หน้า Success / Cancel</li>
       <li><span class="toc-num">1.6</span>News — ข่าวสาร</li>
+      <li><span class="toc-num">1.7</span>Contact — ช่องทางติดต่อ</li>
     </ol>
   </div>
 
@@ -280,19 +281,23 @@
   <p>ติดอยู่ที่ด้านบนของทุกหน้า เลื่อนตามขึ้น/ลงไม่หาย ประกอบด้วย:</p>
   <ul>
     <li><strong>โลโก้ Judy Shop</strong> (ซ้ายสุด) — คลิกเพื่อกลับหน้าแรก</li>
-    <li><strong>เมนูหลัก</strong>: Home · Shop · News — เมนูที่กำลังเปิดอยู่จะมีจุดสีชมพูใต้ชื่อ</li>
+    <li><strong>เมนูหลัก</strong>: Home · Shop · News · Contact — เมนูที่กำลังเปิดอยู่จะมีจุดสีชมพูใต้ชื่อ</li>
     <li><strong>ปุ่มสลับภาษา</strong> TH / EN — ปุ่มสีชมพูคือภาษาที่เลือกอยู่ (URL จะเปลี่ยนเป็น <code>/en/...</code>)</li>
     <li><strong>ปุ่มเปลี่ยนธีม</strong> สว่าง / มืด</li>
-    <li><strong>ไอคอน Discord</strong> และโซเชียลอื่น — เปิดในแท็บใหม่</li>
   </ul>
 
   <div class="box info">
     <div class="box-title">บนมือถือ</div>
-    <p>เมนู Home / Shop / News จะซ่อนอยู่ในปุ่ม Hamburger (สามขีด) ทางขวา แตะเพื่อเปิด Drawer</p>
+    <p>เมนู Home / Shop / News / Contact จะซ่อนอยู่ในปุ่ม Hamburger (สามขีด) ทางขวา แตะเพื่อเปิด Drawer</p>
+  </div>
+
+  <div class="box info">
+    <div class="box-title">เปลี่ยนแปลง · เวอร์ชัน 3</div>
+    <p>ไอคอน Discord / TikTok / YouTube ที่เคยอยู่บน Navbar และ Footer ถูกย้ายไปรวมไว้ที่หน้า <strong>Contact</strong> ที่เดียว เพื่อให้ Navbar สะอาดและให้ลูกค้าเห็นข้อมูลแต่ละช่องทางครบในที่เดียว ดูรายละเอียดที่บทที่ 1.7</p>
   </div>
 
   <h3>Footer ด้านล่าง</h3>
-  <p>เลื่อนสุดหน้าจะเจอ Footer ประกอบด้วย: ลิขสิทธิ์ © ปีปัจจุบัน, ลิงก์เมนูเสริม, ไอคอนโซเชียล</p>
+  <p>เลื่อนสุดหน้าจะเจอ Footer ประกอบด้วย: ลิขสิทธิ์ © ปีปัจจุบัน, ลิงก์ FAQ · Check status · Contact</p>
 
   <div class="section-kicker">บทที่ 1.2</div>
   <h2>หน้าแรกและป็อปอัพประกาศ</h2>
@@ -421,6 +426,40 @@
     <li>แต่ละข่าวมี: ป้ายหมวด, หัวข้อ, สรุปสั้น, วันที่</li>
     <li>หมวดข่าว: <span class="badge blue">Update</span> · <span class="badge">Announce</span> · <span class="badge green">Event</span> · <span class="badge orange">Maintenance</span></li>
   </ul>
+
+  <div class="section-kicker">บทที่ 1.7 · ใหม่</div>
+  <h2>Contact — ช่องทางติดต่อ</h2>
+
+  <p>URL: <code>/contact</code> หรือ <code>/en/contact</code></p>
+
+  <p>หน้านี้รวมช่องทางติดต่อร้านทุกช่องทางไว้ในที่เดียว แทนไอคอนเล็กๆ ที่เคยอยู่บน Navbar/Footer ของเวอร์ชัน 2 ทำให้ลูกค้าเห็นรายละเอียดและรูปแบบเนื้อหาของแต่ละช่องก่อนคลิก</p>
+
+  <h3>โครงสร้างหน้า</h3>
+  <ul>
+    <li><strong>หัวเรื่อง</strong> "Get in touch" + คำโปรย</li>
+    <li><strong>การ์ดช่องทางแนวยาว 4 ใบ</strong> เรียงเป็นคอลัมน์เดียว (max-width 2xl)</li>
+    <li>แต่ละการ์ดมี: ไอคอนสีแบรนด์ + ชื่อช่องทาง + URL handle จริง + คำบรรยายว่าใช้ทำอะไร + ลูกศรกลม</li>
+    <li>Hover แล้วการ์ดยกขึ้นเล็กน้อยและไอคอนหมุน 6°</li>
+  </ul>
+
+  <h3>4 ช่องทางที่แสดง</h3>
+  <table>
+    <tr><th>ช่อง</th><th>Handle ที่แสดง</th><th>ใช้สำหรับ</th></tr>
+    <tr><td><span class="badge blue">Discord</span></td><td><code>discord.gg/ERV8KqRztF</code></td><td>คุยกับทีมงานสด ๆ เร็วสุด</td></tr>
+    <tr><td><span class="badge gray">TikTok</span></td><td><code>tiktok.com/@judyshop_th</code></td><td>ข่าวสาร ประกาศ และสปอยเกมใหม่ๆ</td></tr>
+    <tr><td><span class="badge red">YouTube</span></td><td><code>youtube.com/@JUDYSHOP-TH</code></td><td>คลิปเล่นเกมเต็มๆ, สอนวิธีเล่น, ไฮไลต์อีเวนต์</td></tr>
+    <tr><td><span class="badge">Email</span></td><td><code>judyshop0330@gmail.com</code></td><td>ติดต่องาน, สปอนเซอร์, หรือเรื่องเชิงธุรกิจ</td></tr>
+  </table>
+
+  <div class="box info">
+    <div class="box-title">Email ไม่ใช่ช่องสำหรับลูกค้าทั่วไป</div>
+    <p>คำบรรยายเขียนชัดว่า "For business enquiries, partnerships, and press" / "ติดต่องาน, สปอนเซอร์, หรือสอบถามเชิงธุรกิจ" — ลูกค้าที่ต้องการขอคืนเงิน, แจ้งปัญหา, หรือถามเรื่องออเดอร์ ให้ใช้ <strong>Discord</strong> ซึ่งเร็วกว่ามาก</p>
+  </div>
+
+  <div class="box success">
+    <div class="box-title">เปลี่ยน Handle / URL ได้ที่ไหน</div>
+    <p>ค่าทั้งหมดเก็บใน <code>src/constants/site.ts</code> (<code>discordUrl</code>, <code>tiktokUrl</code>, <code>youtubeUrl</code>, <code>supportEmail</code>) ส่วน handle ที่แสดงเก็บใน CHANNELS array ของ <code>src/app/[locale]/contact/page.tsx</code> แก้แล้วเปลี่ยนทั่วทั้งเว็บอัตโนมัติ</p>
+  </div>
 
 </section>
 
@@ -676,24 +715,47 @@
     <tr><td>Roblox Username</td><td>✓ (ระบบเช็คซ้ำกับ row อื่นใน product เดียวกัน)</td></tr>
     <tr><td>Lifetime toggle</td><td>✓ เปิด = ตลอดชีพ ปิด = มีวันหมด</td></tr>
     <tr><td>Expires At</td><td>✓ Date/Time picker</td></tr>
-    <tr><td>Quick extend</td><td>✓ ปุ่ม <code>+1d</code> <code>+7d</code> <code>+30d</code> <code>+90d</code> <code>+1y</code></td></tr>
-    <tr><td>Set to now</td><td>✓ รีเซ็ตวันที่เป็นปัจจุบัน</td></tr>
+    <tr><td>Quick extend</td><td>✓ ชิปสีชมพู <code>+1d</code> <code>+7d</code> <code>+30d</code> <code>+90d</code> <code>+1y</code></td></tr>
+    <tr><td>Custom ± days</td><td>✓ <strong>ใหม่</strong> — Stepper พิมพ์ตัวเลขเอง เช่น 5, 14, 60 แล้วกด − หรือ + เพื่อหัก/บวกจากวันหมดปัจจุบัน</td></tr>
+    <tr><td>Set to now</td><td>✓ ปุ่ม <strong>Now</strong> รีเซ็ตวันที่เป็นปัจจุบัน</td></tr>
     <tr><td>Label</td><td>✓ note ภายใน</td></tr>
     <tr><td>Product · Source · AddedBy</td><td>✗ อ่านอย่างเดียว</td></tr>
   </table>
 
+  <h4>Quick adjust UI · เวอร์ชัน 3</h4>
+  <p>UI ส่วนปรับวันถูกออกแบบใหม่ให้สวยและสะอาด 2 แถว:</p>
+  <ul>
+    <li><strong>แถวบน</strong> — ปุ่ม <code>Now</code> (เทา) + ชิปสีชมพู <code>+1d</code> <code>+7d</code> <code>+30d</code> <code>+90d</code> <code>+1y</code></li>
+    <li><strong>แถวล่าง</strong> — Stepper กลม: ปุ่ม <strong>−</strong> ซ้าย, ช่องตัวเลข, ปุ่ม <strong>+</strong> ขวา + ข้อความ "days" ใช้สำหรับวันที่ไม่อยู่ในชิปด่วน (เช่น ลด 5 วัน, เพิ่ม 14 วัน)</li>
+  </ul>
+
   <h4>ตัวอย่างการต่ออายุ</h4>
   <ul>
-    <li>เพิ่ม 7 วันจากวันหมดเดิม → คลิก <code>+7d</code></li>
-    <li>ตั้งเป็น "ตั้งแต่วันนี้ไป 30 วัน" → คลิก <strong>Set to now</strong> แล้ว <code>+30d</code></li>
+    <li>เพิ่ม 7 วันจากวันหมดเดิม → คลิกชิป <code>+7d</code></li>
+    <li>เพิ่ม 14 วัน (ไม่มีในชิปด่วน) → พิมพ์ <code>14</code> ใน stepper → กดปุ่ม <strong>+</strong></li>
+    <li>ลด 5 วันจากวันหมดเดิม → พิมพ์ <code>5</code> ใน stepper → กดปุ่ม <strong>−</strong></li>
+    <li>ตั้งเป็น "ตั้งแต่วันนี้ไป 30 วัน" → คลิก <strong>Now</strong> แล้วชิป <code>+30d</code></li>
     <li>เปลี่ยนเป็น Lifetime → เปิด toggle <strong>Lifetime access</strong></li>
   </ul>
 
   <h3>5) ลบ Whitelist</h3>
-  <p>คลิกปุ่ม X → Confirm → Whitelist ถูกตัดทันที</p>
+  <p>มี 2 วิธี:</p>
+
+  <h4>วิธี A — ปุ่ม X ในแถว (เร็ว)</h4>
+  <p>คลิกปุ่ม X แดงที่ท้ายแถว → Confirm → Whitelist ถูกตัดทันที</p>
+
+  <h4>วิธี B — ปุ่ม Remove ใน Edit Modal (ใหม่)</h4>
+  <p>เปิด Modal แก้ไขแล้วเลือกลบที่นี่ได้เลย ไม่ต้องปิด modal กลับไปกด X ในแถว:</p>
+  <ol class="steps">
+    <li>คลิกไอคอน <strong>ถังขยะ + Remove</strong> มุมซ้ายล่างของ Modal</li>
+    <li>Footer สลับเป็นข้อความยืนยัน "Remove [username]?" พร้อมปุ่ม <strong>Back</strong> และ <strong>Confirm remove</strong></li>
+    <li>กด <strong>Confirm remove</strong> → Toast ขึ้น "Removed [username]" และ Modal ปิด</li>
+    <li>กด <strong>Back</strong> เพื่อยกเลิก กลับไปแก้ไขต่อ</li>
+  </ol>
+
   <div class="box warn">
     <div class="box-title">ลบ Whitelist ตัดสิทธิ์ทันที (ไม่คืนเงิน)</div>
-    <p>สำหรับเคสคืนเงิน ใช้ปุ่ม Refund ที่หน้า Transactions แทน (จะคืนเงินจริงด้วย)</p>
+    <p>สำหรับเคสคืนเงิน ใช้ปุ่ม Refund ที่หน้า Transactions แทน (จะคืนเงินจริงด้วยและตัด Whitelist ให้)</p>
   </div>
 
   <div class="section-kicker">บทที่ 2.7</div>
@@ -1244,7 +1306,7 @@ $binding.AddSslCertificate($cert.Thumbprint, "My")</code></pre>
 
   <div class="box info">
     <div class="box-title">ติดต่อทีมงาน</div>
-    <p>หากมีคำถามเพิ่มเติมหรือพบปัญหา ติดต่อทีมงานได้ที่ Discord ของ Judy Shop</p>
+    <p>หากมีคำถามเพิ่มเติมหรือพบปัญหา ไปที่หน้า <strong>Contact</strong> (<code>/contact</code>) เพื่อดูช่องทางทั้งหมด — Discord (เร็วสุดสำหรับลูกค้า), TikTok, YouTube, และ Email สำหรับติดต่องาน</p>
   </div>
 
 </section>
