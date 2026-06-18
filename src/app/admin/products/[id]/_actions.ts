@@ -316,8 +316,9 @@ const MAX_PRESET_BYTES = 50 * 1024 * 1024; // 50MB
 const PRESET_ALLOWED_EXTENSIONS = new Set([
   ".zip",       // bundles
   ".rbxm", ".rbxmx",  // Roblox models
-  ".json", ".txt", ".csv",  // configs
-  ".png", ".jpg", ".jpeg", ".webp",  // reference images
+  ".tfc",       // TikTok-game config files
+  ".json", ".txt", ".csv", ".xml", ".yaml", ".yml",  // configs
+  ".png", ".jpg", ".jpeg", ".webp", ".gif",  // reference images
   ".pdf",       // documentation
 ]);
 
