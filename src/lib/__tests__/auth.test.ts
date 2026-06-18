@@ -94,16 +94,16 @@ describe("hashPassword / verifyPassword", () => {
 
 describe("signSession / verifySession", () => {
   it("round-trips sub + email through a signed JWT", async () => {
-    const token = await signSession({ sub: "user-1", email: "a@b.com" });
+    const token = await signSession({ sub: "user-1", email: "a@b.com", tv: 0 });
     expect(typeof token).toBe("string");
     expect(token.split(".")).toHaveLength(3); // header.payload.signature
 
     const session = await verifySession(token);
-    expect(session).toEqual({ sub: "user-1", email: "a@b.com" });
+    expect(session).toEqual({ sub: "user-1", email: "a@b.com", tv: 0 });
   });
 
   it("returns null for a tampered signature", async () => {
-    const token = await signSession({ sub: "user-1", email: "a@b.com" });
+    const token = await signSession({ sub: "user-1", email: "a@b.com", tv: 0 });
     const [h, p] = token.split(".");
     const bad = `${h}.${p}.tamperedsignaturexx`;
     expect(await verifySession(bad)).toBeNull();

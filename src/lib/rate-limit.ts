@@ -11,11 +11,29 @@
  *       map. Replace with Redis (Upstash, etc.) before scaling out, but
  *       the call surface (`hit()` returns `{ ok, remaining, resetIn }`)
  *       is designed to drop in with minimal change.
+ *
+ * Eviction: STORE is GC'd lazily — entries with zero hits after a
+ * cleanup pass are removed. Without this an attacker could spam unique
+ * keys (e.g. spoofed X-Forwarded-For) and grow STORE unbounded.
  */
 
 type Window = { hits: number[]; limit: number; windowMs: number };
 
 const STORE = new Map<string, Window>();
+
+// Lazy eviction every ~5 min — runs inside hit() so we don't need a
+// timer (which would keep the process alive in tests).
+const EVICT_INTERVAL_MS = 5 * 60 * 1000;
+let lastEvict = 0;
+function maybeEvict(now: number): void {
+  if (now - lastEvict < EVICT_INTERVAL_MS) return;
+  lastEvict = now;
+  for (const [key, win] of STORE.entries()) {
+    const cutoff = now - win.windowMs;
+    while (win.hits.length && win.hits[0]! <= cutoff) win.hits.shift();
+    if (win.hits.length === 0) STORE.delete(key);
+  }
+}
 
 export type RateLimitResult = {
   /** True when the request is within the limit. */
@@ -32,6 +50,7 @@ export function hit(
 ): RateLimitResult {
   const now = Date.now();
   const cutoff = now - opts.windowMs;
+  maybeEvict(now);
 
   let win = STORE.get(key);
   if (!win) {
@@ -68,26 +87,47 @@ export function reset(key: string): void {
 }
 
 /**
- * Best-effort caller IP from common proxy headers, falling back to
- * an opaque placeholder so the key is still bucketed.
+ * Best-effort caller IP from common proxy headers.
  *
- * We trust the FIRST entry in `x-forwarded-for` — only do this behind
- * a proxy that strips client-supplied versions of that header (Vercel,
- * Cloudflare, Fly, most CDNs). Without a proxy, the header is missing
- * and we use a fixed bucket — which is acceptable for dev.
+ * Header priority (first non-empty wins):
+ *   1. `cf-connecting-ip`   — Cloudflare sets this and strips client-supplied versions
+ *   2. `x-vercel-forwarded-for` — Vercel platform header
+ *   3. `x-real-ip`          — common nginx-style header (set by trusted proxy)
+ *   4. `x-forwarded-for`    — RFC standard; we take the FIRST entry (client IP)
+ *
+ * Trust model: when `TRUST_PROXY=1` is set, we honor the headers above.
+ * Otherwise (direct exposure / dev), we ignore them and bucket by the
+ * fallback below. This prevents an attacker on an untrusted-network
+ * deploy from rotating their bucket per-request by spoofing the header.
+ *
+ * Fallback: `_dev_` in development, `_unknown_` in production. The
+ * production fallback intentionally collapses all unidentified callers
+ * into one bucket — this fails-closed (sharing the cap) rather than
+ * fails-open (granting everyone fresh buckets). Always configure a
+ * trusted proxy in production.
  */
 export function clientIp(reqOrHeaders: Request | Headers): string {
   const headers = reqOrHeaders instanceof Headers ? reqOrHeaders : reqOrHeaders.headers;
-  const fwd = headers.get("x-forwarded-for");
-  if (fwd) {
-    const first = fwd.split(",")[0]?.trim();
-    if (first) return first;
+  const trustProxy = process.env.TRUST_PROXY === "1";
+
+  if (trustProxy) {
+    const cf = headers.get("cf-connecting-ip");
+    if (cf) return cf.trim();
+    const vercel = headers.get("x-vercel-forwarded-for");
+    if (vercel) {
+      const first = vercel.split(",")[0]?.trim();
+      if (first) return first;
+    }
+    const real = headers.get("x-real-ip");
+    if (real) return real.trim();
+    const fwd = headers.get("x-forwarded-for");
+    if (fwd) {
+      const first = fwd.split(",")[0]?.trim();
+      if (first) return first;
+    }
   }
-  const real = headers.get("x-real-ip");
-  if (real) return real.trim();
-  // Fallback bucket — better than nothing, but unprotected against
-  // shared NAT in dev.
-  return "_unknown_";
+
+  return process.env.NODE_ENV === "production" ? "_unknown_" : "_dev_";
 }
 
 /** Format `Retry-After` header value (seconds, rounded up). */

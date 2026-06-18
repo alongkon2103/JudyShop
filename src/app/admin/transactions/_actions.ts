@@ -84,14 +84,21 @@ export async function refundOrder(args: {
   }
 
   // ── 2. Stripe refund — fail fast before we touch our DB. ─────────
+  // The idempotency key makes Stripe deduplicate retries on its side,
+  // so double-clicks / concurrent admin refunds + network retries can
+  // never charge twice. Keyed per-order — different orders get different
+  // refunds, but same order = same operation.
   try {
-    await stripe.refunds.create({
-      payment_intent: order.stripePaymentId,
-      metadata: {
-        orderId: order.id,
-        reason: args.reason ?? "",
+    await stripe.refunds.create(
+      {
+        payment_intent: order.stripePaymentId,
+        metadata: {
+          orderId: order.id,
+          reason: args.reason ?? "",
+        },
       },
-    });
+      { idempotencyKey: `refund-${order.id}` },
+    );
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Stripe refund failed.";
     return { ok: false, kind: "stripe_rejected", error: msg };

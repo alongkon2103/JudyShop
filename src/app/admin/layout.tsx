@@ -16,6 +16,20 @@ const inter = Inter({
  * - When NOT authenticated (login page): no shell, no sidebar.
  * - When authenticated: top bar + persistent sidebar + main.
  */
+/**
+ * Auth model is two-layer:
+ *   1. `middleware.ts` rejects any /admin request without a valid JWT
+ *      signature, redirecting to /admin/login.
+ *   2. Every admin server component / server action / API route calls
+ *      `requireAdmin()` which DB-checks `isActive` + `tokenVersion`.
+ *
+ * The layout uses `getAdminSession()` (JWT-only, no DB hit) just to
+ * display the email — a revoked token will briefly render the shell
+ * before the inner page's `requireAdmin()` redirects, which is
+ * acceptable. We don't enforce here because (a) we'd need to know
+ * whether we're on /admin/login and Next.js doesn't surface that
+ * reliably from a layout, and (b) middleware already gates this.
+ */
 export default async function AdminLayout({
   children,
 }: {

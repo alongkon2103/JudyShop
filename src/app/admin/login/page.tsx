@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/admin-session";
 import { safeNextPath } from "@/lib/redirect";
+import { db } from "@/lib/db";
 import { LoginForm } from "./LoginForm";
 
 export const metadata: Metadata = { title: "Admin login" };
@@ -13,9 +14,21 @@ export default async function AdminLoginPage({
 }) {
   const next = safeNextPath(searchParams.next);
 
-  // If already authenticated, skip the form.
+  // If already authenticated, skip the form — but only if the token
+  // also passes the DB-backed revoke check. Without the DB check, a
+  // logged-out cookie (signature still valid, tokenVersion bumped)
+  // would loop: login → redirect to /admin → requireAdmin redirects
+  // back here → repeat.
   const session = await getAdminSession();
-  if (session) redirect(next);
+  if (session) {
+    const user = await db.adminUser.findUnique({
+      where: { id: session.sub },
+      select: { isActive: true, tokenVersion: true },
+    });
+    if (user?.isActive && user.tokenVersion === session.tv) {
+      redirect(next);
+    }
+  }
 
   return (
     <section className="grid min-h-[80svh] place-items-center py-s5">

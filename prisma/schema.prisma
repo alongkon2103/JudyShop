@@ -386,6 +386,12 @@ model AdminUser {
   isActive     Boolean   @default(true)
   lastLoginAt  DateTime?
 
+  // Bumped on logout / password change. JWTs carry the version they
+  // were signed with; `requireAdmin()` rejects sessions where the
+  // version no longer matches the DB, so a stolen cookie becomes
+  // useless the moment the legit admin logs out.
+  tokenVersion Int @default(0)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

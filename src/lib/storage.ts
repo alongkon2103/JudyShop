@@ -16,6 +16,7 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { mkdir, writeFile, unlink } from "node:fs/promises";
 import path from "node:path";
+import { isWhitelistedImageHeader, sniffImageMime } from "./upload-constraints";
 
 export const STORAGE_BUCKET = "product-assets";
 export const LOCAL_PUBLIC_ROOT = path.join(process.cwd(), "public", "uploads");
@@ -57,7 +58,27 @@ export async function uploadFile(opts: {
   path: string;
   file: File;
   upsert?: boolean;
+  /**
+   * When set, the file's first 12 bytes MUST match a real image
+   * header (PNG/JPEG/GIF/WebP). The caller's claimed `file.type` is
+   * untrusted — this stops `curl -F file=@evil.html;type=image/png`
+   * from sneaking an XSS payload into our image folder.
+   */
+  requireImageMagicBytes?: boolean;
 }): Promise<UploadResult> {
+  if (opts.requireImageMagicBytes) {
+    const head = new Uint8Array(await opts.file.slice(0, 12).arrayBuffer());
+    if (!isWhitelistedImageHeader(head)) {
+      const detected = sniffImageMime(head);
+      return {
+        ok: false,
+        error: detected
+          ? `File header says "${detected}" which isn't on our whitelist.`
+          : "File doesn't look like an image (header bytes don't match JPEG/PNG/GIF/WebP).",
+      };
+    }
+  }
+
   const driver = getActiveDriver();
   return driver === "supabase" ? uploadSupabase(opts) : uploadLocal(opts);
 }

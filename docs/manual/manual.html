@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8" />
-<title>คู่มือการใช้งาน Judyshop · เวอร์ชัน 3</title>
+<title>คู่มือการใช้งาน Judyshop · เวอร์ชัน 4</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&family=Noto+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -170,7 +170,7 @@
       color: #767676;
     }
     @top-right {
-      content: "Judyshop · คู่มือการใช้งาน v3";
+      content: "Judyshop · คู่มือการใช้งาน v4";
       font-family: "Noto Sans Thai", sans-serif;
       font-size: 8.5pt;
       color: #a0a0a0;
@@ -194,7 +194,7 @@
     การเชื่อมต่อกับเกม Roblox ไปจนถึงการ Deploy บน Windows Server
   </p>
   <div class="cover-meta">
-    <strong>เวอร์ชัน 3</strong> · ครอบคลุม 7 หน้า Public + 11 หน้า Admin + Roblox API + Deployment<br/>
+    <strong>เวอร์ชัน 4</strong> · ครอบคลุม 6 หน้า Public + 11 หน้า Admin + Roblox API + Deployment + Security Hardening<br/>
     เอกสารฉบับนี้สร้างจากซอร์สโค้ดล่าสุด · จัดทำโดยทีมพัฒนา
   </div>
 </section>
@@ -297,7 +297,7 @@
   </div>
 
   <h3>Footer ด้านล่าง</h3>
-  <p>เลื่อนสุดหน้าจะเจอ Footer ประกอบด้วย: ลิขสิทธิ์ © ปีปัจจุบัน, ลิงก์ FAQ · Check status · Contact</p>
+  <p>เลื่อนสุดหน้าจะเจอ Footer ประกอบด้วย: ลิขสิทธิ์ © ปีปัจจุบัน, ลิงก์ FAQ · Contact</p>
 
   <div class="section-kicker">บทที่ 1.2</div>
   <h2>หน้าแรกและป็อปอัพประกาศ</h2>
@@ -1220,6 +1220,115 @@ $binding.AddSslCertificate($cert.Thumbprint, "My")</code></pre>
   </ol>
 
   <p>ดูรายละเอียดเพิ่มที่ <strong>บทที่ 2.11</strong></p>
+
+  <div class="section-kicker">บทที่ 4.5 · ใหม่ (v4)</div>
+  <h2>Production Security Hardening</h2>
+
+  <p>ระบบมี security control หลายชั้น — ก่อน launch ต้องทำเช็คลิสต์ทั้งหมด</p>
+
+  <h3>1) Environment Variables — บังคับยาวขั้นต่ำ</h3>
+  <p>ตั้งค่าใน secret manager ของ server (ไม่ใช่ <code>.env</code> file บน disk) — แอปจะ <strong>ไม่ start</strong> ถ้าค่าไม่ครบหรือสั้นเกิน:</p>
+  <table>
+    <tr><th>Variable</th><th>ขั้นต่ำ</th><th>คำแนะนำ</th></tr>
+    <tr><td><code>ADMIN_SESSION_SECRET</code></td><td>32 ตัว</td><td>Random 64 hex (<code>openssl rand -hex 32</code>)</td></tr>
+    <tr><td><code>WHITELIST_API_KEY</code></td><td>32 ตัว</td><td>Random 64 hex; share กับ Roblox-side เท่านั้น</td></tr>
+    <tr><td><code>STRIPE_WEBHOOK_SECRET</code></td><td>—</td><td>จาก Stripe Dashboard (Live mode)</td></tr>
+    <tr><td><code>NODE_ENV</code></td><td>—</td><td>ต้องเป็น <code>production</code> เท่านั้น</td></tr>
+    <tr><td><code>TRUST_PROXY</code></td><td>—</td><td>ตั้ง <code>1</code> เมื่ออยู่หลัง Cloudflare/Nginx/IIS (ดูข้อ 3)</td></tr>
+  </table>
+
+  <div class="box danger">
+    <div class="box-title">ห้าม commit secrets</div>
+    <p>ตรวจให้แน่ใจว่า <code>.env</code> อยู่ใน <code>.gitignore</code> และไม่เคยถูก push. ถ้าเคย push ไปแล้ว — rotate ทุก secret ทันที</p>
+  </div>
+
+  <h3>2) Cookie / Session Security</h3>
+  <ul>
+    <li><strong>Cookie prefix <code>__Host-</code></strong> ใน production — browser บังคับ <code>Secure</code> + <code>Path=/</code> + ห้าม <code>Domain=</code> (กัน subdomain leak)</li>
+    <li><strong>JWT ผูก <code>iss</code> + <code>aud</code></strong> = <code>"judyshop-admin"</code> — ป้องกัน token reuse cross-context</li>
+    <li><strong><code>tokenVersion</code> ใน AdminUser</strong> — เพิ่มเลขทุกครั้งที่ logout → revoke ทุก session ของ admin คนนั้นทันที (กันโดน phish/ขโมย cookie)</li>
+    <li><strong>Logout revoke ทุก device</strong> — ไม่ใช่แค่ clear cookie</li>
+    <li>Session TTL: 8 ชม. (auto expire)</li>
+  </ul>
+
+  <h3>3) Trust Proxy &amp; IP-based Rate Limits</h3>
+  <p>Rate limiter ใช้ IP ของผู้เรียก — ถ้าอยู่หลัง proxy ต้องตั้งค่าให้ถูก ไม่งั้นจะถูก spoof <code>X-Forwarded-For</code> หลบ rate limit ได้</p>
+  <ol class="steps">
+    <li>ตั้ง <code>TRUST_PROXY=1</code> ใน env</li>
+    <li>Server จะอ่าน header ตามลำดับ: <code>cf-connecting-ip</code> → <code>x-vercel-forwarded-for</code> → <code>x-real-ip</code> → <code>x-forwarded-for</code> (entry แรก)</li>
+    <li>ถ้าไม่ตั้ง <code>TRUST_PROXY</code> ใน production: requests ทั้งหมดถูก bucket รวมกันใน <code>_unknown_</code> (fail-closed) — รู้ทันทีว่า config ผิด</li>
+  </ol>
+
+  <h3>4) Brute-force Lockout (Admin Login)</h3>
+  <table>
+    <tr><th>Layer</th><th>Limit</th><th>Window</th><th>หมายเหตุ</th></tr>
+    <tr><td>Per-IP</td><td>5 attempts</td><td>15 นาที</td><td>กัน single-IP script</td></tr>
+    <tr><td>Per-Email</td><td><strong>3 attempts</strong></td><td><strong>3 ชั่วโมง</strong></td><td>Hard lockout ต่อ account</td></tr>
+  </table>
+  <p>ทั้ง success และ failure ถูกบันทึกใน <code>AuditLog</code> (action: <code>admin.login.success</code> / <code>admin.login.failure</code>) พร้อม reason + IP</p>
+
+  <h3>5) CSRF / Origin Check</h3>
+  <p>ทุก POST ไปที่ <code>/api/admin/*</code> เช็ค <code>Origin</code> header ตรงกับ <code>NEXT_PUBLIC_SITE_URL</code> เท่านั้น (skip ใน dev)</p>
+
+  <h3>6) File Upload Security</h3>
+  <ul>
+    <li><strong>Magic-byte validation</strong> — image upload เช็ค header bytes จริงๆ (JPEG/PNG/GIF/WebP) ไม่เชื่อ <code>Content-Type</code> จาก client</li>
+    <li><strong>SVG ห้าม inline render</strong> — uploads route ลบ SVG ออกจาก MIME map; ไฟล์ unknown serve เป็น <code>application/octet-stream</code> + <code>Content-Disposition: attachment</code></li>
+    <li><strong>Preset extension whitelist</strong> — <code>.zip .rbxm .rbxmx .json .txt .csv .png .jpg .jpeg .webp .pdf</code> เท่านั้น</li>
+    <li><strong>Path traversal defense</strong> — strip <code>..</code> และ resolve กับ <code>LOCAL_PUBLIC_ROOT</code></li>
+    <li><strong><code>X-Content-Type-Options: nosniff</code></strong> ทุก response</li>
+  </ul>
+
+  <h3>7) Payment / Order Security</h3>
+  <ul>
+    <li><strong>Stripe webhook signature verify</strong> + <code>WebhookEvent</code> table dedup (idempotent)</li>
+    <li><strong>Refund มี idempotency key</strong> (<code>refund-${orderId}</code>) — double-click ไม่ refund 2 รอบ</li>
+    <li><strong>Order + Whitelist อยู่ใน <code>db.$transaction</code></strong> — atomic, ไม่มี state ครึ่งๆ กลางๆ</li>
+    <li><strong>Stripe apiVersion pinned</strong> — Stripe ไม่ silently upgrade schema</li>
+    <li><strong>Server-side price re-derive</strong> — ไม่เชื่อยอดที่ client ส่งมา</li>
+    <li><strong>Card surcharge เก็บจาก Settings table</strong> — client tamper ไม่ได้</li>
+  </ul>
+
+  <h3>8) Whitelist API (<code>/api/checkwhitelist</code>)</h3>
+  <ul>
+    <li><strong>Constant-time API key compare</strong> (SHA-256 hash + <code>timingSafeEqual</code>) — ไม่ leak ความยาว key</li>
+    <li><strong>Generic 401 message</strong> — ไม่บอก "missing config" vs "wrong key"</li>
+    <li><strong>Rate-limit bucket = SHA-256 fingerprint</strong> — ไม่ใช่ prefix ของ key จริง</li>
+    <li><strong>Username regex strict</strong> — Roblox format (3-20 chars, no leading/trailing/double underscore) reject ก่อนถึง DB</li>
+    <li><strong>Response ไม่มี <code>product.id</code></strong> — ไม่ leak internal CUID</li>
+    <li><strong><code>Cache-Control: private, no-store</code></strong> + <code>Vary: x-api-key</code></li>
+  </ul>
+
+  <h3>9) Trial Abuse Protection</h3>
+  <ul>
+    <li>Per-(productId, username) cooldown: 24 ชม. (เดิม)</li>
+    <li><strong>Burst cap: 20 trials / นาที / IP</strong> (กัน click-spam)</li>
+    <li><strong>Daily cap: 5 trials / 24 ชม. / IP</strong> (กัน cycle ผ่าน username หลายชื่อ)</li>
+  </ul>
+
+  <h3>10) Roblox Integration Security</h3>
+  <p>Avatar URL จาก thumbnails API จะถูก validate ว่ามาจาก allowlisted hosts (<code>tr.rbxcdn.com</code>, <code>t0.rbxcdn.com</code> – <code>t7.rbxcdn.com</code>) เท่านั้น ก่อน return ให้ client — กันกรณี Roblox CDN ถูก compromise แล้ว return <code>javascript:</code> URL</p>
+
+  <h3>11) Migration: <code>tokenVersion</code></h3>
+  <p>Schema เพิ่มคอลัมน์ <code>tokenVersion Int @default(0)</code> ใน <code>AdminUser</code>:</p>
+  <pre><code>npx prisma migrate deploy</code></pre>
+  <div class="box warn">
+    <div class="box-title">หลัง deploy v4 ครั้งแรก</div>
+    <p>Admin ที่ login อยู่ทั้งหมดจะถูก kick (JWT เดิมไม่มี <code>tv</code> claim) ต้อง login ใหม่ครั้งเดียว — เป็นพฤติกรรมที่ตั้งใจ</p>
+  </div>
+
+  <h3>เช็คลิสต์ก่อน Launch</h3>
+  <ul>
+    <li>☐ Rotate ทุก secret ใน production (DB, ADMIN_SESSION_SECRET, WHITELIST_API_KEY, STRIPE keys)</li>
+    <li>☐ Move secrets ออกจาก <code>.env</code> file ไป secret manager</li>
+    <li>☐ Set <code>NODE_ENV=production</code></li>
+    <li>☐ Set <code>TRUST_PROXY=1</code> (ถ้าหลัง Cloudflare/Nginx)</li>
+    <li>☐ Run <code>npx prisma migrate deploy</code></li>
+    <li>☐ Verify cookie ใน browser มี <code>__Host-</code> prefix + Secure flag</li>
+    <li>☐ Test brute-force lockout — ลอง login ผิด 3 ครั้ง → ต้อง 429</li>
+    <li>☐ Test Stripe webhook ด้วย "Send test webhook" จาก Dashboard</li>
+    <li>☐ ตั้ง Cloudflare WAF rules สำหรับ <code>/api/admin/*</code> และ <code>/admin/*</code></li>
+  </ul>
 
 </section>
 

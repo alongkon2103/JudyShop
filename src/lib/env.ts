@@ -11,13 +11,23 @@ function required(name: string): string {
   return v;
 }
 
+function requiredMin(name: string, min: number): string {
+  const v = required(name);
+  if (v.length < min) {
+    throw new Error(
+      `${name} is too short (${v.length} chars) — must be at least ${min} for production use.`,
+    );
+  }
+  return v;
+}
+
 export const env = {
   get DATABASE_URL() { return required("DATABASE_URL"); },
   get DIRECT_URL() { return process.env.DIRECT_URL ?? required("DATABASE_URL"); },
   /** 32+ char random string used to sign admin session JWTs. */
-  get ADMIN_SESSION_SECRET() { return required("ADMIN_SESSION_SECRET"); },
+  get ADMIN_SESSION_SECRET() { return requiredMin("ADMIN_SESSION_SECRET", 32); },
   /** Shared secret the Roblox game server uses to call /api/checkwhitelist. */
-  get WHITELIST_API_KEY() { return required("WHITELIST_API_KEY"); },
+  get WHITELIST_API_KEY() { return requiredMin("WHITELIST_API_KEY", 32); },
 
   /** Stripe — server-side. */
   get STRIPE_SECRET_KEY()     { return required("STRIPE_SECRET_KEY"); },

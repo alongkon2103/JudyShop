@@ -19,9 +19,6 @@ export function Footer() {
           <Link href="/faq" className="transition-colors hover:text-fg-dark">
             {tFaq("title")}
           </Link>
-          <Link href="/check" className="transition-colors hover:text-fg-dark">
-            {tNav("check")}
-          </Link>
           <Link href="/contact" className="transition-colors hover:text-fg-dark">
             {tNav("contact")}
           </Link>

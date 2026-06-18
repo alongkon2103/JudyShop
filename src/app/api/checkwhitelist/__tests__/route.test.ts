@@ -70,7 +70,9 @@ describe("/api/checkwhitelist — auth", () => {
     const res = await GET(makeReq("http://localhost/api/checkwhitelist?username=foo"));
     expect(res.status).toBe(401);
     const body = await res.json();
-    expect(body.error).toMatch(/api key/i);
+    // Generic "Unauthorized." — we no longer distinguish missing-key
+    // from wrong-key in the public response (server-side log still does).
+    expect(body.error).toMatch(/unauthorized/i);
   });
 
   it("returns 401 when the x-api-key header is wrong", async () => {
@@ -161,7 +163,9 @@ describe("/api/checkwhitelist — input validation", () => {
     expect(res.status).toBe(400);
   });
 
-  it("returns 400 when `username` exceeds 100 characters", async () => {
+  it("returns 400 when `username` doesn't match the Roblox regex (e.g. too long)", async () => {
+    // Username is now restricted to 3–20 Roblox-format chars; the old
+    // "100-char" test now hits the regex check earlier with the same 400.
     const huge = "a".repeat(101);
     const res = await GET(makeReq(
       `http://localhost/api/checkwhitelist?username=${huge}`,
@@ -197,7 +201,8 @@ describe("/api/checkwhitelist — single-result path (with filter)", () => {
       { "x-api-key": VALID_KEY },
     ));
     expect(res.status).toBe(200);
-    expect(res.headers.get("cache-control")).toBe("no-store");
+    expect(res.headers.get("cache-control")).toBe("private, no-store");
+    expect(res.headers.get("vary")).toBe("x-api-key");
     const body = await res.json();
     expect(body).toEqual({
       status:     "active",
@@ -207,8 +212,8 @@ describe("/api/checkwhitelist — single-result path (with filter)", () => {
       duration:   "30days",
       source:     "stripe",
       trial:      false,
+      // Internal `id` intentionally dropped from public response.
       product: {
-        id:      "p1",
         slug:    "demo",
         name_en: "Demo Game",
         game_id: "12345",
@@ -325,6 +330,9 @@ describe("/api/checkwhitelist — array path (no filter, all games)", () => {
     expect(body.count).toBe(2);
     expect(body.username).toBe("judy_player");
     expect(body.entries).toHaveLength(2);
+    // Note: internal `id` is intentionally NOT exposed via the public
+    // API — it was dropped from the response shape as a hardening
+    // measure (prevents IDs being usable in any other public endpoint).
     expect(body.entries[0]).toEqual({
       status: "active",
       expires_at: null,
@@ -332,7 +340,7 @@ describe("/api/checkwhitelist — array path (no filter, all games)", () => {
       duration: "permanent",
       source: "stripe",
       trial: false,
-      product: { id: "p1", slug: "judy-legend", name_en: "Judy Legend", game_id: "111" },
+      product: { slug: "judy-legend", name_en: "Judy Legend", game_id: "111" },
     });
     expect(body.entries[1].product.slug).toBe("judy-jump");
   });
@@ -369,9 +377,11 @@ describe("/api/checkwhitelist — array path (no filter, all games)", () => {
       { "x-api-key": VALID_KEY },
     ));
     const body = await res.json();
+    // Internal `id` is dropped from the public response.
     expect(body.entries[0].product).toEqual({
-      id: "p", slug: "x", name_en: "X game", game_id: null,
+      slug: "x", name_en: "X game", game_id: null,
     });
+    expect(Object.keys(body.entries[0].product)).not.toContain("id");
     // nameTh / camelCase keys should NOT leak through.
     expect(Object.keys(body.entries[0].product)).not.toContain("nameEn");
     expect(Object.keys(body.entries[0].product)).not.toContain("nameTh");

@@ -132,7 +132,7 @@ function formatDuration(expireDate: Date, addedAt: Date): string {
   return `${days}days`;
 }
 
-// ── Multi-entry lookup (for the public /check page) ──────────────
+// ── Multi-entry lookup (used by the API-key-gated /api/checkwhitelist) ──
 
 export type UserWhitelistEntry = {
   status: "active" | "expired";
@@ -158,11 +158,9 @@ export type UserWhitelistEntry = {
  *
  * The single-result `checkWhitelist()` is built for the Roblox runtime
  * API — there it knows exactly which game is asking (via gameId) and
- * just wants a yes/no for that one. The public `/check` page is
- * different: the customer might be whitelisted across several games
- * and rightly expects to see the full picture. Returning one row makes
- * the page lie ("you only have access to Judy Legend") when in reality
- * they're whitelisted on three other games too.
+ * just wants a yes/no for that one. This multi-entry shape exists for
+ * admin tooling that needs the full picture for a username across all
+ * products in one call.
  *
  * Ordering: lifetime first, then furthest expiry — so the most-useful
  * entry appears at the top of the list.

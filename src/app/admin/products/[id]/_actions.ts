@@ -118,7 +118,7 @@ async function maybeUpload(productId: string, kind: "images" | "overlays", file:
   if (!check.ok) throw new Error(check.error);
   const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") ?? "bin";
   const path = `products/${productId}/${kind}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-  const res = await uploadFile({ path, file });
+  const res = await uploadFile({ path, file, requireImageMagicBytes: true });
   if (!res.ok) throw new Error(res.error);
   return res;
 }
@@ -305,9 +305,33 @@ async function reorder(
 
 const MAX_PRESET_BYTES = 50 * 1024 * 1024; // 50MB
 
+/**
+ * Presets are game-asset / config files for end users — never anything
+ * that can execute in a browser. Whitelist by extension so a compromised
+ * admin (or a phished one) can't upload an `.svg` / `.html` / `.js` and
+ * send the link to a teammate to hijack their admin session.
+ *
+ * Anything not in this list returns 400. Add new extensions intentionally.
+ */
+const PRESET_ALLOWED_EXTENSIONS = new Set([
+  ".zip",       // bundles
+  ".rbxm", ".rbxmx",  // Roblox models
+  ".json", ".txt", ".csv",  // configs
+  ".png", ".jpg", ".jpeg", ".webp",  // reference images
+  ".pdf",       // documentation
+]);
+
 async function uploadPreset(productId: string, file: File) {
   if (file.size > MAX_PRESET_BYTES) throw new Error("File too large (max 50 MB).");
+
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 100);
+  const ext = safeName.includes(".") ? safeName.slice(safeName.lastIndexOf(".")).toLowerCase() : "";
+  if (!ext || !PRESET_ALLOWED_EXTENSIONS.has(ext)) {
+    throw new Error(
+      `File type "${ext || "unknown"}" is not allowed for presets. Allowed: ${[...PRESET_ALLOWED_EXTENSIONS].join(", ")}`,
+    );
+  }
+
   const path = `products/${productId}/presets/${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeName}`;
   const res = await uploadFile({ path, file });
   if (!res.ok) throw new Error(res.error);

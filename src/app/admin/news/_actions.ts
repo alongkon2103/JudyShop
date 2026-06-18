@@ -29,7 +29,7 @@ async function maybeUploadNewsImage(file: File | null): Promise<string | null> {
   if (!check.ok) throw new Error(check.error);
   const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") ?? "bin";
   const path = `news/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-  const res = await uploadFile({ path, file });
+  const res = await uploadFile({ path, file, requireImageMagicBytes: true });
   if (!res.ok) throw new Error(res.error);
   return res.url;
 }

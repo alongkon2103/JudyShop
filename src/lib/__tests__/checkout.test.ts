@@ -39,14 +39,24 @@ vi.mock("../env", () => ({
 // load so we still need a stub.
 vi.mock("../stripe", () => ({ stripe: {} }));
 
-vi.mock("../db", () => ({
-  db: {
+vi.mock("../db", () => {
+  // `fulfilCheckout` now wraps Order + Whitelist writes in
+  // `db.$transaction(async (tx) => …)`. The mock implementation just
+  // passes our top-level `db` object back as the `tx` argument, so
+  // calls like `tx.order.upsert(...)` route through to the same
+  // `vi.fn()` mocks that existing tests are already asserting on.
+  const db: any = {
     plan:      { findUnique: vi.fn() },
     order:     { upsert:     vi.fn() },
     whitelist: { findUnique: vi.fn(), upsert: vi.fn() },
-    setting:   { upsert:     vi.fn() }, // touched by getSettings (unused by fulfilCheckout but the import resolves it)
-  },
-}));
+    setting:   { upsert:     vi.fn() }, // unused by fulfilCheckout but resolves the import
+    $transaction: vi.fn(),
+  };
+  db.$transaction.mockImplementation((fn: any) =>
+    typeof fn === "function" ? fn(db) : Promise.all(fn),
+  );
+  return { db };
+});
 
 import { fulfilCheckout } from "../checkout";
 import { db } from "../db";

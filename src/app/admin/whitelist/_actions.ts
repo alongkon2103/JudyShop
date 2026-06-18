@@ -140,6 +140,17 @@ export async function updateWhitelist(formData: FormData): Promise<
     if (Number.isNaN(parsedDate.getTime())) {
       return { ok: false, error: "Invalid date format" };
     }
+    // Mirror createWhitelist's 100-year cap so the admin can't accidentally
+    // create a non-lifetime "year 9999" entry that downstream analytics /
+    // cleanup jobs aren't built to handle. If they truly want never-expires,
+    // they should tick Lifetime explicitly.
+    const maxAllowed = new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000);
+    if (parsedDate > maxAllowed) {
+      return {
+        ok: false,
+        error: "Expire date is more than 100 years away. Tick Lifetime instead.",
+      };
+    }
     nextExpire = parsedDate;
   }
 

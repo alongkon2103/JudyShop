@@ -117,28 +117,11 @@ export async function fulfilCheckout(args: {
   });
   if (!plan) throw new Error(`Plan ${planId} not found`);
 
-  // --- 1. Upsert Order keyed on Stripe session id --------------------
-  const order = await db.order.upsert({
-    where: { stripeSessionId: args.stripeSessionId },
-    update: {
-      status: "PAID",
-      stripePaymentId: args.stripePaymentId,
-      amount: (args.amountTotal ?? 0) / 100,
-    },
-    create: {
-      productId,
-      planId,
-      username,
-      amount: (args.amountTotal ?? 0) / 100,
-      currency: (args.currency ?? "thb").toUpperCase(),
-      paymentMethod: args.paymentMethod,
-      status: "PAID",
-      stripeSessionId: args.stripeSessionId,
-      stripePaymentId: args.stripePaymentId,
-    },
-  });
-
-  // --- 2. Compute new expiry / lifetime ------------------------------
+  // --- 1. Compute new expiry / lifetime ------------------------------
+  // We compute BEFORE the transaction so the transaction body is fast
+  // (just the writes). The lifetime+expiry calculation depends on the
+  // current Whitelist row, so we read it here even though we re-upsert
+  // inside the txn — the upsert is the source of truth.
   const existing = await db.whitelist.findUnique({
     where: { productId_username: { productId, username } },
   });
@@ -159,32 +142,56 @@ export async function fulfilCheckout(args: {
     nextExpireDate = new Date(startFrom.getTime() + days * DAY_MS);
   }
 
-  // --- 3. Upsert Whitelist and link it to the Order ------------------
-  // Label policy: on a Stripe purchase we overwrite any prior label with
-  // the buyer's email. The previous label may have been an admin note
-  // (e.g. "สังกัด RX") or another email — the latest paid purchase is
-  // the most useful pointer for support follow-up, and we still have
-  // the full history in the Order + AuditLog tables. If we don't get
-  // an email back from Stripe, fall back to keeping the existing label.
-  await db.whitelist.upsert({
-    where: { productId_username: { productId, username } },
-    update: {
-      expireDate: nextExpireDate,
-      isLifetime: nextIsLifetime,
-      source: "STRIPE",
-      addedBy: "stripe",
-      orderId: order.id,
-      ...(stripeLabel ? { label: stripeLabel } : {}),
-    },
-    create: {
-      productId,
-      username,
-      expireDate: nextExpireDate,
-      isLifetime: nextIsLifetime,
-      source: "STRIPE",
-      addedBy: "stripe",
-      orderId: order.id,
-      label: stripeLabel,
-    },
+  // --- 2. Atomic Order + Whitelist write -----------------------------
+  // Wrap both writes in a single transaction so we never end up in a
+  // half-fulfilled state (Order=PAID but no Whitelist row, or vice
+  // versa) if the DB dies mid-flight. Both upserts are idempotent on
+  // their unique keys, so Stripe webhook retries continue to be safe.
+  //
+  // Label policy: on a Stripe purchase we overwrite any prior label
+  // with the buyer's email. If Stripe didn't return an email, fall back
+  // to keeping the existing label.
+  await db.$transaction(async (tx) => {
+    const order = await tx.order.upsert({
+      where: { stripeSessionId: args.stripeSessionId },
+      update: {
+        status: "PAID",
+        stripePaymentId: args.stripePaymentId,
+        amount: (args.amountTotal ?? 0) / 100,
+      },
+      create: {
+        productId,
+        planId,
+        username,
+        amount: (args.amountTotal ?? 0) / 100,
+        currency: (args.currency ?? "thb").toUpperCase(),
+        paymentMethod: args.paymentMethod,
+        status: "PAID",
+        stripeSessionId: args.stripeSessionId,
+        stripePaymentId: args.stripePaymentId,
+      },
+    });
+
+    await tx.whitelist.upsert({
+      where: { productId_username: { productId, username } },
+      update: {
+        expireDate: nextExpireDate,
+        isLifetime: nextIsLifetime,
+        source: "STRIPE",
+        addedBy: "stripe",
+        orderId: order.id,
+        ...(stripeLabel ? { label: stripeLabel } : {}),
+      },
+      create: {
+        productId,
+        username,
+        expireDate: nextExpireDate,
+        isLifetime: nextIsLifetime,
+        source: "STRIPE",
+        addedBy: "stripe",
+        orderId: order.id,
+        label: stripeLabel,
+      },
+    });
   });
 }

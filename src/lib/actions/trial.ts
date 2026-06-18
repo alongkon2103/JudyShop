@@ -11,8 +11,14 @@ const Input = z.object({
 });
 
 // Cap rapid-fire trial requests at the edge before we even hit Postgres.
-const IP_LIMIT = 20;
-const IP_WINDOW_MS = 60 * 1000;
+// Two layers: a burst cap to stop spamming AND a daily-ish cap to stop
+// an attacker from cycling Roblox usernames to mint unlimited trials
+// from a single IP (per-username/product 24h check in trial.ts can't
+// catch that — different usernames bypass it entirely).
+const IP_BURST_LIMIT  = 20;
+const IP_BURST_WINDOW = 60 * 1000;
+const IP_DAILY_LIMIT  = 5;
+const IP_DAILY_WINDOW = 24 * 60 * 60 * 1000;
 
 /** All possible error codes a client may receive. Client maps to i18n. */
 export type StartTrialErrorCode =
@@ -44,9 +50,23 @@ export async function startTrialAction(payload: unknown): Promise<StartTrialActi
 
   const h = headers();
   const ip = clientIp(h);
-  const rl = hit(`trial:ip:${ip}`, { limit: IP_LIMIT, windowMs: IP_WINDOW_MS });
-  if (!rl.ok) {
-    return { ok: false, code: "ip_rate_limited", retryAfterSec: retryAfterSeconds(rl.resetIn) };
+
+  // Burst cap — short window, blocks click-spam / script floods.
+  const burst = hit(`trial:ip:burst:${ip}`, {
+    limit: IP_BURST_LIMIT, windowMs: IP_BURST_WINDOW,
+  });
+  if (!burst.ok) {
+    return { ok: false, code: "ip_rate_limited", retryAfterSec: retryAfterSeconds(burst.resetIn) };
+  }
+
+  // Daily cap — caps total trials ever granted to a single IP/day,
+  // independent of which username/product they target. Stops the
+  // "cycle through Roblox usernames" abuse pattern.
+  const daily = hit(`trial:ip:daily:${ip}`, {
+    limit: IP_DAILY_LIMIT, windowMs: IP_DAILY_WINDOW,
+  });
+  if (!daily.ok) {
+    return { ok: false, code: "ip_rate_limited", retryAfterSec: retryAfterSeconds(daily.resetIn) };
   }
 
   try {

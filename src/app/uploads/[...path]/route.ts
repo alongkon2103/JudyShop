@@ -32,13 +32,20 @@ import { LOCAL_PUBLIC_ROOT } from "@/lib/storage";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+/**
+ * Inline-renderable types only. SVG is intentionally NOT here —
+ * it's an HTML/JS container and an `<svg onload=fetch(...)>` payload
+ * runs in the customer's browser if we serve it as image/svg+xml on
+ * our own origin. Anything not in this map gets octet-stream + an
+ * attachment Content-Disposition below, so it downloads instead of
+ * rendering.
+ */
 const MIME_TYPES: Record<string, string> = {
   ".jpg":  "image/jpeg",
   ".jpeg": "image/jpeg",
   ".png":  "image/png",
   ".webp": "image/webp",
   ".gif":  "image/gif",
-  ".svg":  "image/svg+xml",
   ".avif": "image/avif",
   ".pdf":  "application/pdf",
   ".zip":  "application/zip",
@@ -79,12 +86,22 @@ export async function GET(
 
     const buf = await readFile(resolvedRequested);
     const ext = path.extname(resolvedRequested).toLowerCase();
-    const contentType = MIME_TYPES[ext] ?? "application/octet-stream";
+    const knownType = MIME_TYPES[ext];
+    const contentType = knownType ?? "application/octet-stream";
+
+    // Unknown types (and the deliberately-excluded SVG) get forced into
+    // download mode so the browser never interprets them in our origin.
+    // Known image/pdf/json types render inline as before.
+    const disposition = knownType ? "inline" : `attachment; filename="${path.basename(resolvedRequested)}"`;
 
     return new NextResponse(buf, {
       headers: {
         "content-type": contentType,
         "content-length": String(st.size),
+        "content-disposition": disposition,
+        // Stop sniffers from re-interpreting a polyglot file (e.g. a
+        // .png that's actually HTML) as something executable.
+        "x-content-type-options": "nosniff",
         // Upload filenames include a timestamp + random suffix, so the
         // bytes at this URL never change. Tell every cache it can keep
         // them forever (browsers cap at 1 year anyway).

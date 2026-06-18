@@ -7,6 +7,7 @@ import {
   verifyPassword,
 } from "@/lib/auth";
 import { clientIp, hit, reset, retryAfterSeconds } from "@/lib/rate-limit";
+import { checkOrigin } from "@/lib/csrf";
 
 export const runtime = "nodejs";
 
@@ -15,12 +16,17 @@ const LoginInput = z.object({
   password: z.string().min(1).max(200),
 });
 
-// Brute-force throttle: 5 failed attempts per IP per 15 minutes,
-// and 5 failed attempts per email per 15 minutes (slow lane).
+// Brute-force throttle.
+//   - Per-IP: 5 attempts / 15 min — broad lane, blocks single-IP scripts.
+//   - Per-email: 3 attempts / 3 hours — hard lockout per account, defends
+//     against distributed (botnet) attempts that spread IP load thin.
+// The 3-hour email window is intentionally aggressive: a real admin who
+// fat-fingers 3 times in a row must wait it out or contact ops. Worth
+// the friction because admin compromise is the worst-case outcome here.
 const IP_WINDOW_MS    = 15 * 60 * 1000;
 const IP_LIMIT        = 5;
-const EMAIL_WINDOW_MS = 15 * 60 * 1000;
-const EMAIL_LIMIT     = 5;
+const EMAIL_WINDOW_MS = 3 * 60 * 60 * 1000;
+const EMAIL_LIMIT     = 3;
 
 function tooMany(resetIn: number) {
   const retryAfter = retryAfterSeconds(resetIn);
@@ -30,7 +36,40 @@ function tooMany(resetIn: number) {
   );
 }
 
+/**
+ * Write a login outcome row to AuditLog directly (bypassing the
+ * `logAdmin` helper because that one assumes a valid session already
+ * exists). Wrapped in try/catch — a logging failure must never block
+ * a login response.
+ */
+async function logLoginAttempt(args: {
+  emailKey: string;
+  ip: string;
+  success: boolean;
+  reason?: "not_found" | "inactive" | "bad_password";
+  userId?: string;
+}) {
+  try {
+    await db.auditLog.create({
+      data: {
+        actorId:    args.userId ?? null,
+        actorEmail: args.emailKey,
+        action:     args.success ? "admin.login.success" : "admin.login.failure",
+        ip:         args.ip,
+        payload:    args.success
+          ? undefined
+          : { reason: args.reason ?? "unknown" },
+      },
+    });
+  } catch (err) {
+    console.error("[login-audit] failed", err);
+  }
+}
+
 export async function POST(req: NextRequest) {
+  const originBlock = checkOrigin(req);
+  if (originBlock) return originBlock;
+
   const ip = clientIp(req);
 
   // Pre-check the IP bucket *before* parsing the body so an attacker
@@ -45,8 +84,12 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   }
-  const { email, password } = parsed.data;
-  const emailKey = email.trim().toLowerCase();
+  const { password } = parsed.data;
+  // Canonical email for both DB lookup and rate-limit bucket. Without
+  // this, `Admin@x.com` vs `admin@x.com` hit different DB rows but the
+  // same lowercase rate-limit bucket — making the per-email throttle
+  // bypassable via casing tricks.
+  const emailKey = parsed.data.email.trim().toLowerCase();
 
   // Per-email bucket — defends against distributed (botnet) attempts
   // that spread the IP load thin.
@@ -56,13 +99,27 @@ export async function POST(req: NextRequest) {
   });
   if (!emailCheck.ok) return tooMany(emailCheck.resetIn);
 
-  const user = await db.adminUser.findUnique({ where: { email } });
-  // Compare against a dummy hash when the user doesn't exist so that
-  // response time doesn't leak which emails are registered.
-  const hash = user?.passwordHash ?? "$2a$12$invalidinvalidinvalidinvalidinvali";
+  // Look up by canonical email. We use `findFirst` with `mode: "insensitive"`
+  // so admins created with any casing (e.g. `Admin@x.com` via the CLI)
+  // still resolve to the same row.
+  const user = await db.adminUser.findFirst({
+    where: { email: { equals: emailKey, mode: "insensitive" } },
+  });
+
+  // Use the dummy hash for BOTH "user doesn't exist" AND "user is
+  // deactivated". This keeps the bcrypt timing identical between
+  // those two paths so an attacker can't enumerate which admin
+  // emails are still active.
+  const hash =
+    user && user.isActive
+      ? user.passwordHash
+      : "$2a$12$invalidinvalidinvalidinvalidinvali";
   const ok = await verifyPassword(password, hash);
 
   if (!user || !user.isActive || !ok) {
+    const reason: "not_found" | "inactive" | "bad_password" =
+      !user ? "not_found" : !user.isActive ? "inactive" : "bad_password";
+    await logLoginAttempt({ emailKey, ip, success: false, reason });
     return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
   }
 
@@ -76,7 +133,9 @@ export async function POST(req: NextRequest) {
     data: { lastLoginAt: new Date() },
   });
 
-  const token = await signSession({ sub: user.id, email: user.email });
+  await logLoginAttempt({ emailKey, ip, success: true, userId: user.id });
+
+  const token = await signSession({ sub: user.id, email: user.email, tv: user.tokenVersion });
   const cookie = buildSessionCookie(token);
 
   const res = NextResponse.json({ ok: true });

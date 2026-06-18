@@ -13,7 +13,6 @@ import { LocaleSwitcher } from "./LocaleSwitcher";
 const NAV = [
   { key: "home",    href: "/" },
   { key: "shop",    href: "/shop" },
-  // { key: "check", href: "/check" },
   { key: "news",    href: "/news" },
   { key: "contact", href: "/contact" },
 ] as const;

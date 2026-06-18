@@ -18,6 +18,32 @@
 const USERS_API = "https://users.roblox.com/v1/usernames/users";
 const AVATAR_API = "https://thumbnails.roblox.com/v1/users/avatar-headshot";
 
+// Roblox CDN hosts we'll accept as avatar URLs. If the thumbnails API
+// ever returns a URL outside this list (compromised CDN, response
+// tampering), we drop the avatar rather than render an attacker-
+// controlled URL into the customer's browser.
+const AVATAR_HOST_ALLOWLIST = [
+  "tr.rbxcdn.com",
+  "t0.rbxcdn.com",
+  "t1.rbxcdn.com",
+  "t2.rbxcdn.com",
+  "t3.rbxcdn.com",
+  "t4.rbxcdn.com",
+  "t5.rbxcdn.com",
+  "t6.rbxcdn.com",
+  "t7.rbxcdn.com",
+];
+
+function isAllowedAvatarUrl(raw: string): boolean {
+  try {
+    const u = new URL(raw);
+    if (u.protocol !== "https:") return false;
+    return AVATAR_HOST_ALLOWLIST.includes(u.hostname);
+  } catch {
+    return false;
+  }
+}
+
 export type RobloxUser = {
   id: number;
   username: string;     // canonical username from Roblox (case-preserving)
@@ -71,7 +97,9 @@ export async function lookupRobloxUser(rawUsername: string): Promise<LookupResul
     if (res.ok) {
       const json = (await res.json()) as { data?: Array<{ imageUrl?: string; state?: string }> };
       const hit = json.data?.[0];
-      if (hit?.state === "Completed" && hit.imageUrl) avatarUrl = hit.imageUrl;
+      if (hit?.state === "Completed" && hit.imageUrl && isAllowedAvatarUrl(hit.imageUrl)) {
+        avatarUrl = hit.imageUrl;
+      }
     }
   } catch {
     // swallow — avatar is optional

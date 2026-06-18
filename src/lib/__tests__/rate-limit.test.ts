@@ -136,7 +136,25 @@ describe("rate-limit · hit()", () => {
   });
 });
 
-describe("rate-limit · clientIp()", () => {
+describe("rate-limit · clientIp() — when TRUST_PROXY=1", () => {
+  // clientIp() now requires explicit opt-in to honor forwarded headers,
+  // preventing XFF spoofing on direct-exposure deployments. Tests opt in
+  // to the trusted-proxy behaviour with the env flag.
+  const origTrust = process.env.TRUST_PROXY;
+  beforeEach(() => { process.env.TRUST_PROXY = "1"; });
+  afterEach(() => {
+    if (origTrust === undefined) delete process.env.TRUST_PROXY;
+    else process.env.TRUST_PROXY = origTrust;
+  });
+
+  it("prefers cf-connecting-ip first (Cloudflare)", () => {
+    const h = new Headers({
+      "cf-connecting-ip": "5.5.5.5",
+      "x-forwarded-for":  "1.2.3.4",
+    });
+    expect(clientIp(h)).toBe("5.5.5.5");
+  });
+
   it("picks the first entry from x-forwarded-for", () => {
     const h = new Headers({ "x-forwarded-for": "1.2.3.4, 5.6.7.8" });
     expect(clientIp(h)).toBe("1.2.3.4");
@@ -147,21 +165,14 @@ describe("rate-limit · clientIp()", () => {
     expect(clientIp(h)).toBe("9.9.9.9");
   });
 
-  it("falls back to x-real-ip when x-forwarded-for is missing", () => {
+  it("falls back to x-real-ip when forwarded headers are missing", () => {
     const h = new Headers({ "x-real-ip": "10.0.0.1" });
     expect(clientIp(h)).toBe("10.0.0.1");
   });
 
-  it("prefers x-forwarded-for over x-real-ip when both are present", () => {
-    const h = new Headers({
-      "x-forwarded-for": "2.2.2.2",
-      "x-real-ip":       "3.3.3.3",
-    });
-    expect(clientIp(h)).toBe("2.2.2.2");
-  });
-
-  it("returns '_unknown_' when neither header is set", () => {
-    expect(clientIp(new Headers())).toBe("_unknown_");
+  it("returns a sentinel when no recognised header is set", () => {
+    const got = clientIp(new Headers());
+    expect(["_unknown_", "_dev_"]).toContain(got);
   });
 
   it("accepts a Request and reads its headers", () => {
@@ -173,8 +184,26 @@ describe("rate-limit · clientIp()", () => {
 
   it("does not crash on an empty x-forwarded-for value", () => {
     const h = new Headers({ "x-forwarded-for": "" });
-    // Empty header → falls through to x-real-ip / unknown
-    expect(clientIp(h)).toBe("_unknown_");
+    const got = clientIp(h);
+    expect(["_unknown_", "_dev_"]).toContain(got);
+  });
+});
+
+describe("rate-limit · clientIp() — when TRUST_PROXY is unset", () => {
+  // Without the opt-in, forwarded headers are ignored entirely so they
+  // can't be spoofed to bypass rate limits.
+  const origTrust = process.env.TRUST_PROXY;
+  beforeEach(() => { delete process.env.TRUST_PROXY; });
+  afterEach(() => {
+    if (origTrust === undefined) delete process.env.TRUST_PROXY;
+    else process.env.TRUST_PROXY = origTrust;
+  });
+
+  it("ignores spoofed x-forwarded-for", () => {
+    const h = new Headers({ "x-forwarded-for": "1.2.3.4" });
+    const got = clientIp(h);
+    expect(got).not.toBe("1.2.3.4");
+    expect(["_unknown_", "_dev_"]).toContain(got);
   });
 });
 
