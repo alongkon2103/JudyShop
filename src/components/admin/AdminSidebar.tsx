@@ -12,6 +12,7 @@ import {
   Settings,
   History,
   Users,
+  UserCog,
   TrendingUp,
   BarChart3,
 } from "lucide-react";
@@ -45,6 +46,7 @@ const NAV: { section: string; items: NavItem[] }[] = [
   {
     section: "System",
     items: [
+      { href: "/admin/admins",   label: "Admins",    icon: UserCog },
       { href: "/admin/audit",    label: "Audit log", icon: History },
       { href: "/admin/settings", label: "Settings",  icon: Settings },
     ],

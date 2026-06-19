@@ -4,22 +4,16 @@ import { useRef } from "react";
 import { useFormStatus } from "react-dom";
 import { Field, inputClass } from "@/components/admin/Form";
 import { useToast } from "@/components/admin/toast/ToastContext";
-import { createPartner } from "./_actions";
+import { createAdmin } from "./_actions";
 
-/**
- * Compact "add partner" form pinned to the top of the partners list.
- * Three fields — name (required), contact (optional, free-form), and
- * an internal admin note. Submitting clears the form so admins can
- * batch-add partners without re-focusing.
- */
-export function NewPartnerForm() {
+export function NewAdminForm() {
   const formRef = useRef<HTMLFormElement>(null);
   const toast = useToast();
 
   const action = async (formData: FormData) => {
-    const res = await createPartner(formData);
+    const res = await createAdmin(formData);
     if (res.ok) {
-      toast.success("Partner added");
+      toast.success("Admin created");
       formRef.current?.reset();
     } else {
       toast.error(res.error);
@@ -29,30 +23,34 @@ export function NewPartnerForm() {
   return (
     <form ref={formRef} action={action} className="space-y-3">
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <Field label="Name *">
+        <Field label="Email *">
+          <input
+            name="email"
+            type="email"
+            required
+            maxLength={200}
+            autoComplete="off"
+            placeholder="new@admin.com"
+            className={inputClass}
+          />
+        </Field>
+        <Field label="Name">
           <input
             name="name"
             type="text"
-            required
             maxLength={100}
-            placeholder="เช่น คุณ A"
+            placeholder="(optional)"
             className={inputClass}
           />
         </Field>
-        <Field label="Contact" hint="Email / phone / LINE id">
+        <Field label="Password *" hint="อย่างน้อย 12 ตัว">
           <input
-            name="contact"
-            type="text"
-            maxLength={200}
-            placeholder="a@email.com"
-            className={inputClass}
-          />
-        </Field>
-        <Field label="Internal note">
-          <input
-            name="note"
-            type="text"
-            maxLength={500}
+            name="password"
+            type="password"
+            required
+            minLength={12}
+            maxLength={128}
+            autoComplete="new-password"
             className={inputClass}
           />
         </Field>
@@ -72,7 +70,7 @@ function Submit() {
       disabled={pending}
       className="rounded-full bg-pink-500 px-6 py-2.5 text-[12px] font-semibold text-white shadow-[0_2px_0_var(--pink-600)] transition-transform duration-fast ease-spring hover:-translate-y-0.5 active:translate-y-0.5 disabled:opacity-60"
     >
-      {pending ? "Adding…" : "Add partner"}
+      {pending ? "Adding…" : "Add admin"}
     </button>
   );
 }

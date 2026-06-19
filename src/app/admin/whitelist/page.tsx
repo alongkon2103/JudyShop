@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { ScrollText } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/admin-session";
@@ -90,6 +91,57 @@ export default async function WhitelistPage({
     select: { id: true, slug: true, nameEn: true },
   });
 
+  // Per-product whitelist stats shown at the top of the page so the
+  // admin can see "which game has how many" at a glance. Three grouped
+  // queries in parallel — total / active / lifetime per product.
+  const statsNow = new Date();
+  const [totalByProduct, activeByProduct, lifetimeByProduct] = await Promise.all([
+    db.whitelist.groupBy({ by: ["productId"], _count: { _all: true } }),
+    db.whitelist.groupBy({
+      by: ["productId"],
+      where: { OR: [{ isLifetime: true }, { expireDate: { gt: statsNow } }] },
+      _count: { _all: true },
+    }),
+    db.whitelist.groupBy({
+      by: ["productId"],
+      where: { isLifetime: true },
+      _count: { _all: true },
+    }),
+  ]);
+
+  const statsMap = new Map<string, { total: number; active: number; lifetime: number }>();
+  for (const p of products) {
+    statsMap.set(p.id, { total: 0, active: 0, lifetime: 0 });
+  }
+  for (const row of totalByProduct) {
+    const s = statsMap.get(row.productId);
+    if (s) s.total = row._count._all;
+  }
+  for (const row of activeByProduct) {
+    const s = statsMap.get(row.productId);
+    if (s) s.active = row._count._all;
+  }
+  for (const row of lifetimeByProduct) {
+    const s = statsMap.get(row.productId);
+    if (s) s.lifetime = row._count._all;
+  }
+
+  const totalsAll = {
+    total: [...statsMap.values()].reduce((a, b) => a + b.total, 0),
+    active: [...statsMap.values()].reduce((a, b) => a + b.active, 0),
+    lifetime: [...statsMap.values()].reduce((a, b) => a + b.lifetime, 0),
+  };
+
+  // buildHref preserves the free-text `q` search while toggling the
+  // product filter — clicking a card that's already selected clears it.
+  const buildHref = (productId: string | null) => {
+    const sp = new URLSearchParams();
+    if (q) sp.set("q", q);
+    if (productId) sp.set("product", productId);
+    const qs = sp.toString();
+    return `/admin/whitelist${qs ? `?${qs}` : ""}`;
+  };
+
   // Free-text search spans every column an admin might recognise the
   // entry by: the username itself, the label (which now holds the
   // buyer's "Stripe: email" for purchased rows and admin notes for
@@ -133,6 +185,70 @@ export default async function WhitelistPage({
         title="Whitelist"
         subtitle={`รายชื่อผู้ใช้ที่มีสิทธิ์เข้าเกม — total ${total}`}
       />
+
+      {/* Per-product stats — click any card to filter the table below.
+          Clicking the already-selected card toggles the filter off.
+          Kept deliberately quiet visually: only the border colour
+          changes on hover/select, no background flood. */}
+      <div className="panel rounded-xl p-4 sm:p-5">
+        <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
+          <h2 className="text-[14px] font-semibold uppercase tracking-[0.06em] text-fg-light">
+            Whitelist by game
+          </h2>
+          <div className="flex items-center gap-3 text-[11px] text-fg-light-mute">
+            <span>
+              Active <span className="font-semibold text-fg-light">{totalsAll.active.toLocaleString()}</span>
+            </span>
+            <span className="text-line-light">·</span>
+            <span>
+              Lifetime <span className="font-semibold text-fg-light">{totalsAll.lifetime.toLocaleString()}</span>
+            </span>
+            <span className="text-line-light">·</span>
+            <span>
+              Total <span className="font-semibold text-fg-light">{totalsAll.total.toLocaleString()}</span>
+            </span>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {products.map((p) => {
+            const s = statsMap.get(p.id) ?? { total: 0, active: 0, lifetime: 0 };
+            const isFiltered = product === p.id;
+            const href = buildHref(isFiltered ? null : p.id);
+            return (
+              <Link
+                key={p.id}
+                href={href}
+                aria-pressed={isFiltered}
+                title={isFiltered ? `Click again to clear filter` : `Filter to ${p.nameEn}`}
+                className={
+                  "block rounded-lg border px-4 py-3 transition-colors " +
+                  (isFiltered
+                    ? "border-pink-500/80"
+                    : "border-line-light hover:border-fg-light-mute/40")
+                }
+              >
+                <p className="truncate text-[13px] font-medium text-fg-light" title={p.nameEn}>
+                  {p.nameEn}
+                </p>
+                <div className="mt-2 flex items-baseline gap-1.5">
+                  <span className="text-[22px] font-semibold leading-none tabular-nums text-fg-light">
+                    {s.active.toLocaleString()}
+                  </span>
+                  <span className="text-[11px] text-fg-light-mute">
+                    / {s.total.toLocaleString()} total
+                  </span>
+                </div>
+                <p className="mt-1.5 text-[11px] text-fg-light-mute">
+                  Lifetime{" "}
+                  <span className="font-medium text-fg-light-soft tabular-nums">
+                    {s.lifetime.toLocaleString()}
+                  </span>
+                </p>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
 
       <div className="panel rounded-xl p-4 sm:p-5">
         <h2 className="mb-3 text-[14px] font-semibold uppercase tracking-[0.06em] text-fg-light">
