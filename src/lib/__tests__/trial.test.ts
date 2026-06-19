@@ -17,7 +17,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 vi.mock("../db", () => ({
   db: {
     product:    { findUnique: vi.fn() },
-    whitelist:  { findUnique: vi.fn(), upsert: vi.fn() },
+    whitelist:  { findFirst: vi.fn(), upsert: vi.fn() },
     trialUsage: { findFirst: vi.fn(), create: vi.fn() },
     $transaction: vi.fn(),
   },
@@ -97,7 +97,7 @@ describe("startTrial — product validation", () => {
 describe("startTrial — 24h rate limit", () => {
   beforeEach(() => {
     vi.mocked(db.product.findUnique).mockResolvedValue(makeProduct() as any);
-    vi.mocked(db.whitelist.findUnique).mockResolvedValue(null);
+    vi.mocked(db.whitelist.findFirst).mockResolvedValue(null);
   });
 
   it("checks TrialUsage with a cutoff exactly 24h ago", async () => {
@@ -139,7 +139,7 @@ describe("startTrial — already_active guard", () => {
   });
 
   it("refuses to overwrite a lifetime whitelist", async () => {
-    vi.mocked(db.whitelist.findUnique).mockResolvedValueOnce({
+    vi.mocked(db.whitelist.findFirst).mockResolvedValueOnce({
       productId: "prod-1", username: "judy_player",
       isLifetime: true, expireDate: null,
     } as any);
@@ -149,7 +149,7 @@ describe("startTrial — already_active guard", () => {
 
   it("refuses when the existing expireDate is later than the new trial expiry", async () => {
     const future = new Date(Date.now() + 60 * 60 * 1000); // 1h ahead
-    vi.mocked(db.whitelist.findUnique).mockResolvedValueOnce({
+    vi.mocked(db.whitelist.findFirst).mockResolvedValueOnce({
       productId: "prod-1", username: "judy_player",
       isLifetime: false, expireDate: future,
     } as any);
@@ -157,7 +157,7 @@ describe("startTrial — already_active guard", () => {
   });
 
   it("ALLOWS trial when existing whitelist is already expired", async () => {
-    vi.mocked(db.whitelist.findUnique).mockResolvedValueOnce({
+    vi.mocked(db.whitelist.findFirst).mockResolvedValueOnce({
       productId: "prod-1", username: "judy_player",
       isLifetime: false, expireDate: new Date(Date.now() - 60 * 1000),
     } as any);
@@ -170,12 +170,31 @@ describe("startTrial — already_active guard", () => {
     // so equal expiries pass through.
     const trialMinutes = 10;
     const newExpiry = new Date(Date.now() + trialMinutes * 60 * 1000);
-    vi.mocked(db.whitelist.findUnique).mockResolvedValueOnce({
+    vi.mocked(db.whitelist.findFirst).mockResolvedValueOnce({
       productId: "prod-1", username: "judy_player",
       isLifetime: false, expireDate: newExpiry,
     } as any);
     const r = await startTrial(BASE);
     expect(r.ok).toBe(true);
+  });
+
+  it("detects a lifetime row stored in DIFFERENT case (case-insensitive lookup)", async () => {
+    // Customer paid as "MyName" (lifetime), now tries trial as "myname".
+    // Without case-insensitive matching, the guard wouldn't see the
+    // existing lifetime row and would happily mint a 10-min trial.
+    vi.mocked(db.whitelist.findFirst).mockResolvedValueOnce({
+      productId: "prod-1", username: "MyName",
+      isLifetime: true, expireDate: null,
+    } as any);
+    const r = await startTrial({ ...BASE, username: "myname" });
+    expect(r).toEqual({ ok: false, reason: "already_active" });
+
+    // And the lookup itself must use the insensitive Prisma mode.
+    const call = vi.mocked(db.whitelist.findFirst).mock.calls[0]![0]!;
+    expect(call.where).toMatchObject({
+      productId: "prod-1",
+      username:  { equals: "myname", mode: "insensitive" },
+    });
   });
 });
 
@@ -185,7 +204,7 @@ describe("startTrial — atomic write", () => {
   beforeEach(() => {
     vi.mocked(db.product.findUnique).mockResolvedValue(makeProduct() as any);
     vi.mocked(db.trialUsage.findFirst).mockResolvedValue(null);
-    vi.mocked(db.whitelist.findUnique).mockResolvedValue(null);
+    vi.mocked(db.whitelist.findFirst).mockResolvedValue(null);
   });
 
   it("wraps the whitelist upsert + trial-usage insert in a single transaction", async () => {
@@ -247,6 +266,26 @@ describe("startTrial — atomic write", () => {
     if (r.ok) {
       expect(Number.isFinite(Date.parse(r.expiresAt))).toBe(true);
     }
+  });
+
+  it("upserts on the EXISTING row's casing — no duplicate row across cases", async () => {
+    // Customer's earlier whitelist row is stored as "MyName" (expired).
+    // They now trial as "myname" — the guard allows the trial but the
+    // upsert must target "MyName" so we update that row instead of
+    // creating a parallel "myname" row.
+    vi.mocked(db.whitelist.findFirst).mockResolvedValueOnce({
+      productId: "prod-1", username: "MyName",
+      isLifetime: false, expireDate: new Date(Date.now() - 60 * 1000),
+    } as any);
+    const r = await startTrial({ ...BASE, username: "myname" });
+    expect(r.ok).toBe(true);
+
+    const upsertCall = vi.mocked(db.whitelist.upsert).mock.calls[0]![0];
+    expect(upsertCall.where).toEqual({
+      productId_username: { productId: "prod-1", username: "MyName" },
+    });
+    expect(upsertCall.create.username).toBe("MyName");
+    expect((vi.mocked(db.trialUsage.create).mock.calls[0]![0]).data.username).toBe("MyName");
   });
 });
 

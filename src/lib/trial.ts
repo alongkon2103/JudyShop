@@ -73,8 +73,16 @@ export async function startTrial(args: {
   if (recent) return { ok: false, reason: "rate_limited" };
 
   // ── 2. Don't downgrade an existing paid/lifetime whitelist.
-  const existing = await db.whitelist.findUnique({
-    where: { productId_username: { productId: product.id, username } },
+  //       The lookup is CASE-INSENSITIVE on purpose — Roblox treats
+  //       "MyName" and "myname" as the same player, and the in-game
+  //       checkwhitelist API matches insensitively too. Without this,
+  //       a customer who paid as "MyName" could trigger trial as
+  //       "myname" and end up with a parallel 10-minute row.
+  const existing = await db.whitelist.findFirst({
+    where: {
+      productId: product.id,
+      username:  { equals: username, mode: "insensitive" },
+    },
   });
   if (existing) {
     if (existing.isLifetime) return { ok: false, reason: "already_active" };
@@ -83,13 +91,18 @@ export async function startTrial(args: {
     }
   }
 
+  // Preserve the original casing of the row that already exists (if
+  // any) so the upsert UPDATES it instead of creating a parallel row
+  // in a different case. One Roblox user → one whitelist row per game.
+  const storeAs = existing?.username ?? username;
+
   // ── 3. Upsert whitelist + record trial usage, atomically.
   await db.$transaction([
     db.whitelist.upsert({
-      where: { productId_username: { productId: product.id, username } },
+      where: { productId_username: { productId: product.id, username: storeAs } },
       create: {
         productId:  product.id,
-        username,
+        username:   storeAs,
         expireDate: newExpiry,
         isLifetime: false,
         source:     "TRIAL",
@@ -105,7 +118,7 @@ export async function startTrial(args: {
     db.trialUsage.create({
       data: {
         productId: product.id,
-        username,
+        username:  storeAs,
         ip:        args.ip ?? null,
         userAgent: args.userAgent ?? null,
         startedAt: now,
