@@ -253,14 +253,16 @@
   [data-theme="light"] .tint-soft-strong { background-color: hsl(265 45% 25% / 0.12); }
   [data-theme="light"] .tint-soft-hover:hover { background-color: hsl(265 45% 25% / 0.16); }
 
-  /* Glass pill — Navbar bar (theme-aware via [data-theme] overrides). */
+  /* Glass pill — Navbar bar (theme-aware via [data-theme] overrides).
+     Bumped opacity so the bar reads as a solid panel — keeps a touch
+     of blur for depth without letting the page content show through. */
   .glass {
-    background: hsl(265 40% 14% / 0.55);
+    background: hsl(265 40% 14% / 0.92);
     border: 1px solid var(--line-dark);
-    backdrop-filter: blur(12px) saturate(140%);
+    backdrop-filter: blur(8px) saturate(140%);
   }
   [data-theme="light"] .glass {
-    background: hsl(0 0% 100% / 0.72);
+    background: hsl(0 0% 100% / 0.96);
     border: 1px solid hsl(265 30% 25% / 0.14);
     box-shadow: 0 4px 22px -8px hsl(265 40% 30% / 0.18);
   }
