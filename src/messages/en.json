@@ -48,6 +48,8 @@
     "cardSubtitleFee": "Visa / Master (+{pct}% fee)",
     "robloxUsername": "Roblox username",
     "robloxUsernamePlaceholder": "Enter your Roblox username",
+    "findUsernameBtn": "How to find",
+    "findUsernameTitle": "Where to find your Roblox username",
     "robloxUsernameHint": "Enter your exact Roblox username to bind the license key.",
     "subtotal": "Subtotal",
     "cardFee": "Card fee · {pct}%",

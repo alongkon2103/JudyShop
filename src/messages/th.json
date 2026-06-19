@@ -48,6 +48,8 @@
     "cardSubtitleFee": "Visa / Master (+{pct}% ค่าธรรมเนียม)",
     "robloxUsername": "ชื่อผู้ใช้ Roblox",
     "robloxUsernamePlaceholder": "ใส่ชื่อผู้ใช้ Roblox ของคุณ",
+    "findUsernameBtn": "วิธีดู",
+    "findUsernameTitle": "ดู Roblox username ที่ไหน",
     "robloxUsernameHint": "ใส่ Roblox username ให้ตรงเพื่อผูกสิทธิ์ใช้งาน",
     "subtotal": "ยอดรวม",
     "cardFee": "ค่าธรรมเนียมบัตร · {pct}%",

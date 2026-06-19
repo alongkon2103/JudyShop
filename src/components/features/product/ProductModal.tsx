@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useId, useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { Timer } from "lucide-react";
+import { Timer, HelpCircle, X } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
+import { Portal } from "@/components/admin/Portal";
 import { Badge } from "@/components/ui/Badge";
 import { formatTHB, formatUSD } from "@/lib/format";
 import { priceBreakdown } from "@/lib/settings";
@@ -66,6 +67,13 @@ export function ProductModal({ product, open, onClose, cardFeePercent }: Props) 
     [],
   );
 
+  // "Where to find your Roblox username" help popup. Auto-shows ONCE
+  // when the username field gets focus, then stays manual-only until
+  // the modal is reopened with a (re)mounted product. Tracking the
+  // "already shown" flag in a ref avoids re-renders on every focus.
+  const [helpOpen, setHelpOpen] = useState(false);
+  const helpAutoShownRef = useRef(false);
+
   useEffect(() => {
     if (product) {
       setPlanId(product.plans[0]?.id ?? null);
@@ -75,8 +83,20 @@ export function ProductModal({ product, open, onClose, cardFeePercent }: Props) 
       setCheckoutError(null);
       setTrialMessage(null);
       setRobloxFound(false);
+      setHelpOpen(false);
+      helpAutoShownRef.current = false;
     }
   }, [product]);
+
+  // ESC to dismiss help popup (independent of the modal's own ESC handler).
+  useEffect(() => {
+    if (!helpOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setHelpOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [helpOpen]);
 
   const selectedPlan = useMemo(
     () => product?.plans.find((p) => p.id === planId) ?? null,
@@ -214,25 +234,86 @@ export function ProductModal({ product, open, onClose, cardFeePercent }: Props) 
           <label className="font-sans text-[12px] font-extrabold uppercase tracking-[0.12em] text-fg-light">
             {t("robloxUsername")}
           </label>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder={t("robloxUsernamePlaceholder")}
-            autoComplete="off"
-            autoCapitalize="none"
-            spellCheck={false}
-            className={cn(
-              "w-full rounded-full border-2 border-line-light bg-paper-2 px-5 py-3 text-fg-light placeholder:text-fg-light-mute",
-              "transition-all duration-fast ease-out focus:outline-none",
-              "focus:border-pink-400 focus:ring-4 focus:ring-pink-400/25",
-            )}
-          />
+          <div className="relative">
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              onFocus={() => {
+                if (!helpAutoShownRef.current) {
+                  helpAutoShownRef.current = true;
+                  setHelpOpen(true);
+                }
+              }}
+              placeholder={t("robloxUsernamePlaceholder")}
+              autoComplete="off"
+              autoCapitalize="none"
+              spellCheck={false}
+              className={cn(
+                "w-full rounded-full border-2 border-line-light bg-paper-2 px-5 py-3 text-fg-light placeholder:text-fg-light-mute",
+                "transition-all duration-fast ease-out focus:outline-none",
+                "focus:border-pink-400 focus:ring-4 focus:ring-pink-400/25",
+              )}
+            />
+            {/* "How to find" pill — pinned to the bottom-right corner
+                of the input so it's right where the eye lands after a
+                user starts typing and pauses to wonder where the name
+                lives. Click reopens the help popup any time. */}
+            <button
+              type="button"
+              onClick={() => setHelpOpen(true)}
+              className={cn(
+                "absolute -bottom-3 right-3 inline-flex items-center gap-1 rounded-full",
+                "bg-pink-500 px-2.5 py-1 font-sans text-[10px] font-extrabold uppercase tracking-[0.1em] text-white",
+                "shadow-[0_2px_0_var(--pink-600)] transition-transform duration-fast ease-spring hover:-translate-y-0.5 active:translate-y-0.5",
+              )}
+            >
+              <HelpCircle size={11} strokeWidth={2.5} />
+              {t("findUsernameBtn")}
+            </button>
+          </div>
 
           {/* <RobloxPreview username={username} onResolved={onRobloxResolved} />
           <p className="text-[12px] leading-snug text-fg-light-soft">{t("robloxUsernameHint")}</p> */}
 
         </div>
+
+        {/* Help popup — rendered through a Portal so `fixed` anchors to
+            the viewport instead of the Modal's overflow-y-auto container
+            (without this, the popup gets clipped to the sheet bounds
+            and only the modal area dims, not the rest of the page). */}
+        {helpOpen && (
+          <Portal>
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-label={t("findUsernameTitle")}
+              className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
+            >
+              <button
+                type="button"
+                aria-label="Close"
+                onClick={() => setHelpOpen(false)}
+                className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              />
+              <div className="anim-modal-in relative w-full max-w-[min(90vw,720px)]">
+                <img
+                  src="/images/Help.png"
+                  alt={t("findUsernameTitle")}
+                  className="block h-auto max-h-[82svh] w-full rounded-xl object-contain shadow-2xl ring-1 ring-white/10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setHelpOpen(false)}
+                  aria-label="Close help"
+                  className="absolute -right-3 -top-3 grid h-10 w-10 place-items-center rounded-full bg-white text-violet-700 shadow-[0_2px_0_var(--paper-3),0_6px_14px_-4px_hsl(265_60%_20%/0.5)] transition-transform duration-fast ease-spring hover:scale-110"
+                >
+                  <X size={18} strokeWidth={2.25} />
+                </button>
+              </div>
+            </div>
+          </Portal>
+        )}
 
         {/* Price breakdown */}
         <div className="space-y-1 rounded-2xl border-2 border-line-light bg-paper-2 px-5 py-3 sm:px-6">
