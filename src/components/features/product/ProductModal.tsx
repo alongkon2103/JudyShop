@@ -88,6 +88,18 @@ export function ProductModal({ product, open, onClose, cardFeePercent }: Props) 
     [selectedPlan, method, cardFeePercent],
   );
 
+  // USD total mirrors the THB fee multiplier so the displayed amounts
+  // stay in sync — card +6% must add 6% to BOTH currencies, otherwise
+  // "฿1,590 / $50" looks suspicious and undersells the upcharge.
+  const usdTotal = useMemo(() => {
+    if (!selectedPlan) return 0;
+    const base = Number(selectedPlan.priceUSD);
+    if (method === "card" && cardFeePercent > 0) {
+      return Math.round(base * (100 + cardFeePercent)) / 100;
+    }
+    return base;
+  }, [selectedPlan, method, cardFeePercent]);
+
   if (!product) return null;
 
   const canPay = selectedPlan !== null && username.trim().length > 0;
@@ -248,7 +260,7 @@ export function ProductModal({ product, open, onClose, cardFeePercent }: Props) 
               {formatTHB(breakdown.total)}
               {selectedPlan && (
                 <span className="ml-1 font-sans text-[12px] font-bold text-fg-light-mute sm:text-[14px]">
-                  / {formatUSD(selectedPlan.priceUSD)}
+                  / {formatUSD(usdTotal)}
                 </span>
               )}
             </span>
