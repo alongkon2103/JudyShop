@@ -479,19 +479,21 @@
   .anim-pop        { opacity:0; transform:scale(0.88);       animation: pop     0.55s  var(--ease-spring) forwards; }
   .anim-spring     { opacity:0; transform:scale(0.9);        animation: spring  var(--t-base) var(--ease-spring) forwards; }
 
-  /* Modal entry — bottom-sheet on mobile, centred scale-spring on
-     desktop. Single class so the responsive switch happens via the
-     media query below (Tailwind's `sm:` prefix wouldn't compose cleanly
-     with the keyframe animation). */
+  /* Modal entry — bottom-sheet on mobile, centred fade-in on desktop.
+     Uses ease-out (no overshoot) so the sheet glides into place
+     instead of bouncing — bouncy sheets feel unprofessional on a
+     payment / commerce surface. Single class so the responsive switch
+     happens via the media query below (Tailwind's `sm:` prefix
+     wouldn't compose cleanly with the keyframe animation). */
   .anim-modal-in {
     opacity: 0;
     transform: translateY(100%);
-    animation: sheetUp var(--t-base) var(--ease-spring) forwards;
+    animation: sheetUp 0.32s var(--ease-out) forwards;
   }
   @media (min-width: 640px) {
     .anim-modal-in {
-      transform: scale(0.9);
-      animation: spring var(--t-base) var(--ease-spring) forwards;
+      transform: scale(0.96);
+      animation: spring var(--t-base) var(--ease-out) forwards;
     }
   }
 
