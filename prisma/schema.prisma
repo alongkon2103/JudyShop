@@ -360,8 +360,41 @@ model Setting {
   /// Percentage added to the cart total when paying by credit card.
   /// e.g. 3.00 → +3 % surcharge. PromptPay is not surcharged.
   cardFeePercent Decimal  @default(0) @db.Decimal(5, 2)
+
+  /// Admin-authored site rules — rendered on /[locale]/rules. Stored
+  /// as TipTap-sanitized HTML (same pipeline as product descriptions).
+  /// Two columns for i18n; both fall back to "" when unset.
+  rulesContentEn String   @default("") @db.Text
+  rulesContentTh String   @default("") @db.Text
+
   updatedAt      DateTime @updatedAt
   updatedBy      String?
+}
+
+// ── How-to-use videos (admin-managed tutorial library) ────────
+// Generic site-wide tutorials — NOT linked to a product. Public
+// /[locale]/how-to-use page renders these as tabs (one card per
+// video) with an embedded YouTube player below.
+model HowToUseVideo {
+  id            String   @id @default(cuid())
+  titleEn       String
+  titleTh       String
+  descriptionEn String?  @db.Text
+  descriptionTh String?  @db.Text
+  /// Original YouTube URL as pasted by the admin. The embed iframe
+  /// uses the parsed videoId so admins can paste any youtu.be /
+  /// youtube.com/watch / youtube.com/shorts format.
+  youtubeUrl    String
+  /// Parsed video id (e.g. "dQw4w9WgXcQ"). Validated at write time
+  /// so the public page never has to handle a bad URL.
+  videoId       String
+  displayOrder  Int      @default(0)
+  isActive      Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, displayOrder])
 }
 
 // ── Stripe webhook dedup ──────────────────────────────────────

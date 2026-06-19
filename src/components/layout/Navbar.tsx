@@ -11,10 +11,12 @@ import { LocaleSwitcher } from "./LocaleSwitcher";
 
 /** Hard-coded route paths — labels resolved per-locale via translations. */
 const NAV = [
-  { key: "home",    href: "/" },
-  { key: "shop",    href: "/shop" },
-  { key: "news",    href: "/news" },
-  { key: "contact", href: "/contact" },
+  { key: "home",     href: "/" },
+  { key: "shop",     href: "/shop" },
+  { key: "news",     href: "/news" },
+  { key: "contact",  href: "/contact" },
+  { key: "howToUse", href: "/how-to-use" },
+  { key: "rules",    href: "/rules" },
 ] as const;
 
 export function Navbar() {

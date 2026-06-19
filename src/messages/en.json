@@ -1,9 +1,22 @@
 {
+  "howToUse": {
+    "title": "How to use",
+    "subtitle": "Step-by-step video guides",
+    "selectLabel": "Choose a guide",
+    "empty": "No guides yet — check back soon."
+  },
+  "rules": {
+    "title": "Rules",
+    "subtitle": "Please read before you buy",
+    "empty": "No rules posted yet."
+  },
   "nav": {
     "home": "Home",
     "shop": "Shop",
     "news": "News",
     "contact": "Contact",
+    "howToUse": "How to use",
+    "rules": "Rules",
     "admin": "Admin",
     "openMenu": "Open menu",
     "closeMenu": "Close menu"

@@ -15,6 +15,8 @@ import {
   UserCog,
   TrendingUp,
   BarChart3,
+  PlayCircle,
+  Gavel,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 
@@ -41,6 +43,8 @@ const NAV: { section: string; items: NavItem[] }[] = [
       { href: "/admin/finance",       label: "Finance",       icon: TrendingUp },
       { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
       { href: "/admin/news",          label: "News",          icon: Newspaper },
+      { href: "/admin/how-to-use",    label: "How to use",    icon: PlayCircle },
+      { href: "/admin/rules",         label: "Rules",         icon: Gavel },
     ],
   },
   {
