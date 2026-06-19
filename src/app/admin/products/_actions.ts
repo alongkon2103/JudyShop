@@ -40,9 +40,10 @@ const ProductInput = z.object({
   shortDescriptionTh: z.string().max(180).optional().or(z.literal("")),
   badge: BadgeSchema,
   gameId: z.string().max(200).optional().or(z.literal("")),
-  // Game preset link shown on the success page. Must be a valid URL
-  // when provided (zod .url() handles the format check) — falling back
-  // to "" so the field can be cleared from the admin form.
+  // Game link (Roblox game URL) and preset link shown on the success
+  // page. Both validated as URLs when provided, falling back to ""
+  // so the admin can clear them.
+  gameLinkUrl:   z.string().max(500).url().optional().or(z.literal("")),
   gamePresetUrl: z.string().max(500).url().optional().or(z.literal("")),
   isActive: z.union([z.literal("on"), z.literal("")]).optional(),
   comingSoon: z.union([z.literal("on"), z.literal("")]).optional(),
@@ -112,6 +113,7 @@ export async function createProductAction(
       shortDescriptionTh: opt(data.shortDescriptionTh),
       badge: data.badge ? data.badge : null,
       gameId: parseGameId(data.gameId),
+      gameLinkUrl:   opt(data.gameLinkUrl),
       gamePresetUrl: opt(data.gamePresetUrl),
       isActive: data.isActive === "on",
       comingSoon: data.comingSoon === "on",
@@ -184,6 +186,7 @@ export async function updateProductAction(
       shortDescriptionTh: opt(data.shortDescriptionTh),
       badge: data.badge ? data.badge : null,
       gameId: parseGameId(data.gameId),
+      gameLinkUrl:   opt(data.gameLinkUrl),
       gamePresetUrl: opt(data.gamePresetUrl),
       isActive: data.isActive === "on",
       comingSoon: data.comingSoon === "on",

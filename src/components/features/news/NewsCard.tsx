@@ -1,4 +1,5 @@
 import { useLocale, useTranslations } from "next-intl";
+import { ImageWithSkeleton } from "@/components/ui/ImageWithSkeleton";
 import { cn } from "@/lib/cn";
 import type { NewsCategory, NewsItem } from "@/types";
 
@@ -56,6 +57,19 @@ export function NewsCard({ item }: { item: NewsItem }) {
         <h2 className="font-display text-[20px] leading-tight text-fg-light sm:text-[24px]">
           {item.title}
         </h2>
+        {item.imageUrl && (
+          <div className="mt-s3 overflow-hidden rounded-md">
+            <div className="relative aspect-[16/9] w-full bg-paper-2">
+              <ImageWithSkeleton
+                src={item.imageUrl}
+                alt={item.title}
+                fill
+                sizes="(max-width: 640px) 100vw, 640px"
+                className="object-cover"
+              />
+            </div>
+          </div>
+        )}
         <p className="mt-s2 text-[14px] leading-relaxed text-fg-light-soft sm:text-[15px]">
           {item.excerpt}
         </p>

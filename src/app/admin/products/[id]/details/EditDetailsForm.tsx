@@ -27,6 +27,7 @@ type Props = {
     shortDescriptionTh: string | null;
     badge: "HOT" | "NEW" | "SALE" | null;
     gameId: string | null;
+    gameLinkUrl: string | null;
     gamePresetUrl: string | null;
     isActive: boolean;
     comingSoon: boolean;
@@ -86,9 +87,25 @@ export function EditDetailsForm({ product }: Props) {
           </Field>
 
           <Field
+            label="Game link"
+            error={errors.gameLinkUrl}
+            hint="ลิงก์เกมที่จะแสดงให้ลูกค้าเปิดหลังจ่ายเงิน (เช่น URL หน้า Roblox)"
+            full
+          >
+            <input
+              name="gameLinkUrl"
+              type="url"
+              defaultValue={product.gameLinkUrl ?? ""}
+              maxLength={500}
+              placeholder="https://www.roblox.com/games/12345678/..."
+              className={inputClass}
+            />
+          </Field>
+
+          <Field
             label="Game preset link"
             error={errors.gamePresetUrl}
-            hint="ลิงก์ที่จะแสดงให้ลูกค้าหลังจ่ายเงิน (เหนือ Preset files) เช่น Google Drive, คู่มือ setup"
+            hint="ลิงก์ Preset/คู่มือ setup ที่แสดงให้ลูกค้าหลังจ่ายเงิน (เช่น Google Drive)"
             full
           >
             <input

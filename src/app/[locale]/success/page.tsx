@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { CheckCircle2, Hourglass, Download, Gift, FileBox, ExternalLink } from "lucide-react";
+import { CheckCircle2, Hourglass, Download, Gift, FileBox, ExternalLink, Gamepad2 } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { stripe } from "@/lib/stripe";
@@ -198,36 +198,38 @@ export default async function SuccessPage({
           </div>
         </div>
 
-        {/* Belt-and-braces: presets/overlays/preset-link already come
-            from `order` which is null for strangers, but pin the guard
+        {/* Belt-and-braces: presets/overlays/links already come from
+            `order` which is null for strangers, but pin the guard
             explicitly so a future refactor can't accidentally unlock
             premium content. */}
-        {isOwner && (product?.gamePresetUrl || presets.length > 0 || overlays.length > 0) && (
+        {isOwner && (
+          product?.gameLinkUrl ||
+          product?.gamePresetUrl ||
+          presets.length > 0 ||
+          overlays.length > 0
+        ) && (
           <section className="mt-s5 space-y-s4">
+            {/* Game link — primary "Open game" CTA, shown first so
+                customers can jump straight into the game they just paid
+                for. Distinct from gameId (which is internal). */}
+            {product?.gameLinkUrl && (
+              <LinkCard
+                href={product.gameLinkUrl}
+                icon={<Gamepad2 size={16} strokeWidth={2.25} />}
+                title={t("gameLinkTitle")}
+                cta={t("gameLinkOpen")}
+              />
+            )}
+
             {/* Game preset link — admin-set URL shown above the file
                 downloads so customers see the setup link first. */}
             {product?.gamePresetUrl && (
-              <a
+              <LinkCard
                 href={product.gamePresetUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="sticker group flex items-center gap-s3 rounded-xl p-s4 transition-transform duration-fast ease-spring hover:-translate-y-0.5 sm:p-s5"
-              >
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-pink-500/15 text-pink-500">
-                  <ExternalLink size={16} strokeWidth={2.25} />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <h2 className="text-[15px] font-semibold text-fg-light">
-                    {t("gamePresetTitle")}
-                  </h2>
-                  <p className="mt-0.5 truncate text-[12px] text-fg-light-soft">
-                    {product.gamePresetUrl}
-                  </p>
-                </div>
-                <span className="shrink-0 rounded-full bg-pink-500 px-4 py-2 font-sans text-[12px] font-extrabold uppercase tracking-[0.1em] text-white shadow-[0_2px_0_var(--pink-600)] transition-transform duration-fast ease-spring group-hover:-translate-y-0.5">
-                  {t("gamePresetOpen")}
-                </span>
-              </a>
+                icon={<ExternalLink size={16} strokeWidth={2.25} />}
+                title={t("gamePresetTitle")}
+                cta={t("gamePresetOpen")}
+              />
             )}
 
             {presets.length > 0 && (
@@ -266,6 +268,41 @@ export default async function SuccessPage({
 }
 
 // ── Components ──────────────────────────────────────────────
+
+/** Shared "open external URL" card used by Game link / Game preset
+ *  link rows above the preset downloads. Visual parity matters — the
+ *  buyer should read both cards as members of the same group. */
+function LinkCard({
+  href,
+  icon,
+  title,
+  cta,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  title: string;
+  cta: string;
+}) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="sticker group flex items-center gap-s3 rounded-xl p-s4 transition-transform duration-fast ease-spring hover:-translate-y-0.5 sm:p-s5"
+    >
+      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-pink-500/15 text-pink-500">
+        {icon}
+      </span>
+      <div className="min-w-0 flex-1">
+        <h2 className="text-[15px] font-semibold text-fg-light">{title}</h2>
+        <p className="mt-0.5 truncate text-[12px] text-fg-light-soft">{href}</p>
+      </div>
+      <span className="shrink-0 rounded-full bg-pink-500 px-4 py-2 font-sans text-[12px] font-extrabold uppercase tracking-[0.1em] text-white shadow-[0_2px_0_var(--pink-600)] transition-transform duration-fast ease-spring group-hover:-translate-y-0.5">
+        {cta}
+      </span>
+    </a>
+  );
+}
 
 function DownloadList({
   title,

@@ -6,4 +6,5 @@ export type NewsItem = {
   category: NewsCategory;
   title: string;
   excerpt: string;
+  imageUrl?: string | null;
 };

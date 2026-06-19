@@ -53,6 +53,7 @@ export default async function NewsPage({ params }: { params: { locale: string } 
                     date: item.publishedAt,
                     title: item.title,
                     excerpt: item.excerpt,
+                    imageUrl: item.imageUrl,
                   }}
                 />
               </div>

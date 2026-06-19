@@ -37,9 +37,13 @@ model Product {
   badge        ProductBadge?
   /// Roblox place/game ID this whitelist applies to.
   gameId       String?
+  /// Optional link to the Roblox game itself — "Open game" CTA on
+  /// the success page. Distinct from gameId (numeric, for whitelist
+  /// lookups) so the admin can pin a marketing URL with slug.
+  gameLinkUrl  String?
   /// Optional external link shown on the success page after a paying
-  /// customer's order is fulfilled. Sits ABOVE the preset download
-  /// list — typically points to a setup guide / Google Drive / etc.
+  /// customer's order is fulfilled. Sits below "Open game" and above
+  /// the preset download list — typically a setup guide / Drive link.
   gamePresetUrl String?
   isActive     Boolean       @default(true)
   comingSoon   Boolean       @default(false)
