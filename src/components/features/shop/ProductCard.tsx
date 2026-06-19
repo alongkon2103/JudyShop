@@ -27,7 +27,11 @@ export function ProductCard({ product, onSelect }: Props) {
       onClick={() => onSelect(product)}
       disabled={product.comingSoon}
       className={cn(
-        "group/card relative flex w-full flex-col overflow-hidden text-left",
+        // h-full keeps every card in a grid row the same height, even
+        // when one product's short description is 1 line and another's
+        // is 2 — the body grows, the price row stays pinned to the
+        // bottom via `mt-auto`.
+        "group/card relative flex h-full w-full flex-col overflow-hidden text-left",
         "sticker rounded-lg sm:rounded-xl",
         "transition-all duration-base ease-spring",
         "hover:-translate-y-1.5",

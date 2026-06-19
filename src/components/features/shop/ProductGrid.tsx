@@ -20,7 +20,7 @@ export function ProductGrid({ products, cardFeePercent }: Props) {
         {products.map((product, i) => (
           <div
             key={product.id}
-            className="anim-fade-up"
+            className="anim-fade-up h-full"
             style={{ animationDelay: `${i * 0.06}s` }}
           >
             <ProductCard product={product} onSelect={setSelected} />
