@@ -478,6 +478,37 @@
   .anim-scale-in   { opacity:0; transform:scale(0.96);       animation: scaleIn var(--t-base) var(--ease-out) forwards; }
   .anim-pop        { opacity:0; transform:scale(0.88);       animation: pop     0.55s  var(--ease-spring) forwards; }
   .anim-spring     { opacity:0; transform:scale(0.9);        animation: spring  var(--t-base) var(--ease-spring) forwards; }
+
+  /* Modal entry — bottom-sheet on mobile, centred scale-spring on
+     desktop. Single class so the responsive switch happens via the
+     media query below (Tailwind's `sm:` prefix wouldn't compose cleanly
+     with the keyframe animation). */
+  .anim-modal-in {
+    opacity: 0;
+    transform: translateY(100%);
+    animation: sheetUp var(--t-base) var(--ease-spring) forwards;
+  }
+  @media (min-width: 640px) {
+    .anim-modal-in {
+      transform: scale(0.9);
+      animation: spring var(--t-base) var(--ease-spring) forwards;
+    }
+  }
+
+  /* Modal exit — paired with the data-closing attribute on the sheet
+     so the mobile sheet slides DOWN while the desktop modal scales out. */
+  .modal-sheet {
+    transition: opacity 200ms ease, transform 200ms ease;
+  }
+  .modal-sheet[data-closing="true"] {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  @media (min-width: 640px) {
+    .modal-sheet[data-closing="true"] {
+      transform: scale(0.94);
+    }
+  }
   .anim-slide-down     { opacity:0; transform:translateY(-12px); animation: slideDown var(--t-base) var(--ease-out) forwards; }
   .anim-slide-in-right { opacity:0; transform:translateX(24px);  animation: slideInRight var(--t-base) var(--ease-out) forwards; }
   .anim-slide-out-right{                                          animation: slideOutRight var(--t-base) var(--ease-out) forwards; }
@@ -505,6 +536,7 @@
   to { opacity: 1; transform: scale(1); }
 }
 @keyframes spring    { to { opacity:1; transform:scale(1); } }
+@keyframes sheetUp   { to { opacity:1; transform:translateY(0); } }
 @keyframes slideDown { to { opacity:1; transform:translateY(0); } }
 @keyframes slideInRight  { to { opacity:1; transform:translateX(0); } }
 @keyframes slideOutRight { to { opacity:0; transform:translateX(24px); } }

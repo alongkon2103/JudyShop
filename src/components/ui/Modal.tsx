@@ -56,7 +56,9 @@ export function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center px-3 py-4 sm:px-4 sm:py-8"
+      // Mobile: anchored to the bottom edge, full-width sheet.
+      // Desktop (sm+): centred with breathing room around all sides.
+      className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:px-4 sm:py-8"
       role="dialog" aria-modal="true" aria-labelledby={labelledBy}
     >
       <button
@@ -67,20 +69,29 @@ export function Modal({
         style={{ opacity: closing ? 0 : 1, transitionDuration: `${CLOSE_MS}ms` }}
       />
       <div
+        data-closing={closing ? "true" : "false"}
         className={cn(
-          "relative w-full overflow-hidden rounded-xl",
+          "modal-sheet relative w-full overflow-hidden",
+          // Top corners only on mobile (sheet hugs the bottom);
+          // all corners on desktop (floating modal).
+          "rounded-t-2xl sm:rounded-xl",
           "sticker text-fg-light",
-          "max-h-[92vh] overflow-y-auto scrollbar-themed",
-          "anim-spring",
+          // svh handles iOS Safari's collapsing URL bar — fallback to
+          // vh on older browsers. Slightly less than full so the user
+          // can still see a hint of the page behind on mobile.
+          "max-h-[92svh] overflow-y-auto scrollbar-themed",
+          "anim-modal-in",
           sizes[size],
           className,
         )}
-        style={{
-          opacity: closing ? 0 : undefined,
-          transform: closing ? "scale(0.94)" : undefined,
-          transition: closing ? `opacity ${CLOSE_MS}ms ease, transform ${CLOSE_MS}ms ease` : undefined,
-        }}
       >
+        {/* Drag handle — purely visual indicator that this is a sheet
+            (we don't actually support swipe-to-dismiss yet). Hidden on
+            desktop where the modal is a centred dialog, not a sheet. */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center pt-2 sm:hidden">
+          <span className="h-1 w-10 rounded-full bg-white/40" aria-hidden />
+        </div>
+
         <button
           type="button"
           aria-label="Close"
