@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { CheckCircle2, Hourglass, Download, Gift, FileBox } from "lucide-react";
+import { CheckCircle2, Hourglass, Download, Gift, FileBox, ExternalLink } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { stripe } from "@/lib/stripe";
@@ -198,11 +198,38 @@ export default async function SuccessPage({
           </div>
         </div>
 
-        {/* Belt-and-braces: presets/overlays already come from `order`
-            which is null for strangers, but pin the guard explicitly
-            so a future refactor can't accidentally unlock downloads. */}
-        {isOwner && (presets.length > 0 || overlays.length > 0) && (
+        {/* Belt-and-braces: presets/overlays/preset-link already come
+            from `order` which is null for strangers, but pin the guard
+            explicitly so a future refactor can't accidentally unlock
+            premium content. */}
+        {isOwner && (product?.gamePresetUrl || presets.length > 0 || overlays.length > 0) && (
           <section className="mt-s5 space-y-s4">
+            {/* Game preset link — admin-set URL shown above the file
+                downloads so customers see the setup link first. */}
+            {product?.gamePresetUrl && (
+              <a
+                href={product.gamePresetUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="sticker group flex items-center gap-s3 rounded-xl p-s4 transition-transform duration-fast ease-spring hover:-translate-y-0.5 sm:p-s5"
+              >
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-pink-500/15 text-pink-500">
+                  <ExternalLink size={16} strokeWidth={2.25} />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-[15px] font-semibold text-fg-light">
+                    {t("gamePresetTitle")}
+                  </h2>
+                  <p className="mt-0.5 truncate text-[12px] text-fg-light-soft">
+                    {product.gamePresetUrl}
+                  </p>
+                </div>
+                <span className="shrink-0 rounded-full bg-pink-500 px-4 py-2 font-sans text-[12px] font-extrabold uppercase tracking-[0.1em] text-white shadow-[0_2px_0_var(--pink-600)] transition-transform duration-fast ease-spring group-hover:-translate-y-0.5">
+                  {t("gamePresetOpen")}
+                </span>
+              </a>
+            )}
+
             {presets.length > 0 && (
               <DownloadList
                 title={t("presetFiles")}

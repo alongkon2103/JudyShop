@@ -28,6 +28,7 @@ export default async function ProductDetailsTab({
           shortDescriptionTh: product.shortDescriptionTh,
           badge: product.badge,
           gameId: product.gameId,
+          gamePresetUrl: product.gamePresetUrl,
           isActive: product.isActive,
           comingSoon: product.comingSoon,
           trialEnabled: product.trialEnabled,

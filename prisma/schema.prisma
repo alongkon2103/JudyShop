@@ -37,6 +37,10 @@ model Product {
   badge        ProductBadge?
   /// Roblox place/game ID this whitelist applies to.
   gameId       String?
+  /// Optional external link shown on the success page after a paying
+  /// customer's order is fulfilled. Sits ABOVE the preset download
+  /// list — typically points to a setup guide / Google Drive / etc.
+  gamePresetUrl String?
   isActive     Boolean       @default(true)
   comingSoon   Boolean       @default(false)
   /// Smaller value = appears first.

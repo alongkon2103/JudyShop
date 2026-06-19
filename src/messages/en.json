@@ -86,6 +86,8 @@
     "strangerMessage": "If you just completed a purchase, please return from the original browser/device you used to start checkout. Your whitelist is being processed regardless — no action needed.",
     "backToShop": "Back to shop",
     "home": "Home",
+    "gamePresetTitle": "Game preset link",
+    "gamePresetOpen": "Open",
     "presetFiles": "Preset files",
     "giftOverlays": "Gift overlays",
     "downloadHint": "Click Download to save the image — or click the picture to view full-size.",
