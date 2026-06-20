@@ -58,12 +58,22 @@ export type LookupResult =
 /** Roblox username spec: 3–20 chars, letters/digits/underscore, no double-underscore, can't start/end with `_`. */
 const USERNAME_RE = /^(?!.*__)(?!_)(?!.*_$)[A-Za-z0-9_]{3,20}$/;
 
+/**
+ * Clean a raw username input the way customers actually type it:
+ *  - strips any leading `@` (e.g. `@ElMagicFinger`) — common copy-paste from TikTok/Discord
+ *  - strips all whitespace (leading/trailing/internal — Roblox names can't contain spaces anyway)
+ *  - leaves casing intact (downstream lookups are case-insensitive)
+ */
+export function normalizeRobloxUsername(raw: string): string {
+  return raw.replace(/^@+/, "").replace(/\s+/g, "");
+}
+
 export function isPlausibleUsername(s: string): boolean {
-  return USERNAME_RE.test(s.trim());
+  return USERNAME_RE.test(normalizeRobloxUsername(s));
 }
 
 export async function lookupRobloxUser(rawUsername: string): Promise<LookupResult> {
-  const username = rawUsername.trim();
+  const username = normalizeRobloxUsername(rawUsername);
   if (!isPlausibleUsername(username)) return { ok: false, reason: "invalid" };
 
   let userId: number;

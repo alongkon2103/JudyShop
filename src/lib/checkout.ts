@@ -6,6 +6,7 @@ import { db } from "./db";
 import { stripe } from "./stripe";
 import { env } from "./env";
 import { getSettings, priceBreakdown } from "./settings";
+import { normalizeRobloxUsername } from "./roblox";
 import type { PaymentMethod } from "@prisma/client";
 
 export type CheckoutInput = {
@@ -22,7 +23,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 // ── Session creation ─────────────────────────────────────────
 
 export async function createCheckoutSession(input: CheckoutInput): Promise<{ url: string; id: string }> {
-  const username = input.username.trim();
+  const username = normalizeRobloxUsername(input.username);
   if (!username) throw new Error("Roblox username is required.");
   if (username.length > 100) throw new Error("Username too long.");
 

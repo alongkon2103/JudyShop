@@ -17,6 +17,7 @@
  * Prisma transaction so we can't end up with a half-recorded trial.
  */
 import { db } from "./db";
+import { normalizeRobloxUsername } from "./roblox";
 
 const MIN_TRIAL_MINUTES = 1;
 const MAX_TRIAL_MINUTES = 60;
@@ -39,7 +40,7 @@ export async function startTrial(args: {
   ip?: string | null;
   userAgent?: string | null;
 }): Promise<StartTrialResult> {
-  const username = args.username.trim();
+  const username = normalizeRobloxUsername(args.username);
   if (!username) return { ok: false, reason: "invalid_username" };
 
   const product = await db.product.findUnique({

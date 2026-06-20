@@ -16,6 +16,7 @@ import { PaymentMethodCard } from "./PaymentMethodCard";
 import { RobloxPreview } from "./RobloxPreview";
 import { startCheckout } from "@/lib/actions/checkout";
 import { startTrialAction, type StartTrialErrorCode } from "@/lib/actions/trial";
+import { normalizeRobloxUsername } from "@/lib/roblox";
 
 /** Map server-action error codes to the right i18n message. */
 function trialErrorMessage(
@@ -238,7 +239,7 @@ export function ProductModal({ product, open, onClose, cardFeePercent }: Props) 
             <input
               type="text"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={(e) => setUsername(normalizeRobloxUsername(e.target.value))}
               onFocus={() => {
                 if (!helpAutoShownRef.current) {
                   helpAutoShownRef.current = true;
