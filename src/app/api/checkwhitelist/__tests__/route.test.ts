@@ -173,6 +173,36 @@ describe("/api/checkwhitelist — input validation", () => {
     ));
     expect(res.status).toBe(400);
   });
+
+  it("accepts Roblox `roblox_user_<id>` placeholder names (deleted/banned accounts)", async () => {
+    // Roblox returns this synthetic name for users whose account has
+    // been deleted or banned. The game server forwards it verbatim, so
+    // a whitelisted-but-renamed buyer must still resolve here even
+    // though the string exceeds the 20-char standard username limit.
+    vi.mocked(findUserWhitelistEntries).mockResolvedValueOnce({
+      username: "roblox_user_8123065597",
+      entries: [],
+    });
+    const res = await GET(makeReq(
+      "http://localhost/api/checkwhitelist?username=roblox_user_8123065597",
+      { "x-api-key": VALID_KEY },
+    ));
+    expect(res.status).toBe(200);
+    expect(findUserWhitelistEntries).toHaveBeenCalledWith("roblox_user_8123065597");
+  });
+
+  it("rejects placeholder-look-alikes that smuggle non-digits after the prefix", async () => {
+    // `roblox_user_<anything>` must be digits-only — otherwise an
+    // attacker could bypass the 20-char Roblox-username cap by tacking
+    // arbitrary chars onto a fake placeholder. The string below also
+    // exceeds 20 chars so the standard ROBLOX_USERNAME regex rejects
+    // it too, leaving the placeholder pattern as the only escape hatch.
+    const res = await GET(makeReq(
+      "http://localhost/api/checkwhitelist?username=roblox_user_8123065597abc",
+      { "x-api-key": VALID_KEY },
+    ));
+    expect(res.status).toBe(400);
+  });
 });
 
 describe("/api/checkwhitelist — single-result path (with filter)", () => {

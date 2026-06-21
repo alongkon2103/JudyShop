@@ -33,9 +33,23 @@ export const dynamic = "force-dynamic";
 // underscore, no double-underscore. Enforce here so junk like SQL or
 // massive strings never reach the DB.
 const ROBLOX_USERNAME = /^(?!.*__)(?!_)(?!.*_$)[A-Za-z0-9_]{3,20}$/;
+// Roblox returns a synthetic `roblox_user_<userId>` placeholder for
+// deleted/banned accounts (and a handful of legacy cases). The game
+// server passes that string back to us verbatim, so the lookup MUST
+// accept it — otherwise a whitelisted-but-renamed buyer can never be
+// verified. The pattern is locked to digits to keep it tight.
+const ROBLOX_PLACEHOLDER = /^roblox_user_\d{1,16}$/;
+
+const UsernameSchema = z
+  .string()
+  .trim()
+  .refine(
+    (v) => ROBLOX_USERNAME.test(v) || ROBLOX_PLACEHOLDER.test(v),
+    "invalid roblox username",
+  );
 
 const Query = z.object({
-  username:    z.string().trim().regex(ROBLOX_USERNAME, "invalid roblox username"),
+  username:    UsernameSchema,
   productSlug: z.string().trim().min(1).max(80).optional(),
   gameId:      z.string().trim().min(1).max(80).optional(),
 });
