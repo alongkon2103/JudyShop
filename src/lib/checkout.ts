@@ -40,7 +40,7 @@ export async function createCheckoutSession(input: CheckoutInput): Promise<{ url
   // Apply card-method surcharge based on site settings.
   const settings = await getSettings();
   const subtotal = Number(plan.priceTHB);
-  const breakdown = priceBreakdown(subtotal, input.method, settings.cardFeePercent);
+  const breakdown = priceBreakdown(subtotal, input.method, settings);
 
   // THB — Stripe supports it for both card and PromptPay. Smallest unit: satang.
   const amountSatang = Math.round(breakdown.total * 100);
@@ -192,6 +192,134 @@ export async function fulfilCheckout(args: {
         addedBy: "stripe",
         orderId: order.id,
         label: stripeLabel,
+      },
+    });
+  });
+}
+
+// ── PayPal fulfilment ────────────────────────────────────────
+
+/**
+ * Idempotent: re-running with the same PayPal `orderId` is safe.
+ * Mirrors `fulfilCheckout` (Stripe) exactly but writes the PayPal id
+ * columns instead — same Order + Whitelist atomic upsert pattern, so
+ * a partial failure can never grant a Whitelist without an Order or
+ * vice versa.
+ *
+ * Called from /api/paypal/capture-order after PayPal confirms the
+ * capture succeeded. There's no separate webhook handler — capture
+ * is synchronous, so this single path is the source of truth.
+ */
+export async function fulfilPaypalCheckout(args: {
+  paypalOrderId:   string;
+  paypalCaptureId: string;
+  productId:  string;
+  planId:     string;
+  username:   string;
+  /** Amount PayPal captured (may be USD if SDK runs in USD mode).
+   *  We use it only as proof of payment — the figure we store in Order
+   *  is always the THB equivalent derived from the plan, so admin
+   *  finance/analytics tools that aggregate in THB stay consistent. */
+  amount:     number;
+  currency:   string;
+  /** PayPal account email of the buyer, used to label the Whitelist row. */
+  payerEmail: string | null;
+}): Promise<void> {
+  const username = normalizeRobloxUsername(args.username);
+  if (!username) throw new Error("PayPal fulfilment missing username");
+
+  const plan = await db.plan.findUnique({
+    where: { id: args.planId },
+    include: { product: true },
+  });
+  if (!plan) throw new Error(`Plan ${args.planId} not found`);
+  if (plan.productId !== args.productId) {
+    throw new Error("PayPal fulfilment: plan/product mismatch");
+  }
+
+  // Always record the order amount in THB regardless of the currency
+  // PayPal actually billed. Admin finance, analytics, refund flows etc.
+  // assume THB everywhere; mixing USD rows breaks aggregates and
+  // makes reports unreadable. We surface the captured USD value in
+  // the Whitelist label so support can still cross-reference if
+  // needed (e.g. "PayPal: foo@bar.com · $19.00 USD").
+  const settings = await getSettings();
+  const subtotalTHB = Number(plan.priceTHB);
+  const breakdownTHB = priceBreakdown(subtotalTHB, "paypal", settings);
+  const storedAmountTHB = breakdownTHB.total;
+
+  const paidNote =
+    args.currency && args.currency.toUpperCase() !== "THB"
+      ? ` · ${args.currency.toUpperCase()} ${args.amount.toFixed(2)}`
+      : "";
+  const paypalLabel = args.payerEmail
+    ? `PayPal: ${args.payerEmail}${paidNote}`
+    : null;
+
+  // --- 1. Compute expiry / lifetime (same rules as Stripe) -----------
+  const existing = await db.whitelist.findUnique({
+    where: { productId_username: { productId: args.productId, username } },
+  });
+  const now = new Date();
+
+  let nextExpireDate: Date | null;
+  let nextIsLifetime: boolean;
+  if (existing?.isLifetime || plan.isLifetime) {
+    nextIsLifetime = true;
+    nextExpireDate = null;
+  } else {
+    nextIsLifetime = false;
+    const days = plan.durationDays ?? 0;
+    const startFrom =
+      existing?.expireDate && existing.expireDate > now ? existing.expireDate : now;
+    nextExpireDate = new Date(startFrom.getTime() + days * DAY_MS);
+  }
+
+  // --- 2. Atomic Order + Whitelist write -----------------------------
+  // Same atomic guarantee as `fulfilCheckout`. Idempotent: capture
+  // endpoint retries (e.g. network blip mid-fulfilment) upsert on
+  // the same paypalOrderId and produce the same end state.
+  await db.$transaction(async (tx) => {
+    const order = await tx.order.upsert({
+      where: { paypalOrderId: args.paypalOrderId },
+      update: {
+        status: "PAID",
+        paypalCaptureId: args.paypalCaptureId,
+        amount:   storedAmountTHB,
+        currency: "THB",
+      },
+      create: {
+        productId: args.productId,
+        planId:    args.planId,
+        username,
+        amount:    storedAmountTHB,
+        currency:  "THB",
+        paymentMethod: "PAYPAL",
+        status:    "PAID",
+        paypalOrderId:   args.paypalOrderId,
+        paypalCaptureId: args.paypalCaptureId,
+      },
+    });
+
+    await tx.whitelist.upsert({
+      where: { productId_username: { productId: args.productId, username } },
+      update: {
+        expireDate: nextExpireDate,
+        isLifetime: nextIsLifetime,
+        source: "PAYPAL",
+        addedBy: "paypal",
+        orderId: order.id,
+        ...(paypalLabel ? { label: paypalLabel } : {}),
+      },
+      create: {
+        productId: args.productId,
+        username,
+        expireDate: nextExpireDate,
+        isLifetime: nextIsLifetime,
+        source: "PAYPAL",
+        addedBy: "paypal",
+        orderId: order.id,
+        label: paypalLabel,
       },
     });
   });

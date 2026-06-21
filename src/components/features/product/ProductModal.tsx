@@ -13,6 +13,7 @@ import { cn } from "@/lib/cn";
 import { ImageCarousel } from "./ImageCarousel";
 import { PlanRow } from "./PlanRow";
 import { PaymentMethodCard } from "./PaymentMethodCard";
+import { PayPalButtons } from "./PayPalButtons";
 import { RobloxPreview } from "./RobloxPreview";
 import { startCheckout } from "@/lib/actions/checkout";
 import { startTrialAction, type StartTrialErrorCode } from "@/lib/actions/trial";
@@ -44,10 +45,35 @@ type Props = {
   onClose: () => void;
   /** Card surcharge percentage from site settings. */
   cardFeePercent: number;
+  /** PayPal surcharge percentage from site settings. */
+  paypalFeePercent: number;
+  /** Public PayPal client id (NEXT_PUBLIC_PAYPAL_CLIENT_ID).
+   *  Empty string disables the PayPal option client-side. */
+  paypalClientId: string;
+  /** ISO currency PayPal will bill in (e.g. "USD" or "THB"). Mirrors
+   *  what the server passes to PayPal's createOrder — must stay in
+   *  sync, so it flows through as a prop rather than reading a
+   *  parallel env var on the client. */
+  paypalCurrency: string;
+  /** Per-gateway kill switches from admin/settings. */
+  promptpayEnabled: boolean;
+  cardEnabled: boolean;
+  paypalEnabled: boolean;
 };
 
 /** Kawaii product modal — chunky lavender card with sticker pills inside. */
-export function ProductModal({ product, open, onClose, cardFeePercent }: Props) {
+export function ProductModal({
+  product,
+  open,
+  onClose,
+  cardFeePercent,
+  paypalFeePercent,
+  paypalClientId,
+  paypalCurrency,
+  promptpayEnabled,
+  cardEnabled,
+  paypalEnabled,
+}: Props) {
   const t = useTranslations("product");
   const titleId = useId();
   const [planId, setPlanId] = useState<string | null>(null);
@@ -75,10 +101,20 @@ export function ProductModal({ product, open, onClose, cardFeePercent }: Props) 
   const [helpOpen, setHelpOpen] = useState(false);
   const helpAutoShownRef = useRef(false);
 
+  // Order matters — first enabled method becomes the auto-selected default
+  // when the modal opens. Mirrors the visual order of the cards below.
+  const enabledMethods = useMemo<PaymentMethod[]>(() => {
+    const list: PaymentMethod[] = [];
+    if (promptpayEnabled) list.push("promptpay");
+    if (cardEnabled)      list.push("card");
+    if (paypalEnabled && paypalClientId) list.push("paypal");
+    return list;
+  }, [promptpayEnabled, cardEnabled, paypalEnabled, paypalClientId]);
+
   useEffect(() => {
     if (product) {
       setPlanId(product.plans[0]?.id ?? null);
-      setMethod("promptpay");
+      setMethod(enabledMethods[0] ?? "promptpay");
       setUsername("");
       setShake(false);
       setCheckoutError(null);
@@ -87,6 +123,7 @@ export function ProductModal({ product, open, onClose, cardFeePercent }: Props) 
       setHelpOpen(false);
       helpAutoShownRef.current = false;
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product]);
 
   // ESC to dismiss help popup (independent of the modal's own ESC handler).
@@ -105,21 +142,23 @@ export function ProductModal({ product, open, onClose, cardFeePercent }: Props) 
   );
 
   const breakdown = useMemo(
-    () => priceBreakdown(selectedPlan?.priceTHB ?? 0, method, cardFeePercent),
-    [selectedPlan, method, cardFeePercent],
+    () => priceBreakdown(selectedPlan?.priceTHB ?? 0, method, { cardFeePercent, paypalFeePercent }),
+    [selectedPlan, method, cardFeePercent, paypalFeePercent],
   );
 
   // USD total mirrors the THB fee multiplier so the displayed amounts
-  // stay in sync — card +6% must add 6% to BOTH currencies, otherwise
-  // "฿1,590 / $50" looks suspicious and undersells the upcharge.
+  // stay in sync — card/paypal +N% must add N% to BOTH currencies,
+  // otherwise "฿1,590 / $50" looks suspicious and undersells the upcharge.
   const usdTotal = useMemo(() => {
     if (!selectedPlan) return 0;
     const base = Number(selectedPlan.priceUSD);
-    if (method === "card" && cardFeePercent > 0) {
-      return Math.round(base * (100 + cardFeePercent)) / 100;
-    }
+    const pct =
+      method === "card"   ? cardFeePercent   :
+      method === "paypal" ? paypalFeePercent :
+      0;
+    if (pct > 0) return Math.round(base * (100 + pct)) / 100;
     return base;
-  }, [selectedPlan, method, cardFeePercent]);
+  }, [selectedPlan, method, cardFeePercent, paypalFeePercent]);
 
   if (!product) return null;
 
@@ -181,7 +220,11 @@ export function ProductModal({ product, open, onClose, cardFeePercent }: Props) 
     });
   };
 
-  const hasCardFee = breakdown.fee > 0;
+  const hasMethodFee = breakdown.fee > 0;
+  const feeLabel =
+    method === "paypal"
+      ? t("paypalFee", { pct: breakdown.feePercent })
+      : t("cardFee",   { pct: breakdown.feePercent });
 
   return (
     <Modal open={open} onClose={onClose} size="lg" labelledBy={titleId}>
@@ -226,10 +269,27 @@ export function ProductModal({ product, open, onClose, cardFeePercent }: Props) 
           ))}
         </div>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <PaymentMethodCard method="promptpay" selected={method === "promptpay"} onSelect={setMethod} cardFeePercent={cardFeePercent} />
-          <PaymentMethodCard method="card"      selected={method === "card"}      onSelect={setMethod} cardFeePercent={cardFeePercent} />
-        </div>
+        {enabledMethods.length > 0 && (
+          <div className={cn(
+            // Stack vertically by default — three side-by-side payment
+            // cards inside the modal width felt cramped (icon + title +
+            // subtitle pile on each other). Switch to two columns only
+            // when there are exactly two methods enabled.
+            "grid grid-cols-1 gap-2.5",
+            enabledMethods.length === 2 && "sm:grid-cols-2",
+          )}>
+            {enabledMethods.map((m) => (
+              <PaymentMethodCard
+                key={m}
+                method={m}
+                selected={method === m}
+                onSelect={setMethod}
+                cardFeePercent={cardFeePercent}
+                paypalFeePercent={paypalFeePercent}
+              />
+            ))}
+          </div>
+        )}
 
         <div className={cn("space-y-2", shake && "anim-shake")}>
           <label className="font-sans text-[12px] font-extrabold uppercase tracking-[0.12em] text-fg-light">
@@ -324,11 +384,9 @@ export function ProductModal({ product, open, onClose, cardFeePercent }: Props) 
               {formatTHB(breakdown.subtotal)}
             </span>
           </div>
-          {hasCardFee && (
+          {hasMethodFee && (
             <div className="flex items-baseline justify-between text-[13px]">
-              <span className="font-sans font-semibold text-fg-light-soft">
-                {t("cardFee", { pct: breakdown.feePercent })}
-              </span>
+              <span className="font-sans font-semibold text-fg-light-soft">{feeLabel}</span>
               <span className="font-sans font-semibold text-fg-light">
                 +{formatTHB(breakdown.fee)}
               </span>
@@ -349,20 +407,62 @@ export function ProductModal({ product, open, onClose, cardFeePercent }: Props) 
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={handlePay}
-          disabled={pending}
-          className={cn(
-            "w-full rounded-full px-6 py-4 font-sans text-[15px] font-extrabold uppercase tracking-[0.12em] text-white sm:text-[17px]",
-            "bg-pink-500",
-            "shadow-[0_3px_0_var(--pink-600),0_10px_28px_-8px_hsl(330_80%_50%/0.45)]",
-            "transition-all duration-fast ease-spring hover:-translate-y-0.5 hover:bg-pink-400 active:translate-y-0.5",
-            (!canPay || pending) && "opacity-75",
-          )}
-        >
-          {pending ? t("redirecting") : t("payNow")}
-        </button>
+        {method === "paypal" && paypalClientId ? (
+          <div className="relative">
+            {/* PayPal SDK has no disabled state — clicking its button
+                always triggers createOrder, which then throws a generic
+                "payment failed" if the form isn't ready. We solve this
+                by (a) disabling pointer events on the SDK button when
+                the form is invalid, and (b) layering a transparent
+                button on top that runs the same shake + inline-error
+                feedback as the regular Pay Now path. The PayPal iframe
+                stops receiving clicks entirely. */}
+            <div
+              className={cn(
+                "transition-opacity duration-fast",
+                (!canPay || pending) && "pointer-events-none opacity-60",
+              )}
+            >
+              <PayPalButtons
+                clientId={paypalClientId}
+                currency={paypalCurrency}
+                productId={product.id}
+                planId={selectedPlan?.id ?? ""}
+                username={username.trim()}
+                disabled={!canPay || pending}
+                onError={(msg) => setCheckoutError(msg)}
+                onSuccess={(url) => window.location.assign(url)}
+              />
+            </div>
+            {(!canPay || pending) && (
+              <button
+                type="button"
+                aria-label={t("selectFirst")}
+                onClick={() => {
+                  setShake(true);
+                  window.setTimeout(() => setShake(false), 450);
+                  setCheckoutError(t("selectFirst"));
+                }}
+                className="absolute inset-0 z-20 cursor-pointer rounded-2xl bg-transparent"
+              />
+            )}
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={handlePay}
+            disabled={pending}
+            className={cn(
+              "w-full rounded-full px-6 py-4 font-sans text-[15px] font-extrabold uppercase tracking-[0.12em] text-white sm:text-[17px]",
+              "bg-pink-500",
+              "shadow-[0_3px_0_var(--pink-600),0_10px_28px_-8px_hsl(330_80%_50%/0.45)]",
+              "transition-all duration-fast ease-spring hover:-translate-y-0.5 hover:bg-pink-400 active:translate-y-0.5",
+              (!canPay || pending) && "opacity-75",
+            )}
+          >
+            {pending ? t("redirecting") : t("payNow")}
+          </button>
+        )}
         {checkoutError && (
           <p className="rounded-md border border-pink-500/40 bg-pink-500/10 px-3 py-2 text-center text-[12px] font-bold text-pink-500">
             {checkoutError}

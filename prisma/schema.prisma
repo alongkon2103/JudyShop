@@ -156,6 +156,7 @@ model Whitelist {
 
 enum WhitelistSource {
   STRIPE
+  PAYPAL
   MANUAL
   PROMO
   REFUND_REVERT
@@ -223,6 +224,13 @@ model Order {
   stripeSessionId String? @unique
   stripePaymentId String?
 
+  /// PayPal Orders v2 — `paypalOrderId` is the unique id returned by
+  /// /v2/checkout/orders, used as the idempotency key on capture.
+  /// `paypalCaptureId` is the id of the capture record itself (one
+  /// per Order, since we use intent=CAPTURE single-capture flow).
+  paypalOrderId   String? @unique
+  paypalCaptureId String?
+
   product   Product    @relation(fields: [productId], references: [id])
   plan      Plan       @relation(fields: [planId], references: [id])
   whitelist Whitelist?
@@ -237,6 +245,7 @@ model Order {
 enum PaymentMethod {
   PROMPTPAY
   CARD
+  PAYPAL
 }
 
 enum OrderStatus {
@@ -359,7 +368,18 @@ model Setting {
   id             String   @id
   /// Percentage added to the cart total when paying by credit card.
   /// e.g. 3.00 → +3 % surcharge. PromptPay is not surcharged.
-  cardFeePercent Decimal  @default(0) @db.Decimal(5, 2)
+  cardFeePercent   Decimal @default(0) @db.Decimal(5, 2)
+  /// Percentage added when paying by PayPal. PayPal fees in TH tend
+  /// to be higher than Stripe card (cross-border + currency
+  /// conversion), so this is usually set higher than `cardFeePercent`.
+  paypalFeePercent Decimal @default(0) @db.Decimal(5, 2)
+
+  /// Per-gateway kill switches. When false, the public checkout hides
+  /// the option AND the server rejects any requests that try to use
+  /// it — used to disable a method during an incident without a deploy.
+  promptpayEnabled Boolean @default(true)
+  cardEnabled      Boolean @default(true)
+  paypalEnabled    Boolean @default(true)
 
   /// Admin-authored site rules — rendered on /[locale]/rules. Stored
   /// as TipTap-sanitized HTML (same pipeline as product descriptions).

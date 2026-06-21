@@ -52,15 +52,30 @@ describe("formatUSD", () => {
     expect(/\$|USD/.test(out)).toBe(true);
   });
 
-  it("rounds to zero fraction digits", () => {
-    expect(digits(formatUSD(9.99))).toBe("10");
+  it("always shows two decimal places (so $19 + 10% fee shows $20.90, not $21)", () => {
+    expect(digits(formatUSD(9.99))).toBe("999");
+    expect(digits(formatUSD(20.9))).toBe("2090");
   });
 
-  it("renders 0 correctly", () => {
-    expect(digits(formatUSD(0))).toBe("0");
+  it("renders 0 with cents", () => {
+    expect(digits(formatUSD(0))).toBe("000");
   });
 
   it("groups thousands in US style", () => {
     expect(formatUSD(1234)).toMatch(/1,234|1.234/); // most builds use ','
+  });
+});
+
+describe("paymentMethodLabel", () => {
+  it("maps each enum value to a display label", async () => {
+    const { paymentMethodLabel } = await import("../format");
+    expect(paymentMethodLabel("CARD")).toBe("Card");
+    expect(paymentMethodLabel("PAYPAL")).toBe("PayPal");
+    expect(paymentMethodLabel("PROMPTPAY")).toBe("PromptPay");
+  });
+
+  it("defaults unknown values to PromptPay (defensive)", async () => {
+    const { paymentMethodLabel } = await import("../format");
+    expect(paymentMethodLabel("UNKNOWN")).toBe("PromptPay");
   });
 });

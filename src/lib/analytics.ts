@@ -52,24 +52,29 @@ export type TimelinePoint = {
 /** Legacy alias kept for callers that still import DailyPoint. */
 export type DailyPoint = TimelinePoint;
 
+export type MethodLabel = "Card" | "PromptPay" | "PayPal";
+
 export type MethodStat = {
-  method: "Card" | "PromptPay";
+  method: MethodLabel;
   orders: number;
   revenue: number;
   pctOfTotal: number;
 };
 
-export type CardFeeStat = {
-  /** Surcharge rate Currently configured in Settings. Used to back
-   *  the per-order fee out of the stored total. */
+/**
+ * Surcharge breakdown — used for both card and PayPal. We back out
+ * the per-order fee from the stored total using the CURRENT rate from
+ * Settings, so historical orders are approximate when the admin has
+ * changed the rate inside the analytics window.
+ */
+export type FeeBreakdownStat = {
   ratePercent: number;
-  /** Total surcharge collected across all PAID card orders. Computed
-   *  from current rate — accurate only when the rate hasn't been
-   *  changed since the orders in this range were placed. */
   collected: number;
-  /** Pre-surcharge revenue from card orders (gross − surcharge). */
   netRevenue: number;
 };
+
+/** Kept for backwards compat with the existing UI binding. */
+export type CardFeeStat = FeeBreakdownStat;
 
 export type ShopAnalytics = {
   range: AnalyticsRange;
@@ -90,7 +95,9 @@ export type ShopAnalytics = {
   /** Card-surcharge breakdown. Always present even when no card
    *  orders exist (rate carries the current Settings value either way
    *  so the UI can still label "Card fee 6%"). */
-  cardFee: CardFeeStat;
+  cardFee: FeeBreakdownStat;
+  /** PayPal-surcharge breakdown. Same semantics as cardFee. */
+  paypalFee: FeeBreakdownStat;
 };
 
 // ── Date helpers ─────────────────────────────────────────────────
@@ -264,7 +271,8 @@ export async function getShopAnalytics(range: AnalyticsRange): Promise<ShopAnaly
   // was active at checkout time, so this is an estimate when the
   // admin has changed the rate inside the analytics window.
   const settings = await getSettings();
-  const cardFeeRate = settings.cardFeePercent;
+  const cardFeeRate   = settings.cardFeePercent;
+  const paypalFeeRate = settings.paypalFeePercent;
 
   const orders = await db.order.findMany({
     where: {
@@ -304,9 +312,10 @@ export async function getShopAnalytics(range: AnalyticsRange): Promise<ShopAnaly
     orders: number; revenue: number;
   };
   const gameMap   = new Map<string, GameAcc>();
-  const methodMap = new Map<"Card" | "PromptPay", { orders: number; revenue: number }>([
-    ["Card", { orders: 0, revenue: 0 }],
+  const methodMap = new Map<MethodLabel, { orders: number; revenue: number }>([
+    ["Card",      { orders: 0, revenue: 0 }],
     ["PromptPay", { orders: 0, revenue: 0 }],
+    ["PayPal",    { orders: 0, revenue: 0 }],
   ]);
   const uniqueUsers = new Set<string>();
 
@@ -314,8 +323,10 @@ export async function getShopAnalytics(range: AnalyticsRange): Promise<ShopAnaly
   let grossRevenue   = 0;
   let refundedOrders = 0;
   let refundedAmount = 0;
-  let cardFeeCollected = 0;
-  let cardGrossRevenue = 0;
+  let cardFeeCollected   = 0;
+  let cardGrossRevenue   = 0;
+  let paypalFeeCollected = 0;
+  let paypalGrossRevenue = 0;
 
   for (const order of orders) {
     const amount = Number(order.amount);
@@ -353,19 +364,24 @@ export async function getShopAnalytics(range: AnalyticsRange): Promise<ShopAnaly
       g.revenue += amount;
 
       // Per-method
-      const method = order.paymentMethod === "CARD" ? "Card" : "PromptPay";
+      const method: MethodLabel =
+        order.paymentMethod === "CARD"   ? "Card" :
+        order.paymentMethod === "PAYPAL" ? "PayPal" :
+        "PromptPay";
       const m = methodMap.get(method)!;
       m.orders  += 1;
       m.revenue += amount;
 
-      // Card surcharge — back out using current rate.
+      // Per-gateway surcharge — back out using the CURRENT rate.
       //   amount = base × (1 + rate/100)  →  fee = amount × rate / (100 + rate)
-      if (method === "Card" && cardFeeRate > 0) {
-        const fee = amount * cardFeeRate / (100 + cardFeeRate);
-        cardFeeCollected += fee;
+      // Gross totals accumulate for every order of that method so the
+      // pre-fee revenue is correct even when the rate is 0%.
+      if (method === "Card") {
         cardGrossRevenue += amount;
-      } else if (method === "Card") {
-        cardGrossRevenue += amount;
+        if (cardFeeRate > 0) cardFeeCollected += amount * cardFeeRate / (100 + cardFeeRate);
+      } else if (method === "PayPal") {
+        paypalGrossRevenue += amount;
+        if (paypalFeeRate > 0) paypalFeeCollected += amount * paypalFeeRate / (100 + paypalFeeRate);
       }
     } else {
       refundedOrders += 1;
@@ -414,6 +430,11 @@ export async function getShopAnalytics(range: AnalyticsRange): Promise<ShopAnaly
       ratePercent: cardFeeRate,
       collected:   cardFeeCollected,
       netRevenue:  cardGrossRevenue - cardFeeCollected,
+    },
+    paypalFee: {
+      ratePercent: paypalFeeRate,
+      collected:   paypalFeeCollected,
+      netRevenue:  paypalGrossRevenue - paypalFeeCollected,
     },
   };
 }

@@ -22,8 +22,8 @@ export default async function AdminSettingsPage() {
       <div className="panel mx-auto max-w-2xl rounded-xl p-4 sm:p-6">
         <h2 className="mb-3 text-[15px] font-semibold text-fg-light">Payment fees</h2>
         <p className="mb-4 text-[13px] text-fg-light-soft">
-          ค่าธรรมเนียมจะถูกบวกเพิ่มจากราคาสินค้าตอนผู้ใช้เลือกจ่ายด้วยบัตรเครดิต ·
-          PromptPay จะไม่บวกค่าธรรมเนียม
+          ค่าธรรมเนียมจะถูกบวกเพิ่มจากราคาสินค้าตอนผู้ใช้เลือกจ่ายด้วยบัตรเครดิต หรือ PayPal ·
+          PromptPay ไม่บวกค่าธรรมเนียม
         </p>
         <SettingsForm initial={settings} />
       </div>

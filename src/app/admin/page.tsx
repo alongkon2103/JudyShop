@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowDownRight, ArrowUpRight, Coins, Package, Receipt, ScrollText, TrendingUp, Users } from "lucide-react";
 import { requireAdmin } from "@/lib/admin-session";
 import { getDashboardMetrics } from "@/lib/admin/metrics";
-import { formatTHB } from "@/lib/format";
+import { formatTHB, paymentMethodLabel } from "@/lib/format";
 import { cn } from "@/lib/cn";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { StatusBadge } from "@/components/admin/StatusBadge";
@@ -175,7 +175,7 @@ export default async function AdminDashboardPage() {
                       <td className="py-2 pr-2 text-fg-light-soft">{o.username}</td>
                       <td className="py-2 pr-2">
                         <span className="font-medium text-fg-light-soft">
-                          {o.paymentMethod === "CARD" ? "Card" : "PromptPay"}
+                          {paymentMethodLabel(o.paymentMethod)}
                         </span>
                       </td>
                       <td className="py-2 pr-2">

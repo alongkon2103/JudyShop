@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, CreditCard, QrCode } from "lucide-react";
+import { Check, CreditCard, QrCode, Wallet } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/cn";
 import type { PaymentMethod } from "@/types";
@@ -8,6 +8,7 @@ import type { PaymentMethod } from "@/types";
 const ICONS: Record<PaymentMethod, typeof QrCode> = {
   promptpay: QrCode,
   card:      CreditCard,
+  paypal:    Wallet,
 };
 
 type Props = {
@@ -16,20 +17,29 @@ type Props = {
   onSelect: (m: PaymentMethod) => void;
   /** Card surcharge percentage — drives the card subtitle copy. */
   cardFeePercent: number;
+  /** PayPal surcharge percentage — drives the paypal subtitle copy. */
+  paypalFeePercent: number;
 };
 
 /** Kawaii payment tile — rounded chunky, with check corner on selected. */
-export function PaymentMethodCard({ method, selected, onSelect, cardFeePercent }: Props) {
+export function PaymentMethodCard({ method, selected, onSelect, cardFeePercent, paypalFeePercent }: Props) {
   const t = useTranslations("product");
   const Icon = ICONS[method];
 
-  const title = method === "promptpay" ? t("promptpayTitle") : t("cardTitle");
+  const title =
+    method === "promptpay" ? t("promptpayTitle") :
+    method === "card"      ? t("cardTitle") :
+    /* paypal */             t("paypalTitle");
+
   const subtitle =
-    method === "promptpay"
-      ? t("promptpaySubtitle")
-      : cardFeePercent > 0
-        ? t("cardSubtitleFee", { pct: formatFee(cardFeePercent) })
-        : t("cardSubtitleNoFee");
+    method === "promptpay" ? t("promptpaySubtitle") :
+    method === "card"
+      ? (cardFeePercent > 0
+          ? t("cardSubtitleFee", { pct: formatFee(cardFeePercent) })
+          : t("cardSubtitleNoFee"))
+      : /* paypal */ (paypalFeePercent > 0
+          ? t("paypalSubtitleFee", { pct: formatFee(paypalFeePercent) })
+          : t("paypalSubtitleNoFee"));
 
   return (
     <button

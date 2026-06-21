@@ -158,7 +158,10 @@ export default async function AnalyticsPage({
                 segments={data.byMethod.map((m) => ({
                   label: m.method,
                   value: m.revenue,
-                  color: m.method === "Card" ? "hsl(265 60% 55%)" : "hsl(330 75% 50%)",
+                  color:
+                    m.method === "Card"      ? "hsl(265 60% 55%)" :  // violet
+                    m.method === "PayPal"    ? "hsl(42 95% 55%)" :   // gold (PayPal brand)
+                    /* PromptPay */            "hsl(330 75% 50%)",   // pink
                 }))}
                 centerLabel={data.totals.paidOrders.toLocaleString()}
                 centerSub="ORDERS"
@@ -185,41 +188,64 @@ export default async function AnalyticsPage({
             </>
           )}
 
-          {/* Card surcharge breakdown — appears regardless of whether
-              any card orders fired so the rate is always visible to
-              the admin. */}
-          <div className=" bg-pink-500/5 p-3">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-pink-400">
-              ค่าธรรมเนียมบัตร{" "}
-              <span className="ml-1 rounded-full bg-pink-500/15 px-2 py-0.5 tabular-nums">
-                {data.cardFee.ratePercent.toFixed(2)}%
-              </span>
-            </p>
-            <p className="mt-1.5 font-display text-[24px] text-pink-500">
-              {fmtTHB(data.cardFee.collected)}
-            </p>
-            <p className="mt-1 text-[10.5px] text-fg-light-soft">
-              เก็บได้จากออเดอร์ที่จ่ายผ่านบัตรในช่วงนี้
-              {data.cardFee.collected > 0 && (
-                <>
-                  {" · "}
-                  ฐานก่อนคิดค่าธรรมเนียม{" "}
-                  <strong className="text-fg-light">{fmtTHB(data.cardFee.netRevenue)}</strong>
-                </>
-              )}
-            </p>
-            {data.cardFee.ratePercent === 0 && (
-              <p className="mt-1.5 text-[10.5px] text-fg-light-mute">
-                ยังไม่ได้ตั้งค่าธรรมเนียมบัตร — ตั้งได้ที่{" "}
-                <a href="/admin/settings" className="font-semibold text-pink-400 hover:underline">
-                  Settings
-                </a>
-              </p>
-            )}
-          </div>
+          {/* Per-gateway surcharge breakdowns — both cards render whether
+              or not the gateway had orders, so admin always sees the
+              current rate even on slow days. */}
+          <FeeBreakdownCard
+            label="ค่าธรรมเนียมบัตร"
+            sourceLabel="บัตร"
+            stat={data.cardFee}
+          />
+          <FeeBreakdownCard
+            label="ค่าธรรมเนียม PayPal"
+            sourceLabel="PayPal"
+            stat={data.paypalFee}
+          />
         </div>
       </div>
     </section>
+  );
+}
+
+function FeeBreakdownCard({
+  label,
+  sourceLabel,
+  stat,
+}: {
+  label: string;
+  sourceLabel: string;
+  stat: { ratePercent: number; collected: number; netRevenue: number };
+}) {
+  return (
+    <div className=" bg-pink-500/5 p-3">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-pink-400">
+        {label}{" "}
+        <span className="ml-1 rounded-full bg-pink-500/15 px-2 py-0.5 tabular-nums">
+          {stat.ratePercent.toFixed(2)}%
+        </span>
+      </p>
+      <p className="mt-1.5 font-display text-[24px] text-pink-500">
+        {fmtTHB(stat.collected)}
+      </p>
+      <p className="mt-1 text-[10.5px] text-fg-light-soft">
+        เก็บได้จากออเดอร์ที่จ่ายผ่าน{sourceLabel}ในช่วงนี้
+        {stat.collected > 0 && (
+          <>
+            {" · "}
+            ฐานก่อนคิดค่าธรรมเนียม{" "}
+            <strong className="text-fg-light">{fmtTHB(stat.netRevenue)}</strong>
+          </>
+        )}
+      </p>
+      {stat.ratePercent === 0 && (
+        <p className="mt-1.5 text-[10.5px] text-fg-light-mute">
+          ยังไม่ได้ตั้งค่าธรรมเนียม{sourceLabel} — ตั้งได้ที่{" "}
+          <a href="/admin/settings" className="font-semibold text-pink-400 hover:underline">
+            Settings
+          </a>
+        </p>
+      )}
+    </div>
   );
 }
 

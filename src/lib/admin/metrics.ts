@@ -30,7 +30,7 @@ export type RecentOrder = {
   username: string;
   amount: number;
   status: "PAID" | "PENDING" | "FAILED" | "REFUNDED";
-  paymentMethod: "PROMPTPAY" | "CARD";
+  paymentMethod: "PROMPTPAY" | "CARD" | "PAYPAL";
   productName: string;
   createdAt: Date;
 };

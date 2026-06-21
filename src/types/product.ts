@@ -32,4 +32,4 @@ export type Product = {
   trialMinutes?: number;
 };
 
-export type PaymentMethod = "promptpay" | "card";
+export type PaymentMethod = "promptpay" | "card" | "paypal";

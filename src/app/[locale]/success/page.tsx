@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { stripe } from "@/lib/stripe";
 import { db } from "@/lib/db";
 import { fulfilCheckout } from "@/lib/checkout";
-import { isCheckoutOwner } from "@/lib/checkout-cookie";
+import { isCheckoutOwner, isPaypalOwner } from "@/lib/checkout-cookie";
 import { pickI18n, type Locale } from "@/lib/locale";
 
 export async function generateMetadata({
@@ -20,8 +20,14 @@ export async function generateMetadata({
 
 export const dynamic = "force-dynamic";
 
-function fmtTHB(amount: number) {
-  return `฿${amount.toLocaleString("th-TH", { maximumFractionDigits: 2 })}`;
+function fmtAmount(amount: number, currency: string) {
+  // PayPal orders may be in USD; Stripe orders default to THB. Render
+  // whichever the Order row actually has so the success page never lies
+  // about what the buyer paid.
+  if (currency === "THB") {
+    return `฿${amount.toLocaleString("th-TH", { maximumFractionDigits: 2 })}`;
+  }
+  return `$${amount.toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
 }
 
 function formatBytes(n: number | null | undefined) {
@@ -37,22 +43,25 @@ export default async function SuccessPage({
   searchParams,
 }: {
   params: { locale: string };
-  searchParams: { session_id?: string };
+  searchParams: { session_id?: string; paypal_order?: string };
 }) {
   setRequestLocale(params.locale);
   const locale = params.locale as Locale;
   const t = await getTranslations({ locale: params.locale, namespace: "success" });
 
-  const sessionId = searchParams.session_id;
+  const sessionId    = searchParams.session_id;
+  const paypalOrder  = searchParams.paypal_order;
 
-  // Cookie set by `startCheckout` — proves *this browser* initiated
-  // the checkout. Without it, /success is just a generic confirmation:
-  // no order details, no premium downloads (which would otherwise leak
-  // to anyone with the session_id link).
-  const isOwner = isCheckoutOwner(sessionId);
+  // Cookie-pinned ownership for BOTH paths. Without these checks a
+  // leaked URL (browser history, support screenshot, shared link)
+  // would reveal premium downloads + buyer PII to anyone who clicks it.
+  //   - Stripe: cookie set in `startCheckout` server action
+  //   - PayPal: cookie set in /api/paypal/capture-order on success
+  const isStripeOwner    = isCheckoutOwner(sessionId);
+  const isPaypalOwnerNow = isPaypalOwner(paypalOrder);
 
   let session: Awaited<ReturnType<typeof stripe.checkout.sessions.retrieve>> | null = null;
-  if (sessionId && isOwner) {
+  if (sessionId && isStripeOwner) {
     try {
       session = await stripe.checkout.sessions.retrieve(sessionId);
     } catch {
@@ -71,17 +80,23 @@ export default async function SuccessPage({
     whitelist: { select: { expireDate: true, isLifetime: true } },
   } as const;
 
-  // Owner-only DB lookup. Strangers don't get to enumerate orders
-  // by session id, so the rest of the page renders the generic
-  // confirmation branch below.
-  let order = isOwner && sessionId
-    ? await db.order.findUnique({ where: { stripeSessionId: sessionId }, include: orderInclude })
-    : null;
+  // Resolve the Order only when the visiting browser owns the checkout
+  // — either via the Stripe cookie + session_id, or via the PayPal
+  // cookie + paypal_order. Strangers without the cookie fall through
+  // to the generic confirmation card (no premium content).
+  let order =
+    isPaypalOwnerNow && paypalOrder
+      ? await db.order.findUnique({ where: { paypalOrderId: paypalOrder }, include: orderInclude })
+      : isStripeOwner && sessionId
+        ? await db.order.findUnique({ where: { stripeSessionId: sessionId }, include: orderInclude })
+        : null;
 
   // Fallback fulfilment (webhook hasn't fired yet). Only the owning
   // browser may trigger it — `fulfilCheckout` is idempotent, so this
   // is purely a UX optimisation for the buyer, not a security path.
-  if (isOwner && !order && session?.payment_status === "paid") {
+  // PayPal doesn't need a fallback: capture-order is synchronous and
+  // the Order row is guaranteed present before we redirect here.
+  if (isStripeOwner && !order && session?.payment_status === "paid") {
     try {
       const md = (session.metadata ?? {}) as Record<string, string | undefined>;
       const pm =
@@ -113,7 +128,12 @@ export default async function SuccessPage({
   const presets   = product?.presets      ?? [];
   const overlays  = product?.giftOverlays ?? [];
 
-  const paid = session?.payment_status === "paid";
+  // "Paid" derives from the Order row when present (PayPal: capture
+  // already completed and the row exists) and falls back to Stripe
+  // session state for the cookie path. Stranger view kicks in when
+  // we have neither — page becomes a generic confirmation card.
+  const paid = order?.status === "PAID" || session?.payment_status === "paid";
+  const isOwner = isStripeOwner || isPaypalOwnerNow;
   const productName = product ? pickI18n(product.nameEn, product.nameTh, locale) : "";
   const planName    = order   ? pickI18n(order.plan.labelEn, order.plan.labelTh, locale) : "";
 
@@ -157,7 +177,7 @@ export default async function SuccessPage({
 
               <dt className="text-fg-light-mute">{t("paidLabel")}</dt>
               <dd className="font-semibold text-pink-500">
-                {fmtTHB(Number(order.amount))}
+                {fmtAmount(Number(order.amount), order.currency)}
               </dd>
 
               {order.whitelist && (

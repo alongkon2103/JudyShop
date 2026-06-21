@@ -18,7 +18,8 @@
 import { cookies } from "next/headers";
 import { env } from "./env";
 
-const COOKIE_NAME = "judyshop_checkout_session";
+const COOKIE_NAME        = "judyshop_checkout_session";
+const PAYPAL_COOKIE_NAME = "judyshop_paypal_order";
 // 24h — long enough for refresh / browser-back / PromptPay's async
 // confirmation, short enough that a stale cookie can't accumulate.
 const TTL_SECONDS = 60 * 60 * 24;
@@ -47,4 +48,32 @@ export function readCheckoutSessionCookie(): string | null {
 export function isCheckoutOwner(sessionId: string | undefined | null): boolean {
   if (!sessionId) return false;
   return readCheckoutSessionCookie() === sessionId;
+}
+
+// ── PayPal — same pattern, separate cookie ─────────────────
+// PayPal's flow can't set the cookie at create-order time because
+// the buyer may abandon before approving. We set it at capture-order
+// (proof of payment) so /success can resolve `?paypal_order=` only
+// for the browser that just paid. Without this, a leaked URL would
+// reveal premium downloads (presets/overlays) to anyone with the link.
+
+export function setPaypalOwnerCookie(paypalOrderId: string): void {
+  cookies().set({
+    name: PAYPAL_COOKIE_NAME,
+    value: paypalOrderId,
+    httpOnly: true,
+    secure: env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: TTL_SECONDS,
+  });
+}
+
+export function readPaypalOwnerCookie(): string | null {
+  return cookies().get(PAYPAL_COOKIE_NAME)?.value ?? null;
+}
+
+export function isPaypalOwner(paypalOrderId: string | undefined | null): boolean {
+  if (!paypalOrderId) return false;
+  return readPaypalOwnerCookie() === paypalOrderId;
 }

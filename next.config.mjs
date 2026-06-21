@@ -53,6 +53,10 @@ const nextConfig = {
     // the server action handler.
     serverActions: {
       bodySizeLimit: "25mb",
+      // Allow server actions through dev tunnels (Cloudflare quick tunnel,
+      // ngrok, etc.) so PayPal sandbox testing on a real device works.
+      // Localhost stays implicit-allowed; explicit list covers the rest.
+      allowedOrigins: ["*.trycloudflare.com", "*.ngrok-free.app", "*.ngrok.io"],
     },
   },
   async headers() {

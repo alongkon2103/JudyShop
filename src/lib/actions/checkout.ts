@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { createCheckoutSession } from "@/lib/checkout";
 import { setCheckoutSessionCookie } from "@/lib/checkout-cookie";
+import { getSettings } from "@/lib/settings";
 
 const Input = z.object({
   productId: z.string().min(1).max(50),
@@ -22,6 +23,16 @@ export async function startCheckout(payload: unknown): Promise<{ ok: true; url: 
   const parsed = Input.safeParse(payload);
   if (!parsed.success) {
     return { ok: false, error: "Invalid request" };
+  }
+  // Honour the per-gateway kill switch from admin/settings. Server-side
+  // check is the real gate — the UI hides disabled cards but a tampered
+  // client could still POST here, so we don't trust the visible state.
+  const settings = await getSettings();
+  if (parsed.data.method === "promptpay" && !settings.promptpayEnabled) {
+    return { ok: false, error: "PromptPay is temporarily unavailable." };
+  }
+  if (parsed.data.method === "card" && !settings.cardEnabled) {
+    return { ok: false, error: "Card payment is temporarily unavailable." };
   }
   try {
     const { url, id } = await createCheckoutSession(parsed.data);

@@ -33,6 +33,26 @@ export const env = {
   get STRIPE_SECRET_KEY()     { return required("STRIPE_SECRET_KEY"); },
   get STRIPE_WEBHOOK_SECRET() { return required("STRIPE_WEBHOOK_SECRET"); },
 
+  /** PayPal — server-side. Public client id is exposed to the browser
+   *  via NEXT_PUBLIC_PAYPAL_CLIENT_ID (Next inlines it at build time). */
+  get PAYPAL_CLIENT_ID()     { return required("PAYPAL_CLIENT_ID"); },
+  get PAYPAL_CLIENT_SECRET() { return required("PAYPAL_CLIENT_SECRET"); },
+  /** "sandbox" or "live". Defaults to sandbox so a forgotten env var
+   *  can never accidentally hit the live API with sandbox creds. */
+  get PAYPAL_MODE() {
+    const v = (process.env.PAYPAL_MODE ?? "sandbox").trim().toLowerCase();
+    return v === "live" ? "live" : "sandbox";
+  },
+  /** Currency PayPal bills in. Allowlist enforced so a typo can't
+   *  silently fall through to an unsupported value (PayPal would
+   *  reject with a confusing generic error). One source of truth on
+   *  the server — the client receives it as a prop, never reads its
+   *  own env var, so server + SDK never disagree. */
+  get PAYPAL_CURRENCY() {
+    const v = (process.env.PAYPAL_CURRENCY ?? "USD").trim().toUpperCase();
+    return v === "THB" ? "THB" : "USD";
+  },
+
   /** Public site origin for Stripe success/cancel callbacks.
    *  Falls back to localhost in dev. */
   get SITE_URL() {

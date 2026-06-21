@@ -9,9 +9,28 @@ type Props = {
   products: Product[];
   /** Percentage surcharge applied to card payments. */
   cardFeePercent: number;
+  /** Percentage surcharge applied to PayPal payments. */
+  paypalFeePercent: number;
+  /** Public PayPal client id. Empty string hides the PayPal option. */
+  paypalClientId: string;
+  /** ISO currency the PayPal SDK + server use (e.g. "USD" / "THB"). */
+  paypalCurrency: string;
+  /** Per-gateway kill switches from site settings. */
+  promptpayEnabled: boolean;
+  cardEnabled: boolean;
+  paypalEnabled: boolean;
 };
 
-export function ProductGrid({ products, cardFeePercent }: Props) {
+export function ProductGrid({
+  products,
+  cardFeePercent,
+  paypalFeePercent,
+  paypalClientId,
+  paypalCurrency,
+  promptpayEnabled,
+  cardEnabled,
+  paypalEnabled,
+}: Props) {
   const [selected, setSelected] = useState<Product | null>(null);
 
   return (
@@ -33,6 +52,12 @@ export function ProductGrid({ products, cardFeePercent }: Props) {
         open={!!selected}
         onClose={() => setSelected(null)}
         cardFeePercent={cardFeePercent}
+        paypalFeePercent={paypalFeePercent}
+        paypalClientId={paypalClientId}
+        paypalCurrency={paypalCurrency}
+        promptpayEnabled={promptpayEnabled}
+        cardEnabled={cardEnabled}
+        paypalEnabled={paypalEnabled}
       />
     </>
   );

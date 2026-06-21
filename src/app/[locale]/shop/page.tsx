@@ -4,6 +4,7 @@ import { Container } from "@/components/ui/Container";
 import { ProductGrid } from "@/components/features/shop/ProductGrid";
 import { getActiveProducts } from "@/lib/products";
 import { getSettings } from "@/lib/settings";
+import { env } from "@/lib/env";
 import type { Locale } from "@/lib/locale";
 
 export async function generateMetadata({
@@ -44,7 +45,16 @@ export default async function ShopPage({ params }: { params: { locale: string } 
         {products.length === 0 ? (
           <EmptyShop emptyTitle={t("empty")} emptyHint={t("emptyHint")} />
         ) : (
-          <ProductGrid products={products} cardFeePercent={settings.cardFeePercent} />
+          <ProductGrid
+            products={products}
+            cardFeePercent={settings.cardFeePercent}
+            paypalFeePercent={settings.paypalFeePercent}
+            paypalClientId={process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ?? ""}
+            paypalCurrency={env.PAYPAL_CURRENCY}
+            promptpayEnabled={settings.promptpayEnabled}
+            cardEnabled={settings.cardEnabled}
+            paypalEnabled={settings.paypalEnabled}
+          />
         )}
       </Container>
     </section>

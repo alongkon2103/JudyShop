@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/admin/EmptyState";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { Pagination } from "@/components/admin/Pagination";
 import { RefundButton } from "./RefundButton";
+import { paymentMethodLabel } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Transactions" };
 
@@ -31,6 +32,7 @@ function fmtMoney(amount: number, currency: string) {
   }
   return `$${amount.toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
 }
+
 
 function fmtDate(d: Date) {
   return d.toLocaleString("en-GB", {
@@ -107,7 +109,7 @@ export default async function TransactionsPage({
                   <th className="px-4 py-2.5 font-semibold">User</th>
                   <th className="px-4 py-2.5 font-semibold">Method</th>
                   <th className="px-4 py-2.5 text-right font-semibold">Amount</th>
-                  <th className="px-4 py-2.5 font-semibold">Stripe</th>
+                  <th className="px-4 py-2.5 font-semibold">Payment ID</th>
                   <th className="px-4 py-2.5 font-semibold">Date</th>
                   <th className="px-4 py-2.5 text-right font-semibold">Actions</th>
                 </tr>
@@ -128,15 +130,25 @@ export default async function TransactionsPage({
                       {o.username}
                     </td>
                     <td className="px-4 py-3 text-[12px] text-fg-light-soft">
-                      {o.paymentMethod === "CARD" ? "Card" : "PromptPay"}
+                      {paymentMethodLabel(o.paymentMethod)}
                     </td>
                     <td className="px-4 py-3 text-right text-[13px] font-semibold tabular-nums">
                       {fmtMoney(Number(o.amount), o.currency)}
                     </td>
                     <td className="px-4 py-3 font-mono text-[10px] text-fg-light-mute">
-                      <span className="block max-w-[200px] truncate" title={o.stripePaymentId ?? o.stripeSessionId ?? ""}>
-                        {o.stripePaymentId ?? o.stripeSessionId ?? "—"}
-                      </span>
+                      {(() => {
+                        // Prefer the most actionable id for each gateway:
+                        // Stripe: paymentIntent (for refunds), fall back to session id.
+                        // PayPal: captureId (for refunds), fall back to orderId.
+                        const id =
+                          o.stripePaymentId ?? o.stripeSessionId ??
+                          o.paypalCaptureId ?? o.paypalOrderId ?? null;
+                        return (
+                          <span className="block max-w-[200px] truncate" title={id ?? ""}>
+                            {id ?? "—"}
+                          </span>
+                        );
+                      })()}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-[11px] text-fg-light-soft">
                       {fmtDate(o.createdAt)}
@@ -148,7 +160,7 @@ export default async function TransactionsPage({
                           amount={fmtMoney(Number(o.amount), o.currency)}
                           username={o.username}
                           stripePaymentId={o.stripePaymentId}
-                          paymentMethod={o.paymentMethod === "CARD" ? "Card" : "PromptPay"}
+                          paymentMethod={paymentMethodLabel(o.paymentMethod) as "Card" | "PromptPay"}
                           productName={o.product.nameEn}
                           planLabel={o.plan.labelEn}
                         />
