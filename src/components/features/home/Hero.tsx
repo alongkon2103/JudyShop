@@ -24,16 +24,27 @@ export function Hero() {
             {t("heroSubtitle")}
           </p>
 
-          <div className="anim-fade-up anim-delay-500 mt-s5 flex flex-wrap items-center justify-center gap-3">
-            <Button href="/shop" size="lg">{t("ctaShop")}</Button>
+          <div className="anim-fade-up anim-delay-500 mt-s5 flex flex-col items-center gap-3">
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <Button href="/shop" size="lg">{t("ctaShop")}</Button>
+              <Button
+                href={SITE.discordUrl}
+                variant="discord"
+                size="lg"
+                target="_blank"
+                rel="noreferrer"
+              >
+                {tCommon("joinDiscord")}
+              </Button>
+            </div>
             <Button
-              href={SITE.discordUrl}
-              variant="discord"
+              href={SITE.tikfinityUrl}
+              variant="secondary"
               size="lg"
               target="_blank"
               rel="noreferrer"
             >
-              {tCommon("joinDiscord")}
+              {t("ctaTikfinity")}
             </Button>
           </div>
         </div>

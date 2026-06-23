@@ -33,6 +33,7 @@ export const SITE = {
   discordUrl: "https://discord.gg/ERV8KqRztF",
   tiktokUrl: "https://www.tiktok.com/@judyshop_th",
   youtubeUrl: "https://www.youtube.com/@JUDYSHOP-TH",
+  tikfinityUrl: "https://store.judygamestudio.com/",
   supportEmail: "judyshop0330@gmail.com",
 } as const;
 

@@ -22,6 +22,8 @@
     "audit": "tsx scripts/audit.ts",
     "build:manual": "tsx scripts/build-manual-pdf.ts",
     "build:quotation": "tsx scripts/build-quotation-pdf.ts",
+    "build:invoice:paypal": "tsx scripts/build-invoice-paypal-addon-pdf.ts",
+    "build:quotation:tikfinity": "tsx scripts/build-quotation-judyshop-tikfinity-pdf.ts",
     "import:whitelist": "tsx scripts/import-whitelist-xlsx.ts"
   },
   "prisma": {

@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8" />
+<title>ใบเสนอราคา — JudyShop Tikfinity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:    #1a3d72;
+    --navy-2:  #2d5491;
+    --pink:    #d63384;
+    --ink:     #1a1a1a;
+    --ink-soft:#444;
+    --ink-mute:#767676;
+    --border:  #d9d9d9;
+    --border-2:#ececec;
+    --bg-soft: #f5f7fa;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0; padding: 0;
+    font-family: "Noto Sans Thai", "Sarabun", Arial, sans-serif;
+    color: var(--ink);
+    font-size: 10pt;
+    line-height: 1.45;
+  }
+
+  /* ── Heading ────────────────────────────────────────────── */
+  .cover-head {
+    text-align: center;
+    padding: 10pt 0 8pt;
+    border-bottom: 2.5pt solid var(--navy);
+    margin-bottom: 10pt;
+  }
+  .cover-head h1 {
+    margin: 0;
+    font-size: 22pt;
+    color: var(--navy);
+    font-weight: 700;
+  }
+  .cover-head .en {
+    font-size: 11pt;
+    color: var(--navy-2);
+    letter-spacing: 0.1em;
+  }
+  .cover-head .sub {
+    font-size: 9pt;
+    color: var(--ink-mute);
+    margin-top: 2pt;
+  }
+  .cover-head .addon-pill {
+    display: inline-block;
+    margin-top: 5pt;
+    padding: 2pt 10pt;
+    background: var(--navy-2);
+    color: #fff;
+    font-size: 9pt;
+    font-weight: 700;
+    border-radius: 10pt;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── Info boxes ─────────────────────────────────────────── */
+  .info-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 7pt;
+    margin-bottom: 8pt;
+  }
+  .info-box {
+    border: 1pt solid var(--border);
+    border-radius: 4pt;
+    padding: 7pt 9pt;
+  }
+  .info-box h3 {
+    margin: 0 0 3pt;
+    font-size: 10pt;
+    color: var(--navy);
+  }
+  .info-box p {
+    margin: 0;
+    font-size: 8.5pt;
+    color: var(--ink-soft);
+    line-height: 1.4;
+  }
+  .info-box strong { color: var(--ink); font-weight: 600; }
+
+  /* ── Section heading ──────────────────────────────────── */
+  h2 {
+    margin: 9pt 0 5pt;
+    font-size: 11.5pt;
+    color: var(--navy);
+    padding-bottom: 2.5pt;
+    border-bottom: 1pt solid var(--border);
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+  h2 .en {
+    font-size: 9pt;
+    color: var(--ink-mute);
+    font-weight: 400;
+    margin-left: 6pt;
+  }
+
+  /* Small sections keep their content together; the Scope table is
+     allowed to flow because it's the tallest block and would
+     otherwise force the whole table to leap to page 2 if the
+     previous section pushes past the page boundary by even a few pt. */
+  .section {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .section.flow {
+    page-break-inside: auto;
+    break-inside: auto;
+  }
+
+  /* ── Project details ────────────────────────────────────── */
+  dl.proj {
+    margin: 0;
+    display: grid;
+    grid-template-columns: 92pt 1fr;
+    gap: 2.5pt 10pt;
+  }
+  dl.proj dt {
+    font-weight: 700;
+    color: var(--ink);
+    font-size: 8.5pt;
+  }
+  dl.proj dd {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 8.5pt;
+  }
+
+  /* ── Reference banner ───────────────────────────────────── */
+  .ref-banner {
+    background: var(--bg-soft);
+    border-left: 3pt solid var(--navy-2);
+    padding: 6pt 9pt;
+    margin: 5pt 0 7pt;
+    font-size: 8.5pt;
+    color: var(--ink-soft);
+  }
+  .ref-banner strong { color: var(--navy); }
+
+  /* ── Scope table ────────────────────────────────────────── */
+  table.scope {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 4pt 0;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  table.scope th {
+    background: var(--navy);
+    color: #fff;
+    font-size: 8.5pt;
+    font-weight: 700;
+    text-align: left;
+    padding: 5pt 8pt;
+  }
+  table.scope th.num   { width: 7%;  text-align: center; }
+  table.scope th.price { width: 14%; text-align: right; }
+  table.scope td {
+    padding: 4.5pt 8pt;
+    font-size: 9pt;
+    border-bottom: 1pt solid var(--border-2);
+    vertical-align: top;
+  }
+  table.scope td.num   { text-align: center; color: var(--ink-mute); }
+  table.scope td.price { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+  table.scope tbody tr:nth-child(even) { background: var(--bg-soft); }
+  table.scope tfoot td {
+    background: var(--navy);
+    color: #fff;
+    font-weight: 700;
+    font-size: 10pt;
+    padding: 6.5pt 8pt;
+    border: 0;
+  }
+  table.scope tfoot td.label { text-align: right; }
+
+  /* ── Payment table ──────────────────────────────────────── */
+  table.payment {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 4pt 0;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  table.payment th {
+    background: var(--navy);
+    color: #fff;
+    font-size: 8.5pt;
+    padding: 5pt 8pt;
+    text-align: left;
+  }
+  table.payment th.amount { text-align: right; width: 22%; }
+  table.payment td {
+    padding: 5pt 8pt;
+    border-bottom: 1pt solid var(--border-2);
+    font-size: 9pt;
+  }
+  table.payment td.amount {
+    text-align: right;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  table.payment td.label { font-weight: 700; }
+
+  /* ── Conditions ─────────────────────────────────────────── */
+  ol.conditions {
+    margin: 4pt 0;
+    padding-left: 16pt;
+    font-size: 8.5pt;
+    color: var(--ink-soft);
+  }
+  ol.conditions li {
+    margin-bottom: 1.5pt;
+    padding-left: 2pt;
+    line-height: 1.4;
+  }
+
+  /* ── Quotation meta strip ───────────────────────────────── */
+  table.meta {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 8pt;
+    font-size: 8.5pt;
+  }
+  table.meta td {
+    padding: 5pt 10pt;
+    background: var(--bg-soft);
+    border: 1pt solid var(--border);
+    color: var(--ink-soft);
+    text-align: center;
+  }
+  table.meta td span { color: var(--ink-mute); margin-right: 4pt; }
+  table.meta td strong { color: var(--navy); font-weight: 700; }
+
+  /* ── Print ──────────────────────────────────────────────── */
+  @page {
+    size: A4;
+    margin: 10mm 14mm 12mm;
+    @bottom-right {
+      content: "หน้า " counter(page) " / " counter(pages);
+      font-family: "Noto Sans Thai", sans-serif;
+      font-size: 8pt;
+      color: #767676;
+    }
+    @bottom-left {
+      content: "Judy Studio · Quotation · JudyShop Tikfinity";
+      font-family: "Noto Sans Thai", sans-serif;
+      font-size: 8pt;
+      color: #a0a0a0;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- ─── Header ───────────────────────────────────────────── -->
+<div class="cover-head">
+  <h1>ใบเสนอราคา</h1>
+  <div class="en">QUOTATION</div>
+  <div class="sub">โปรเจคใหม่ · เว็บไซต์ขายสิทธิ์ Tikfinity Pro (JudyShop Tikfinity)</div>
+  <div class="addon-pill">NEW PROJECT · STANDALONE WEBSITE</div>
+</div>
+
+<!-- ─── Quotation meta strip ────────────────────────────── -->
+<table class="meta">
+  <tr>
+    <td><span>วันที่ออก:</span> <strong>22 มิถุนายน 2569</strong></td>
+    <td><span>ยืนยันราคาภายใน:</span> <strong>30 วันจากวันที่ออกเอกสาร</strong></td>
+  </tr>
+</table>
+
+<!-- ─── Info boxes ───────────────────────────────────────── -->
+<div class="info-row">
+  <div class="info-box">
+    <h3>ผู้รับจ้าง</h3>
+    <p>
+      อลงกรณ์ จันทร์เที่ยง<br/>
+      123/149 แฟลตปากบึงเคหะร่มเกล้า เขตลาดกระบัง กรุงเทพฯ 10520<br/>
+      <strong>alongkon2103@gmail.com</strong> · <strong>0628189331</strong>
+    </p>
+  </div>
+  <div class="info-box">
+    <h3>ผู้ว่าจ้าง</h3>
+    <p>ชื่อ/บริษัท: <strong>Judy Studio</strong> (Judyshop)</p>
+  </div>
+</div>
+
+<!-- ─── Project Details + Reference ─────────────────────── -->
+<div class="section">
+  <h2>รายละเอียดงาน <span class="en">Project Details</span></h2>
+  <div class="ref-banner">
+    เว็บไซต์ใหม่ <strong>JudyShop Tikfinity</strong> — เป็นเว็บไซต์แยกออกจากร้าน Judyshop เดิม
+    สำหรับขายสิทธิ์ <strong>Tikfinity Pro</strong> ให้ลูกค้า โดยระบบจะต่ออายุ Pro ให้ลูกค้า
+    <strong>อัตโนมัติทันที</strong>หลังชำระเงินสำเร็จ ไม่ต้องให้แอดมินกดเอง
+  </div>
+  <dl class="proj">
+    <dt>ชื่องาน:</dt>
+    <dd>เว็บไซต์ขายสิทธิ์ Tikfinity Pro (JudyShop Tikfinity)</dd>
+    <dt>โครงสร้าง:</dt>
+    <dd>เว็บไซต์เอกเทศ มีระบบหลังบ้าน (Admin) แยกจาก Judyshop หลัก เชื่อมถึงกันแค่ผ่านลิงก์</dd>
+    <dt>ช่องทางจ่ายเงิน:</dt>
+    <dd>บัตรเครดิต + พร้อมเพย์ (ผ่านผู้ให้บริการ Stripe)</dd>
+    <dt>รองรับภาษา:</dt>
+    <dd>ไทย + อังกฤษ พร้อมโหมดสว่าง / มืด</dd>
+    <dt>ระยะเวลาทำงาน:</dt>
+    <dd><strong>1 สัปดาห์</strong> หลังจากชำระมัดจำ</dd>
+  </dl>
+</div>
+
+<!-- ─── Scope of work ────────────────────────────────────── -->
+<div class="section flow">
+  <h2>ขอบเขตงาน <span class="en">Scope of Work</span></h2>
+  <table class="scope">
+    <thead>
+      <tr>
+        <th class="num">#</th>
+        <th>รายการ</th>
+        <th class="price">ราคา (฿)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="num">1</td>
+        <td>เชื่อมต่อระบบกับ Tikfinity ให้ต่ออายุ Pro ให้ลูกค้าอัตโนมัติ ทันทีหลังลูกค้าชำระเงิน</td>
+        <td class="price">1,000</td>
+      </tr>
+      <tr>
+        <td class="num">2</td>
+        <td>ระบบรับชำระเงินผ่าน <strong>บัตรเครดิต</strong> และ <strong>พร้อมเพย์</strong> (ผ่าน Stripe ผู้ให้บริการรับชำระเงินระดับโลก)</td>
+        <td class="price">1,000</td>
+      </tr>
+      <tr>
+        <td class="num">3</td>
+        <td>หน้าเว็บสำหรับลูกค้า — กรอกอีเมล → เลือกแพ็กเกจ → ยืนยัน → ชำระเงิน (ขั้นตอนเดียวจบ)</td>
+        <td class="price">1,200</td>
+      </tr>
+      <tr>
+        <td class="num">4</td>
+        <td>หน้าแอดมินหลัก — กราฟยอดขาย 14 วันล่าสุด สถิติแพ็กเกจขายดี และเครดิตคงเหลือใน Tikfinity</td>
+        <td class="price">1,000</td>
+      </tr>
+      <tr>
+        <td class="num">5</td>
+        <td>หน้าตั้งราคาแพ็กเกจ — แอดมินตั้งราคา/ชื่อ/เปิด-ปิดได้เอง + ปุ่มดึงราคา USD จากอัตราแลกเปลี่ยนสดอัตโนมัติ</td>
+        <td class="price">600</td>
+      </tr>
+      <tr>
+        <td class="num">6</td>
+        <td>หน้าจัดการคำสั่งซื้อ — ดูรายการ ดูรายละเอียด + ปุ่มต่ออายุให้ลูกค้าด้วยมือ (กรณีระบบขัดข้อง)</td>
+        <td class="price">600</td>
+      </tr>
+      <tr>
+        <td class="num">7</td>
+        <td>ระบบสลับภาษา <strong>ไทย / อังกฤษ</strong> รองรับลูกค้าต่างชาติ</td>
+        <td class="price">400</td>
+      </tr>
+      <tr>
+        <td class="num">8</td>
+        <td>ออกแบบหน้าเว็บให้สวยงาม โหมดสว่าง/มืด เข้าธีม Judy Studio + ระบบทดสอบความถูกต้องของโค้ด</td>
+        <td class="price">500</td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="2" class="label">ราคารวมทั้งสิ้น / Total</td>
+        <td class="price">6,300 ฿</td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+
+<!-- ─── Payment Terms ────────────────────────────────────── -->
+<div class="section">
+  <h2>การชำระเงิน <span class="en">Payment</span></h2>
+  <table class="payment">
+    <thead>
+      <tr>
+        <th>รายละเอียด</th>
+        <th class="amount">จำนวนเงิน</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="label">งวดที่ 1 — มัดจำเมื่อยืนยันงาน (30%)</td>
+        <td class="amount">1,890 ฿</td>
+      </tr>
+      <tr>
+        <td class="label">งวดที่ 2 — เมื่อส่งมอบและทดสอบผ่าน (70%)</td>
+        <td class="amount">4,410 ฿</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ─── Conditions ──────────────────────────────────────── -->
+<div class="section">
+  <h2>เงื่อนไข <span class="en">Conditions</span></h2>
+  <ol class="conditions">
+    <li>ราคานี้ <strong>ไม่รวมค่าโฮสติ้ง / VPS / โดเมน / Supabase / Cloudflare</strong> — ผู้ว่าจ้างเปิดบัญชีและจ่ายเอง</li>
+    <li>รับประกันแก้ไขบั๊ก <strong>30 วัน</strong> หลังส่งมอบ — ไม่รวมการเพิ่มฟีเจอร์ใหม่</li>
+    <li>ส่งมอบเมื่อระบบทำงานครบบนเครื่อง production จริงของผู้ว่าจ้าง (deploy + go-live ผ่านเรียบร้อย)</li>
+  </ol>
+</div>
+
+</body>
+</html>

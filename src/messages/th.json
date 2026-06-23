@@ -13,6 +13,7 @@
   "nav": {
     "home": "หน้าหลัก",
     "shop": "ร้านค้า",
+    "tikfinity": "Tikfinity",
     "news": "ข่าวสาร",
     "contact": "ติดต่อ",
     "howToUse": "วิธีใช้งาน",
@@ -29,6 +30,7 @@
     "heroTitle": "Judy Shop",
     "heroSubtitle": "เปิดสิทธิ์เข้าเกม TikTok Interactive ส่งทันที ราคาเป็นมิตร พร้อมซัพพอร์ตจริง",
     "ctaShop": "ดูสินค้า",
+    "ctaTikfinity": "ซื้อ Tikfinity Pro",
     "ctaNews": "อ่านข่าวล่าสุด"
   },
   "shop": {

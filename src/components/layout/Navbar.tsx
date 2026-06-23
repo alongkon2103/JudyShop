@@ -5,18 +5,22 @@ import { useTranslations } from "next-intl";
 import { ChevronRight, Menu, X } from "lucide-react";
 import { Link, usePathname } from "@/i18n/routing";
 import { cn } from "@/lib/cn";
+import { SITE } from "@/constants/site";
 import { Logo } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
 import { LocaleSwitcher } from "./LocaleSwitcher";
 
-/** Hard-coded route paths — labels resolved per-locale via translations. */
+/** Hard-coded route paths — labels resolved per-locale via translations.
+ *  `external: true` items render as plain <a target=_blank> and bypass the
+ *  i18n router (which would otherwise locale-prefix the URL). */
 const NAV = [
-  { key: "home",     href: "/" },
-  { key: "shop",     href: "/shop" },
-  { key: "news",     href: "/news" },
-  { key: "contact",  href: "/contact" },
-  { key: "howToUse", href: "/how-to-use" },
-  { key: "rules",    href: "/rules" },
+  { key: "home",      href: "/" },
+  { key: "shop",      href: "/shop" },
+  { key: "tikfinity", href: SITE.tikfinityUrl, external: true },
+  { key: "news",      href: "/news" },
+  { key: "contact",   href: "/contact" },
+  { key: "howToUse",  href: "/how-to-use" },
+  { key: "rules",     href: "/rules" },
 ] as const;
 
 export function Navbar() {
@@ -40,27 +44,37 @@ export function Navbar() {
             {/* Desktop nav items */}
             <ul className="hidden items-center gap-1 lg:flex">
               {NAV.map((item) => {
-                const active = isActive(item.href);
+                const external = "external" in item && item.external;
+                const active = !external && isActive(item.href);
+                const className = cn(
+                  "relative inline-flex items-center rounded-full px-5 py-2.5 font-sans text-[14px] font-extrabold uppercase tracking-[0.1em]",
+                  "transition-all duration-fast ease-spring hover:scale-105",
+                  active
+                    ? "tint-soft-strong text-pink-400"
+                    : "tint-soft-hover text-fg-dark-soft hover:text-fg-dark",
+                );
                 return (
                   <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      className={cn(
-                        "relative inline-flex items-center rounded-full px-5 py-2.5 font-sans text-[14px] font-extrabold uppercase tracking-[0.1em]",
-                        "transition-all duration-fast ease-spring hover:scale-105",
-                        active
-                          ? "tint-soft-strong text-pink-400"
-                          : "tint-soft-hover text-fg-dark-soft hover:text-fg-dark",
-                      )}
-                    >
-                      {t(item.key)}
-                      {active && (
-                        <span
-                          aria-hidden
-                          className="ml-2 inline-block h-1.5 w-1.5 rounded-full bg-pink-400"
-                        />
-                      )}
-                    </Link>
+                    {external ? (
+                      <a
+                        href={item.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={className}
+                      >
+                        {t(item.key)}
+                      </a>
+                    ) : (
+                      <Link href={item.href} className={className}>
+                        {t(item.key)}
+                        {active && (
+                          <span
+                            aria-hidden
+                            className="ml-2 inline-block h-1.5 w-1.5 rounded-full bg-pink-400"
+                          />
+                        )}
+                      </Link>
+                    )}
                   </li>
                 );
               })}
@@ -92,30 +106,49 @@ export function Navbar() {
           <div className="anim-slide-down glass mt-3 overflow-hidden rounded-2xl lg:hidden">
             <ul className="divide-y divide-line-dark-2">
               {NAV.map((item) => {
-                const active = isActive(item.href);
+                const external = "external" in item && item.external;
+                const active = !external && isActive(item.href);
+                const className = cn(
+                  "flex items-center justify-between gap-3 px-5 py-4 font-sans text-[14px] font-extrabold uppercase tracking-[0.1em]",
+                  "transition-colors duration-fast",
+                  active
+                    ? "tint-soft text-pink-400"
+                    : "tint-soft-hover text-fg-dark-soft hover:text-fg-dark",
+                );
+                const inner = (
+                  <>
+                    <span>{t(item.key)}</span>
+                    <ChevronRight
+                      size={16}
+                      strokeWidth={2.25}
+                      className={cn(
+                        "transition-transform duration-fast",
+                        active ? "text-pink-300" : "text-fg-dark-mute",
+                      )}
+                    />
+                  </>
+                );
                 return (
                   <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      onClick={() => setOpen(false)}
-                      className={cn(
-                        "flex items-center justify-between gap-3 px-5 py-4 font-sans text-[14px] font-extrabold uppercase tracking-[0.1em]",
-                        "transition-colors duration-fast",
-                        active
-                          ? "tint-soft text-pink-400"
-                          : "tint-soft-hover text-fg-dark-soft hover:text-fg-dark",
-                      )}
-                    >
-                      <span>{t(item.key)}</span>
-                      <ChevronRight
-                        size={16}
-                        strokeWidth={2.25}
-                        className={cn(
-                          "transition-transform duration-fast",
-                          active ? "text-pink-300" : "text-fg-dark-mute",
-                        )}
-                      />
-                    </Link>
+                    {external ? (
+                      <a
+                        href={item.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={() => setOpen(false)}
+                        className={className}
+                      >
+                        {inner}
+                      </a>
+                    ) : (
+                      <Link
+                        href={item.href}
+                        onClick={() => setOpen(false)}
+                        className={className}
+                      >
+                        {inner}
+                      </Link>
+                    )}
                   </li>
                 );
               })}
