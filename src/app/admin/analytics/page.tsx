@@ -95,7 +95,7 @@ export default async function AnalyticsPage({
             Timeline (ราย{granularityLabel})
           </h2>
           <p className="text-[11px] text-fg-light-mute">
-            แท่งสีอ่อน = revenue · จุด = จำนวนออเดอร์
+            แท่ง = ยอดขาย · ชี้เมาส์ที่แท่งเพื่อดูจำนวนออเดอร์
           </p>
         </div>
         <DailyTimelineChart points={data.timeline} />

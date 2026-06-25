@@ -37,25 +37,32 @@ export type RecentOrder = {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+// The shop runs on Bangkok time (UTC+7, no DST) but the server clock is
+// UTC in production. Bucket the revenue trend by the *Bangkok* day so Thai
+// early-morning orders aren't pushed onto the previous calendar day.
+const BKK_OFFSET_MS = 7 * 60 * 60 * 1000;
+
 function pctDelta(current: number, previous: number): number {
   if (previous === 0) return current === 0 ? 0 : 100;
   return ((current - previous) / previous) * 100;
 }
 
 function dateKey(d: Date): string {
-  // YYYY-MM-DD in UTC — chart series shares one tz with the server
-  return d.toISOString().slice(0, 10);
+  // YYYY-MM-DD in Bangkok time, independent of the host timezone.
+  return new Date(d.getTime() + BKK_OFFSET_MS).toISOString().slice(0, 10);
 }
 
 export async function getDashboardMetrics(windowDays = 30): Promise<DashboardMetrics> {
   const now = new Date();
 
-  // Snap to start of today (UTC) so the last bucket *is* today — otherwise
-  // sliding the window back by N days from `now` makes today fall outside
-  // the bucket range and the chart silently drops today's orders.
+  // Snap to start of *today in Bangkok* (expressed as a UTC instant) so the
+  // last bucket is the admin's actual today — otherwise sliding the window
+  // back by N days from `now` makes today fall outside the bucket range and
+  // the chart silently drops today's orders.
+  const bkkNow = new Date(now.getTime() + BKK_OFFSET_MS);
   const startOfToday = new Date(Date.UTC(
-    now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),
-  ));
+    bkkNow.getUTCFullYear(), bkkNow.getUTCMonth(), bkkNow.getUTCDate(),
+  ) - BKK_OFFSET_MS);
   const winStart  = new Date(startOfToday.getTime() - (windowDays - 1) * DAY_MS);
   const prevStart = new Date(winStart.getTime() - windowDays * DAY_MS);
 

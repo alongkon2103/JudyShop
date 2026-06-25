@@ -102,23 +102,48 @@ export type ShopAnalytics = {
 
 // ── Date helpers ─────────────────────────────────────────────────
 
+/**
+ * The shop runs on Bangkok time (UTC+7, no DST), but the production
+ * server clock is UTC. Bucketing orders by the *server's* calendar day
+ * pushed Thai early-morning orders (00:00–07:00) onto the previous day
+ * on the live site — that's the "ยอดผิดวัน" the admin sees. Every day /
+ * month boundary below is therefore derived in Asia/Bangkok via a fixed
+ * +7h offset, so the charts are correct no matter the host timezone.
+ */
+const BKK_OFFSET_MS = 7 * 60 * 60 * 1000;
+
+/** An instant's Bangkok wall-clock parts, regardless of server TZ. */
+function bkkParts(d: Date): { year: number; month: number; day: number } {
+  const s = new Date(d.getTime() + BKK_OFFSET_MS);
+  return { year: s.getUTCFullYear(), month: s.getUTCMonth(), day: s.getUTCDate() };
+}
+
+/** UTC instant of Bangkok-midnight that starts the given Bangkok date. */
+function bkkInstant(year: number, month: number, day: number): Date {
+  return new Date(Date.UTC(year, month, day) - BKK_OFFSET_MS);
+}
+
+/** Parse a "YYYY-MM-DD" Bangkok date (from <input type=date>) to its
+ *  midnight UTC instant. Returns null when the string isn't an ISO date. */
+function parseBkkDate(iso: string): Date | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso.trim());
+  if (!m) return null;
+  return bkkInstant(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+}
+
 function startOfDay(d: Date): Date {
-  const x = new Date(d);
-  x.setHours(0, 0, 0, 0);
-  return x;
+  const p = bkkParts(d);
+  return bkkInstant(p.year, p.month, p.day);
 }
 
 function endOfDay(d: Date): Date {
-  const x = new Date(d);
-  x.setHours(23, 59, 59, 999);
-  return x;
+  const p = bkkParts(d);
+  return new Date(bkkInstant(p.year, p.month, p.day + 1).getTime() - 1);
 }
 
 function isoDate(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${dd}`;
+  const p = bkkParts(d);
+  return `${p.year}-${String(p.month + 1).padStart(2, "0")}-${String(p.day).padStart(2, "0")}`;
 }
 
 const MONTHS_EN = [
@@ -127,37 +152,43 @@ const MONTHS_EN = [
 ];
 
 function dayLabel(d: Date): string {
-  return `${d.getDate()} ${MONTHS_EN[d.getMonth()]}`;
+  const p = bkkParts(d);
+  return `${p.day} ${MONTHS_EN[p.month]}`;
 }
 
 function monthLabel(d: Date): string {
-  return `${MONTHS_EN[d.getMonth()]} ${d.getFullYear()}`;
+  const p = bkkParts(d);
+  return `${MONTHS_EN[p.month]} ${p.year}`;
 }
 
 function monthKey(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+  const p = bkkParts(d);
+  return `${p.year}-${String(p.month + 1).padStart(2, "0")}`;
 }
 
-/** Walk every calendar day inclusive between from and to. */
+/** Walk every Bangkok calendar day inclusive between from and to. */
 function eachDay(from: Date, to: Date): Date[] {
   const out: Date[] = [];
-  const cursor = startOfDay(from);
-  const limit  = startOfDay(to);
-  while (cursor.getTime() <= limit.getTime()) {
+  let cursor = startOfDay(from).getTime();
+  const limit = startOfDay(to).getTime();
+  while (cursor <= limit) {
     out.push(new Date(cursor));
-    cursor.setDate(cursor.getDate() + 1);
+    cursor += 86_400_000; // +24h → next Bangkok midnight (UTC+7, no DST)
   }
   return out;
 }
 
-/** Walk every month inclusive between from and to. */
+/** Walk every Bangkok month inclusive between from and to. */
 function eachMonth(from: Date, to: Date): Date[] {
   const out: Date[] = [];
-  const cursor = new Date(from.getFullYear(), from.getMonth(), 1);
-  const limit  = new Date(to.getFullYear(),   to.getMonth(),   1);
-  while (cursor.getTime() <= limit.getTime()) {
-    out.push(new Date(cursor));
-    cursor.setMonth(cursor.getMonth() + 1);
+  const start = bkkParts(from);
+  const end   = bkkParts(to);
+  let y = start.year;
+  let m = start.month;
+  while (y < end.year || (y === end.year && m <= end.month)) {
+    out.push(bkkInstant(y, m, 1));
+    m += 1;
+    if (m > 11) { m = 0; y += 1; }
   }
   return out;
 }
@@ -196,11 +227,12 @@ export function resolveRange(
   to:   string | null | undefined,
   earliestOrder: Date | null,
 ): { preset: RangePreset; range: AnalyticsRange } {
-  // Custom takes priority if both bounds are present and valid.
+  // Custom takes priority if both bounds are present and valid. The
+  // from/to arrive from <input type=date> as Bangkok calendar dates.
   if (preset === "custom" || (from && to)) {
-    const f = from ? new Date(`${from}T00:00:00`) : new Date();
-    const t = to   ? new Date(`${to}T00:00:00`)   : new Date();
-    if (!Number.isNaN(f.getTime()) && !Number.isNaN(t.getTime())) {
+    const f = from ? parseBkkDate(from) : startOfDay(new Date());
+    const t = to   ? parseBkkDate(to)   : startOfDay(new Date());
+    if (f && t) {
       return {
         preset: "custom",
         range: { from: startOfDay(f), to: endOfDay(t) },
@@ -208,33 +240,32 @@ export function resolveRange(
     }
   }
 
-  const today = startOfDay(new Date());
+  const now   = new Date();
+  const today = startOfDay(now);  // UTC instant of Bangkok-midnight today
+  const tp    = bkkParts(now);    // Bangkok Y/M/D of "now"
   switch (preset) {
     case "today":
-      return { preset: "today", range: { from: today, to: endOfDay(today) } };
+      return { preset: "today", range: { from: today, to: endOfDay(now) } };
     case "yesterday": {
-      const y = new Date(today);
-      y.setDate(y.getDate() - 1);
+      const y = new Date(today.getTime() - 86_400_000);
       return { preset: "yesterday", range: { from: y, to: endOfDay(y) } };
     }
     case "7d": {
-      const start = new Date(today);
-      start.setDate(start.getDate() - 6);
-      return { preset: "7d", range: { from: start, to: endOfDay(today) } };
+      const start = new Date(today.getTime() - 6 * 86_400_000);
+      return { preset: "7d", range: { from: start, to: endOfDay(now) } };
     }
     case "30d": {
-      const start = new Date(today);
-      start.setDate(start.getDate() - 29);
-      return { preset: "30d", range: { from: start, to: endOfDay(today) } };
+      const start = new Date(today.getTime() - 29 * 86_400_000);
+      return { preset: "30d", range: { from: start, to: endOfDay(now) } };
     }
     case "this-month": {
-      const start = new Date(today.getFullYear(), today.getMonth(), 1);
-      return { preset: "this-month", range: { from: start, to: endOfDay(today) } };
+      const start = bkkInstant(tp.year, tp.month, 1);
+      return { preset: "this-month", range: { from: start, to: endOfDay(now) } };
     }
     case "last-month": {
-      const start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-      const end   = new Date(today.getFullYear(), today.getMonth(), 0); // last day of prev month
-      return { preset: "last-month", range: { from: start, to: endOfDay(end) } };
+      const start = bkkInstant(tp.year, tp.month - 1, 1);
+      const end   = new Date(bkkInstant(tp.year, tp.month, 1).getTime() - 1); // last ms of prev month
+      return { preset: "last-month", range: { from: start, to: end } };
     }
     case "all":
     default: {
@@ -242,7 +273,7 @@ export function resolveRange(
       // we have one, otherwise fall back to "today only" so an empty
       // shop doesn't render a weird year-long axis with no data.
       const from = earliestOrder ? startOfDay(earliestOrder) : today;
-      return { preset: "all", range: { from, to: endOfDay(today) } };
+      return { preset: "all", range: { from, to: endOfDay(now) } };
     }
   }
 }
