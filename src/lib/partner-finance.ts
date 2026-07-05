@@ -64,10 +64,29 @@ export type PartnerTrendPoint = {
   payout: number;
 };
 
+/** One day of the rolling dashboard series (shape matches RevenueAreaChart). */
+export type PartnerDailyPoint = {
+  date: string; // "YYYY-MM-DD" (Bangkok day)
+  /** The partner's payout (their share) earned that day. */
+  revenue: number;
+  /** PAID orders in the partner's games that day. */
+  orders: number;
+};
+
 const MONTH_LABELS_EN = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ];
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+// Shop runs on Bangkok time (UTC+7, no DST); prod host clock is UTC. Bucket
+// the daily series by the Bangkok day so early-morning Thai orders don't fall
+// onto the previous calendar day (matches the admin dashboard exactly).
+const BKK_OFFSET_MS = 7 * 60 * 60 * 1000;
+
+function bkkDayKey(d: Date): string {
+  return new Date(d.getTime() + BKK_OFFSET_MS).toISOString().slice(0, 10);
+}
 
 function startOfMonth(year: number, month: number): Date {
   return new Date(year, month - 1, 1, 0, 0, 0, 0);
@@ -251,4 +270,63 @@ export async function getPartnerSixMonthTrend(
     });
   }
   return points;
+}
+
+/**
+ * Rolling daily payout series for the partner's dashboard line chart —
+ * the last `windowDays` days ending *today in Bangkok*, one bucket per day
+ * (zero-filled). `revenue` is the partner's own share (payout), scoped to
+ * their games at the DB level. Shape matches the admin RevenueAreaChart.
+ */
+export async function getPartnerDailyPayoutSeries(
+  partnerId: string,
+  windowDays = 30,
+): Promise<PartnerDailyPoint[]> {
+  const now = new Date();
+  // Snap to the start of today in Bangkok (as a UTC instant) so the last
+  // bucket is the partner's actual today, not a window that drops today.
+  const bkkNow = new Date(now.getTime() + BKK_OFFSET_MS);
+  const startOfToday = new Date(
+    Date.UTC(bkkNow.getUTCFullYear(), bkkNow.getUTCMonth(), bkkNow.getUTCDate()) -
+      BKK_OFFSET_MS,
+  );
+  const winStart = new Date(startOfToday.getTime() - (windowDays - 1) * DAY_MS);
+
+  const orders = await db.order.findMany({
+    where: {
+      status: "PAID",
+      createdAt: { gte: winStart },
+      product: { partners: { some: { partnerId } } },
+    },
+    select: {
+      amount: true,
+      createdAt: true,
+      // Only this partner's share row — the series is their payout, not gross.
+      product: {
+        select: {
+          partners: { where: { partnerId }, select: { sharePercent: true } },
+        },
+      },
+    },
+  });
+
+  const buckets = new Map<string, { revenue: number; orders: number }>();
+  for (let i = 0; i < windowDays; i++) {
+    const d = new Date(winStart.getTime() + i * DAY_MS);
+    buckets.set(bkkDayKey(d), { revenue: 0, orders: 0 });
+  }
+  for (const o of orders) {
+    const slot = buckets.get(bkkDayKey(o.createdAt));
+    if (slot) {
+      const pct = Number(o.product.partners[0]?.sharePercent ?? 0);
+      slot.revenue += Number(o.amount) * (pct / 100);
+      slot.orders += 1;
+    }
+  }
+
+  return [...buckets.entries()].map(([date, v]) => ({
+    date,
+    revenue: v.revenue,
+    orders: v.orders,
+  }));
 }

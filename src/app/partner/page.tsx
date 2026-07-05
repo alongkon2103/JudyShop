@@ -3,15 +3,18 @@ import { requirePartner } from "@/lib/admin-session";
 import { db } from "@/lib/db";
 import {
   getPartnerMonthlyFinance,
-  getPartnerSixMonthTrend,
-  type PartnerTrendPoint,
+  getPartnerDailyPayoutSeries,
 } from "@/lib/partner-finance";
 import { formatTHB } from "@/lib/format";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { MonthPicker } from "@/app/admin/finance/MonthPicker";
+import { RevenueAreaChart } from "@/components/admin/charts/RevenueAreaChart";
 
 export const metadata: Metadata = { title: "Partner · Dashboard" };
 export const dynamic = "force-dynamic";
+
+/** Rolling window for the daily revenue line chart (like the admin dashboard). */
+const WINDOW_DAYS = 30;
 
 const MONTHS_TH = [
   "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
@@ -53,9 +56,11 @@ export default async function PartnerDashboardPage({
   const { year, month } = resolveMonth(searchParams.month);
   const selectedKey = `${year}-${String(month).padStart(2, "0")}`;
 
-  const [monthly, trend, activeWhitelist, gameCount] = await Promise.all([
+  const [monthly, series, activeWhitelist, gameCount] = await Promise.all([
     getPartnerMonthlyFinance(partnerId, year, month),
-    getPartnerSixMonthTrend(partnerId, year, month),
+    // Rolling last-30-days daily payout — always anchored to today, so it
+    // doesn't move with the month picker above (which drives the KPIs/table).
+    getPartnerDailyPayoutSeries(partnerId, WINDOW_DAYS),
     db.whitelist.count({
       where: {
         product: { partners: { some: { partnerId } } },
@@ -64,8 +69,6 @@ export default async function PartnerDashboardPage({
     }),
     db.productPartner.count({ where: { partnerId } }),
   ]);
-
-  const maxPayout = Math.max(1, ...trend.map((t) => t.payout));
 
   return (
     <section className="space-y-6">
@@ -84,8 +87,15 @@ export default async function PartnerDashboardPage({
       </div>
 
       <div className="panel rounded-xl p-4 sm:p-5">
-        <h2 className="mb-4 text-[14px] font-semibold text-fg-light">รายได้ย้อนหลัง 6 เดือน</h2>
-        <SixMonthBars trend={trend} max={maxPayout} />
+        <div className="mb-3">
+          <h2 className="text-[14px] font-semibold text-fg-light">รายได้รายวัน</h2>
+          <p className="text-[12px] text-fg-light-mute">
+            ส่วนแบ่งของคุณ {WINDOW_DAYS} วันล่าสุด (เฉพาะออเดอร์ PAID)
+          </p>
+        </div>
+        <div className="text-fg-light">
+          <RevenueAreaChart data={series} />
+        </div>
       </div>
 
       <div className="panel overflow-hidden rounded-xl">
@@ -153,28 +163,6 @@ function Kpi({
       >
         {value}
       </p>
-    </div>
-  );
-}
-
-function SixMonthBars({ trend, max }: { trend: PartnerTrendPoint[]; max: number }) {
-  return (
-    <div className="flex h-44 items-stretch gap-2 sm:gap-4">
-      {trend.map((t) => (
-        <div key={t.monthKey} className="flex h-full flex-1 flex-col items-center gap-1.5">
-          <span className="text-[10px] font-semibold text-fg-light-soft tabular-nums">
-            {formatTHB(t.payout)}
-          </span>
-          <div className="flex w-full flex-1 items-end">
-            <div
-              className="w-full rounded-t bg-pink-500/70"
-              style={{ height: `${Math.max(2, (t.payout / max) * 100)}%` }}
-              title={formatTHB(t.payout)}
-            />
-          </div>
-          <span className="text-[10px] text-fg-light-mute">{t.label}</span>
-        </div>
-      ))}
     </div>
   );
 }

@@ -19,6 +19,7 @@ vi.mock("../db", () => ({
 import {
   getPartnerMonthlyFinance,
   getPartnerSixMonthTrend,
+  getPartnerDailyPayoutSeries,
 } from "../partner-finance";
 import { db } from "../db";
 
@@ -223,7 +224,7 @@ describe("getPartnerSixMonthTrend", () => {
     ]);
   });
 
-  it("sums only the partner's slice per month", async () => {
+  it("sums only the partner's slice per month (trend)", async () => {
     // 6 monthly queries; only the last (current month) has orders.
     mockedFind
       .mockResolvedValueOnce([] as never)
@@ -240,5 +241,47 @@ describe("getPartnerSixMonthTrend", () => {
     expect(points[0]!.payout).toBe(0);
     expect(points[5]!.payout).toBeCloseTo(450, 5); // 1500 × 0.30
     expect(points[5]!.label).toBe("Jun 2026");
+  });
+});
+
+describe("getPartnerDailyPayoutSeries", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("returns one zero-filled bucket per day, scoped to the partner's share", async () => {
+    mockedFind.mockResolvedValueOnce([] as never);
+    const s = await getPartnerDailyPayoutSeries("P1", 30);
+
+    expect(s).toHaveLength(30);
+    expect(s.every((p) => p.revenue === 0 && p.orders === 0)).toBe(true);
+
+    const args = mockedFind.mock.calls[0]![0]! as { where: any; select: any };
+    expect(args.where.status).toBe("PAID");
+    expect(args.where.product.partners.some.partnerId).toBe("P1");
+    // Series is the partner's payout → only their share row is selected.
+    expect(args.select.product.select.partners.where.partnerId).toBe("P1");
+  });
+
+  it("buckets an order as the partner's payout (amount × share)", async () => {
+    // createdAt = now → lands in the last (today) bucket, inside the window.
+    const now = new Date();
+    mockedFind.mockResolvedValueOnce([
+      { amount: 1000, createdAt: now, product: { partners: [{ sharePercent: 30 }] } },
+      { amount: 500, createdAt: now, product: { partners: [{ sharePercent: 30 }] } },
+    ] as never);
+
+    const s = await getPartnerDailyPayoutSeries("P1", 30);
+    const totalRevenue = s.reduce((a, p) => a + p.revenue, 0);
+    const totalOrders = s.reduce((a, p) => a + p.orders, 0);
+    expect(totalRevenue).toBeCloseTo(450, 5); // 1500 × 0.30
+    expect(totalOrders).toBe(2);
+    expect(s[s.length - 1]!.orders).toBe(2); // today's bucket
+  });
+
+  it("respects a custom window length", async () => {
+    mockedFind.mockResolvedValueOnce([] as never);
+    const s = await getPartnerDailyPayoutSeries("P1", 7);
+    expect(s).toHaveLength(7);
   });
 });
