@@ -81,13 +81,18 @@ export function AnnouncementPopup({ message, imageUrl }: Props) {
           </div>
         )}
 
+        {/* Opaque, high-contrast close button. On an image-only popup the X
+            sits directly over the poster, so a translucent/theme-tinted fill
+            washed out against bright artwork. A solid white circle + dark
+            icon + ring + shadow stays visible over any image (and over the
+            paper content in message-only mode, in both light & dark themes). */}
         <button
           type="button"
           onClick={close}
           aria-label={t("close")}
-          className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-paper/85 text-fg-light shadow-md ring-1 ring-black/10 transition-colors hover:bg-white"
+          className="absolute right-3 top-3 z-10 grid h-9 w-9 place-items-center rounded-full bg-white text-neutral-900 shadow-lg ring-1 ring-black/20 transition hover:scale-105 hover:bg-neutral-100"
         >
-          <X size={16} strokeWidth={2.5} />
+          <X size={18} strokeWidth={2.75} />
         </button>
       </div>
     </div>

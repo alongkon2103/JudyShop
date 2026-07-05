@@ -5,18 +5,28 @@ import { useFormStatus } from "react-dom";
 import { Field, inputClass } from "@/components/admin/Form";
 import { Switch } from "@/components/admin/Switch";
 import { useToast } from "@/components/admin/toast/ToastContext";
-import { createWhitelist } from "./_actions";
 
 type Product = { id: string; slug: string; nameEn: string };
 
-export function NewWhitelistForm({ products }: { products: Product[] }) {
+/**
+ * Add-to-whitelist form. The `createAction` is injected so the same form
+ * serves the admin surface (unrestricted) and the partner portal (a
+ * partner-scoped action that rejects products the partner doesn't own).
+ */
+export function NewWhitelistForm({
+  products,
+  createAction,
+}: {
+  products: Product[];
+  createAction: (formData: FormData) => Promise<void>;
+}) {
   const formRef = useRef<HTMLFormElement>(null);
   const [lifetime, setLifetime] = useState(false);
   const toast = useToast();
 
   const action = async (formData: FormData) => {
     try {
-      await createWhitelist(formData);
+      await createAction(formData);
       toast.success("Whitelist entry added");
       formRef.current?.reset();
       setLifetime(false);

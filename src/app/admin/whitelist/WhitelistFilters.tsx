@@ -3,13 +3,17 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Search, X, Loader2 } from "lucide-react";
+import { WHITELIST_STATUSES, type WhitelistStatus } from "@/lib/whitelist-filter";
 
 type Product = { id: string; nameEn: string };
 
 type Props = {
   initialQ: string;
   initialProduct: string;
+  initialStatus: WhitelistStatus;
   products: Product[];
+  /** "/admin/whitelist" or "/partner/whitelist" — the table this filters. */
+  basePath: string;
 };
 
 const DEBOUNCE_MS = 300;
@@ -23,31 +27,41 @@ const DEBOUNCE_MS = 300;
  * Page resets to 1 on any filter change so the admin doesn't end up on
  * page 7 of a result set that only has 2 pages.
  */
-export function WhitelistFilters({ initialQ, initialProduct, products }: Props) {
+export function WhitelistFilters({
+  initialQ,
+  initialProduct,
+  initialStatus,
+  products,
+  basePath,
+}: Props) {
   const router = useRouter();
   const [q, setQ] = useState(initialQ);
   const [product, setProduct] = useState(initialProduct);
+  const [status, setStatus] = useState<WhitelistStatus>(initialStatus);
   const [pending, startTransition] = useTransition();
 
   // Debounce timer + a ref to the latest values so the trailing fire
   // sees what the user actually has now (not whatever was current when
   // the timer was started).
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const latestRef = useRef({ q, product });
-  latestRef.current = { q, product };
+  const latestRef = useRef({ q, product, status });
+  latestRef.current = { q, product, status };
 
   // Resync if the URL is changed by something else (Reset link, browser
   // back). Keeps the input in sync without fighting user typing.
   useEffect(() => { setQ(initialQ); }, [initialQ]);
   useEffect(() => { setProduct(initialProduct); }, [initialProduct]);
+  useEffect(() => { setStatus(initialStatus); }, [initialStatus]);
 
-  const push = (next: { q: string; product: string }) => {
+  const push = (next: { q: string; product: string; status: WhitelistStatus }) => {
     const params = new URLSearchParams();
-    if (next.q.trim())   params.set("q", next.q.trim());
-    if (next.product)    params.set("product", next.product);
+    if (next.q.trim())            params.set("q", next.q.trim());
+    if (next.product)          params.set("product", next.product);
+    // "all" is the default, so omit it to keep URLs clean.
+    if (next.status !== "all") params.set("status", next.status);
     const qs = params.toString();
     startTransition(() => {
-      router.replace(qs ? `/admin/whitelist?${qs}` : "/admin/whitelist", { scroll: false });
+      router.replace(qs ? `${basePath}?${qs}` : basePath, { scroll: false });
     });
   };
 
@@ -69,17 +83,24 @@ export function WhitelistFilters({ initialQ, initialProduct, products }: Props) 
     setProduct(value);
     // Dropdown is an explicit, intentional choice — fire immediately.
     if (timerRef.current) clearTimeout(timerRef.current);
-    push({ q: latestRef.current.q, product: value });
+    push({ q: latestRef.current.q, product: value, status: latestRef.current.status });
+  };
+
+  const onStatusChange = (value: WhitelistStatus) => {
+    setStatus(value);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    push({ q: latestRef.current.q, product: latestRef.current.product, status: value });
   };
 
   const clearAll = () => {
     if (timerRef.current) clearTimeout(timerRef.current);
     setQ("");
     setProduct("");
-    push({ q: "", product: "" });
+    setStatus("all");
+    push({ q: "", product: "", status: "all" });
   };
 
-  const hasFilters = q.trim() || product;
+  const hasFilters = q.trim() || product || status !== "all";
 
   return (
     <div className="panel flex flex-wrap items-center gap-2 rounded-xl p-3">
@@ -123,6 +144,17 @@ export function WhitelistFilters({ initialQ, initialProduct, products }: Props) 
         <option value="">All products</option>
         {products.map((p) => (
           <option key={p.id} value={p.id}>{p.nameEn}</option>
+        ))}
+      </select>
+
+      <select
+        value={status}
+        onChange={(e) => onStatusChange(e.target.value as WhitelistStatus)}
+        aria-label="Filter by status"
+        className="rounded-md border border-line-light bg-paper-2 px-3 py-2.5 text-[13px] text-fg-light"
+      >
+        {WHITELIST_STATUSES.map((s) => (
+          <option key={s.value} value={s.value}>{s.label}</option>
         ))}
       </select>
 

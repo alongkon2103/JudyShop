@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ScrollText } from "lucide-react";
+import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/admin-session";
+import { normalizeWhitelistStatus, whitelistStatusWhere } from "@/lib/whitelist-filter";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { EmptyState } from "@/components/admin/EmptyState";
 import { StatusBadge } from "@/components/admin/StatusBadge";
@@ -11,7 +13,7 @@ import { Pagination } from "@/components/admin/Pagination";
 import { NewWhitelistForm } from "./NewWhitelistForm";
 import { WhitelistFilters } from "./WhitelistFilters";
 import { EditWhitelistButton } from "./EditWhitelistButton";
-import { deleteWhitelist } from "./_actions";
+import { createWhitelist, updateWhitelist, deleteWhitelist } from "./_actions";
 
 export const metadata: Metadata = { title: "Whitelist" };
 
@@ -73,7 +75,7 @@ function timeUntil(
   return { label: past ? `${label} ago` : `${label} left`, tone };
 }
 
-type SearchParams = { q?: string; product?: string; page?: string };
+type SearchParams = { q?: string; product?: string; page?: string; status?: string };
 
 export default async function WhitelistPage({
   searchParams,
@@ -84,6 +86,7 @@ export default async function WhitelistPage({
 
   const q = (searchParams.q ?? "").trim();
   const product = (searchParams.product ?? "").trim();
+  const status = normalizeWhitelistStatus(searchParams.status);
   const page = pageFromQuery(searchParams.page);
 
   const products = await db.product.findMany({
@@ -138,6 +141,7 @@ export default async function WhitelistPage({
     const sp = new URLSearchParams();
     if (q) sp.set("q", q);
     if (productId) sp.set("product", productId);
+    if (status !== "all") sp.set("status", status);
     const qs = sp.toString();
     return `/admin/whitelist${qs ? `?${qs}` : ""}`;
   };
@@ -150,19 +154,28 @@ export default async function WhitelistPage({
   // enum so typing "STRIPE" works as expected.
   const SOURCES = ["STRIPE", "MANUAL", "PROMO", "TRIAL", "REFUND_REVERT"] as const;
   const matchedSource = SOURCES.find((s) => s === q.toUpperCase());
-  const where: Parameters<typeof db.whitelist.findMany>[0] extends infer T
-    ? T extends { where?: infer W } ? W : never : never = {
-    ...(q && {
-      OR: [
-        { username: { contains: q, mode: "insensitive" as const } },
-        { label:    { contains: q, mode: "insensitive" as const } },
-        { addedBy:  { contains: q, mode: "insensitive" as const } },
-        { product: { nameEn: { contains: q, mode: "insensitive" as const } } },
-        { product: { nameTh: { contains: q, mode: "insensitive" as const } } },
-        ...(matchedSource ? [{ source: matchedSource }] : []),
-      ],
-    }),
-    ...(product && { productId: product }),
+  const now = new Date();
+
+  // status / free-text / product are independent filters combined with
+  // AND — keeping the status "active" OR-clause from colliding with the
+  // free-text search OR-clause (two top-level `OR` keys would clobber).
+  const where: Prisma.WhitelistWhereInput = {
+    AND: [
+      whitelistStatusWhere(status, now),
+      q
+        ? {
+            OR: [
+              { username: { contains: q, mode: "insensitive" } },
+              { label:    { contains: q, mode: "insensitive" } },
+              { addedBy:  { contains: q, mode: "insensitive" } },
+              { product: { nameEn: { contains: q, mode: "insensitive" } } },
+              { product: { nameTh: { contains: q, mode: "insensitive" } } },
+              ...(matchedSource ? [{ source: matchedSource }] : []),
+            ],
+          }
+        : {},
+      ...(product ? [{ productId: product }] : []),
+    ],
   };
 
   const [rows, total] = await Promise.all([
@@ -175,8 +188,6 @@ export default async function WhitelistPage({
     }),
     db.whitelist.count({ where }),
   ]);
-
-  const now = new Date();
 
   return (
     <section className="space-y-6">
@@ -254,11 +265,17 @@ export default async function WhitelistPage({
         <h2 className="mb-3 text-[14px] font-semibold uppercase tracking-[0.06em] text-fg-light">
           Add manual entry
         </h2>
-        <NewWhitelistForm products={products} />
+        <NewWhitelistForm products={products} createAction={createWhitelist} />
       </div>
 
       {/* Filters — client-side, debounced, updates URL via router.replace */}
-      <WhitelistFilters initialQ={q} initialProduct={product} products={products} />
+      <WhitelistFilters
+        initialQ={q}
+        initialProduct={product}
+        initialStatus={status}
+        products={products}
+        basePath="/admin/whitelist"
+      />
 
       {rows.length === 0 ? (
         <EmptyState
@@ -297,7 +314,13 @@ export default async function WhitelistPage({
                         </StatusBadge>
                       </td>
                       <td className="px-4 py-3">
-                        <StatusBadge tone={row.source === "STRIPE" ? "info" : "accent"}>
+                        <StatusBadge
+                          tone={
+                            row.source === "STRIPE" || row.source === "PAYPAL"
+                              ? "info"
+                              : "accent"
+                          }
+                        >
                           {row.source}
                         </StatusBadge>
                         {row.addedBy && (
@@ -345,6 +368,8 @@ export default async function WhitelistPage({
                             isLifetime={row.isLifetime}
                             expireDate={row.expireDate?.toISOString() ?? null}
                             label={row.label}
+                            updateAction={updateWhitelist}
+                            deleteAction={deleteWhitelist}
                           />
                           <DeleteButton
                             title={`Remove ${row.username}?`}
@@ -365,7 +390,7 @@ export default async function WhitelistPage({
             total={total}
             pageSize={PAGE_SIZE}
             basePath="/admin/whitelist"
-            query={{ q, product }}
+            query={{ q, product, status: status === "all" ? "" : status }}
           />
         </div>
       )}

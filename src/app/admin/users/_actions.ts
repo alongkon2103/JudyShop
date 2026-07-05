@@ -23,11 +23,21 @@ const EmailSchema = z.preprocess(
 
 const PasswordSchema = z.string().min(PASSWORD_MIN).max(PASSWORD_MAX);
 
-const CreateInput = z.object({
-  email:    EmailSchema,
-  name:     z.string().max(100).optional().or(z.literal("")),
-  password: PasswordSchema,
-});
+// A new login is either a full ADMIN or a scoped PARTNER. PARTNER rows
+// must name the Partner they represent; ADMIN rows never carry one (the
+// action nulls it out regardless of what the form sent).
+const CreateInput = z
+  .object({
+    email:     EmailSchema,
+    name:      z.string().max(100).optional().or(z.literal("")),
+    password:  PasswordSchema,
+    role:      z.enum(["ADMIN", "PARTNER"]),
+    partnerId: z.string().max(50).optional().or(z.literal("")),
+  })
+  .refine((d) => d.role === "ADMIN" || !!d.partnerId, {
+    path: ["partnerId"],
+    message: "partner_required",
+  });
 
 const UpdateInput = z.object({
   id:       z.string().min(1).max(50),
@@ -51,18 +61,36 @@ export type AdminActionResult =
 export async function createAdmin(formData: FormData): Promise<AdminActionResult> {
   const session = await requireAdmin();
   const parsed = CreateInput.safeParse({
-    email:    String(formData.get("email") ?? ""),
-    name:     String(formData.get("name") ?? "").trim(),
-    password: String(formData.get("password") ?? ""),
+    email:     String(formData.get("email") ?? ""),
+    name:      String(formData.get("name") ?? "").trim(),
+    password:  String(formData.get("password") ?? ""),
+    role:      String(formData.get("role") ?? "ADMIN"),
+    partnerId: String(formData.get("partnerId") ?? ""),
   });
   if (!parsed.success) {
     const firstIssue = parsed.error.issues[0];
-    // Surface clear messages for the two most common failures.
+    // Surface clear messages for the most common failures.
     if (firstIssue?.path[0] === "email") return { ok: false, error: "Email ไม่ถูกต้อง" };
     if (firstIssue?.path[0] === "password") {
       return { ok: false, error: `Password ต้องยาวอย่างน้อย ${PASSWORD_MIN} ตัว` };
     }
+    if (firstIssue?.path[0] === "partnerId") {
+      return { ok: false, error: "เลือก Partner ให้ผู้ใช้ที่เป็น Partner ก่อน" };
+    }
     return { ok: false, error: "Invalid input" };
+  }
+
+  // ADMIN rows never carry a partnerId; PARTNER rows must point at a real
+  // Partner. Validate the link exists up front so we never persist a
+  // PARTNER login pointing at a deleted / mistyped id.
+  let partnerId: string | null = null;
+  if (parsed.data.role === "PARTNER") {
+    const partner = await db.partner.findUnique({
+      where: { id: parsed.data.partnerId as string },
+      select: { id: true },
+    });
+    if (!partner) return { ok: false, error: "ไม่พบ Partner ที่เลือก" };
+    partnerId = partner.id;
   }
 
   const passwordHash = await hashPassword(parsed.data.password);
@@ -75,6 +103,8 @@ export async function createAdmin(formData: FormData): Promise<AdminActionResult
         passwordHash,
         isActive:     true,
         tokenVersion: 0,
+        role:         parsed.data.role,
+        partnerId,
       },
     });
 
@@ -85,6 +115,8 @@ export async function createAdmin(formData: FormData): Promise<AdminActionResult
       payload: {
         email:     parsed.data.email,
         name:      parsed.data.name || null,
+        role:      parsed.data.role,
+        partnerId,
         createdBy: session.email,
       },
     });
@@ -95,7 +127,7 @@ export async function createAdmin(formData: FormData): Promise<AdminActionResult
     throw err;
   }
 
-  revalidatePath("/admin/admins");
+  revalidatePath("/admin/users");
   return { ok: true };
 }
 
@@ -159,7 +191,7 @@ export async function updateAdmin(formData: FormData): Promise<AdminActionResult
     },
   });
 
-  revalidatePath("/admin/admins");
+  revalidatePath("/admin/users");
   return { ok: true };
 }
 
@@ -209,7 +241,7 @@ export async function resetAdminPassword(formData: FormData): Promise<AdminActio
     },
   });
 
-  revalidatePath("/admin/admins");
+  revalidatePath("/admin/users");
   return { ok: true };
 }
 
@@ -244,7 +276,7 @@ export async function forceLogoutAdmin(id: string): Promise<AdminActionResult> {
     payload: { targetEmail: before.email, forcedBy: session.email },
   });
 
-  revalidatePath("/admin/admins");
+  revalidatePath("/admin/users");
   return { ok: true };
 }
 
@@ -270,6 +302,6 @@ export async function forceLogoutAllAdmins(): Promise<AdminActionResult> {
     },
   });
 
-  revalidatePath("/admin/admins");
+  revalidatePath("/admin/users");
   return { ok: true };
 }

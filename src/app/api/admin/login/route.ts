@@ -135,10 +135,19 @@ export async function POST(req: NextRequest) {
 
   await logLoginAttempt({ emailKey, ip, success: true, userId: user.id });
 
-  const token = await signSession({ sub: user.id, email: user.email, tv: user.tokenVersion });
+  const token = await signSession({
+    sub: user.id,
+    email: user.email,
+    tv: user.tokenVersion,
+    role: user.role,
+    partnerId: user.partnerId,
+  });
   const cookie = buildSessionCookie(token);
 
-  const res = NextResponse.json({ ok: true });
+  // Return the role so the login form knows where to land the user
+  // (ADMIN → /admin, PARTNER → /partner). It's not sensitive — the cookie
+  // already encodes it — and saves a round-trip.
+  const res = NextResponse.json({ ok: true, role: user.role });
   res.cookies.set(cookie);
   return res;
 }

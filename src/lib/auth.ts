@@ -26,6 +26,11 @@ const SESSION_TTL_SECONDS = 60 * 60 * 8; // 8 hours
 const JWT_ISSUER = "judyshop-admin";
 const JWT_AUDIENCE = "judyshop-admin";
 
+/** Access level baked into the session JWT so edge middleware can gate
+ *  by role without a DB hit. Mirrors Prisma's `UserRole` enum as a plain
+ *  string union to keep this module edge-safe (no @prisma/client import). */
+export type Role = "ADMIN" | "PARTNER";
+
 export type AdminSession = {
   sub: string;        // AdminUser.id
   email: string;
@@ -36,6 +41,13 @@ export type AdminSession = {
    *  revoked. Edge middleware can't reach Prisma, so it only checks
    *  the signature; the DB-backed revocation check runs Node-side. */
   tv: number;
+  /** ADMIN → /admin back-office; PARTNER → /partner portal. Gated in
+   *  middleware (signature-only) and re-checked against the DB row in
+   *  requireAdmin()/requirePartner(). */
+  role: Role;
+  /** Partner this login represents. Non-null only for PARTNER sessions;
+   *  always null for ADMIN. Scopes every /partner query. */
+  partnerId: string | null;
 };
 
 function secretKey(): Uint8Array {
@@ -45,7 +57,12 @@ function secretKey(): Uint8Array {
 // ── JWT ─────────────────────────────────────────────────────
 
 export async function signSession(payload: AdminSession): Promise<string> {
-  return new SignJWT({ email: payload.email, tv: payload.tv } as JWTPayload)
+  return new SignJWT({
+    email: payload.email,
+    tv: payload.tv,
+    role: payload.role,
+    pid: payload.partnerId,
+  } as JWTPayload)
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(payload.sub)
     .setIssuer(JWT_ISSUER)
@@ -69,7 +86,21 @@ export async function verifySession(token: string): Promise<AdminSession | null>
     ) {
       return null;
     }
-    return { sub: payload.sub, email: payload.email, tv: payload.tv };
+    // Role/partnerId were added later — a token minted before this change
+    // (or tampered) won't carry a valid role, so we reject it and force a
+    // fresh login rather than silently guessing a privilege level.
+    const role = payload.role;
+    if (role !== "ADMIN" && role !== "PARTNER") return null;
+    const pid = payload.pid;
+    if (pid !== null && typeof pid !== "string") return null;
+
+    return {
+      sub: payload.sub,
+      email: payload.email,
+      tv: payload.tv,
+      role,
+      partnerId: pid,
+    };
   } catch {
     return null;
   }

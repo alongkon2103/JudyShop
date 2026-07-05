@@ -22,13 +22,17 @@ export function LoginForm({ next }: { next?: string }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
         setError(data.error ?? "Login failed");
         setPending(false);
         return;
       }
-      router.push(safeNextPath(next));
+      // Partners always land in their own portal; the `next` param is
+      // only honoured for admins (it may point at an /admin path a
+      // partner isn't allowed to see anyway).
+      const dest = data.role === "PARTNER" ? "/partner" : safeNextPath(next);
+      router.push(dest);
       router.refresh();
     } catch {
       setError("Network error");

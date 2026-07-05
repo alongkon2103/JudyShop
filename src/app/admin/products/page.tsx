@@ -9,6 +9,7 @@ import { AdminButton } from "@/components/admin/Button";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { deleteProductById } from "./_actions";
+import { ReorderButtons } from "./ReorderButtons";
 
 export const metadata: Metadata = { title: "Products" };
 
@@ -31,7 +32,7 @@ export default async function AdminProductsPage() {
       <PageHeader
         kicker="Catalogue"
         title="Products"
-        subtitle="เกม / Whitelist ทั้งหมดในร้าน — คลิก Edit เพื่อจัดการรายละเอียด, Plan, รูปภาพ และไฟล์ Preset"
+        subtitle="เกม / Whitelist ทั้งหมดในร้าน — ใช้ลูกศร ▲▼ จัดลำดับการแสดงผล, คลิก Edit เพื่อจัดการรายละเอียด, Plan, รูปภาพ และไฟล์ Preset"
         actions={
           <AdminButton href="/admin/products/new">
             <Plus size={14} strokeWidth={2.5} /> New product
@@ -53,9 +54,10 @@ export default async function AdminProductsPage() {
       ) : (
         <div className="panel overflow-hidden rounded-xl">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[880px] border-collapse text-left text-[13px]">
+            <table className="w-full min-w-[940px] border-collapse text-left text-[13px]">
               <thead className="border-b border-line-light bg-paper-2/40 text-[11px] uppercase tracking-[0.06em] text-fg-light-mute">
                 <tr>
+                  <th className="px-3 py-2.5 text-center font-semibold" style={{ width: "56px" }}>Order</th>
                   <th className="px-4 py-2.5 font-semibold" style={{ width: "112px" }}>Image</th>
                   <th className="px-4 py-2.5 font-semibold">Product</th>
                   <th className="px-4 py-2.5 font-semibold">Status</th>
@@ -64,8 +66,15 @@ export default async function AdminProductsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-line-light text-fg-light">
-                {products.map((p) => (
+                {products.map((p, i) => (
                   <tr key={p.id} className="align-middle hover:bg-paper-2/30">
+                    <td className="px-3 py-3">
+                      <ReorderButtons
+                        id={p.id}
+                        isFirst={i === 0}
+                        isLast={i === products.length - 1}
+                      />
+                    </td>
                     <td className="px-4 py-3">
                       <div className="relative h-14 w-20 overflow-hidden rounded-md border border-line-light bg-paper-2">
                         {p.images[0] ? (

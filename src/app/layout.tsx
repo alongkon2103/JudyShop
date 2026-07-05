@@ -111,7 +111,14 @@ const FONT_VARS = [latin.variable, thai.variable, hero.variable].join(" ");
  */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={FONT_VARS}>
+    // suppressHydrationWarning: THEME_INIT_SCRIPT sets data-theme on <html>
+    // before React hydrates, so the server markup and the client's first
+    // render intentionally differ on that one attribute. This suppresses
+    // *only* this element's attribute diff (React never cascades it to
+    // children) — without it the mismatch can escalate into a full
+    // "error while hydrating → switch to client rendering" once any client
+    // component on the page hydrates.
+    <html lang="en" className={FONT_VARS} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>

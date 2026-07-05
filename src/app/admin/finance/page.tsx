@@ -70,7 +70,7 @@ export default async function FinancePage({
         subtitle={`สรุปยอดและการแบ่ง Partner ของเดือน ${selectedKey} — ตัดยอดเดือนปัจจุบัน, แสดง trend 6 เดือนล่าสุด`}
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            <MonthPicker selectedMonth={selectedKey} />
+            <MonthPicker selectedMonth={selectedKey} basePath="/admin/finance" />
             <a
               href={exportHref("csv")}
               className="inline-flex items-center gap-1.5 rounded-full border border-line-light px-3 py-1.5 text-[12px] font-semibold text-fg-light-soft hover:bg-paper-2 hover:text-fg-light"

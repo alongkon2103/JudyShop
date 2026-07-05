@@ -235,3 +235,51 @@ export async function deleteProductAction(formData: FormData) {
   if (typeof id !== "string" || !id) return;
   await deleteProductById(id);
 }
+
+// ── Reorder (Products list arrows) ────────────────────────────
+
+/**
+ * Move a product one slot up or down in the catalogue.
+ *
+ * `displayOrder` starts life at 0 for every product (ties broken by
+ * createdAt), so a naive "swap the two orders" is a no-op whenever the
+ * neighbours share a value. Instead we read the *current visual order*
+ * (the same `orderBy` the list uses), swap the target with its
+ * neighbour in that array, then renumber to sequential displayOrder —
+ * writing only the rows whose value actually changed. First move on a
+ * fresh catalogue normalises everything; after that each move touches
+ * exactly two rows.
+ */
+export async function reorderProduct(id: string, direction: "up" | "down") {
+  await requireAdmin();
+
+  const products = await db.product.findMany({
+    orderBy: [{ displayOrder: "asc" }, { createdAt: "desc" }],
+    select: { id: true, displayOrder: true },
+  });
+
+  const index = products.findIndex((p) => p.id === id);
+  if (index === -1) return;
+
+  const swapWith = direction === "up" ? index - 1 : index + 1;
+  if (swapWith < 0 || swapWith >= products.length) return; // already at an edge
+
+  const reordered = [...products];
+  [reordered[index], reordered[swapWith]] = [reordered[swapWith], reordered[index]];
+
+  // Sequential displayOrder = new position; skip rows already correct.
+  const updates = reordered
+    .map((p, i) => ({ id: p.id, from: p.displayOrder, to: i }))
+    .filter((u) => u.from !== u.to);
+
+  if (updates.length === 0) return;
+
+  await db.$transaction(
+    updates.map((u) =>
+      db.product.update({ where: { id: u.id }, data: { displayOrder: u.to } }),
+    ),
+  );
+
+  revalidatePath("/admin/products");
+  revalidatePath("/shop");
+}

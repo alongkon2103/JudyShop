@@ -36,6 +36,8 @@ const sessionMock = vi.fn(async () => ({
   sub: "self-1",
   email: "self@admin.com",
   tv: 0,
+  role: "ADMIN" as "ADMIN" | "PARTNER",
+  partnerId: null as string | null,
 }));
 vi.mock("../../../../lib/admin-session", () => ({
   requireAdmin: () => sessionMock(),
@@ -49,6 +51,9 @@ vi.mock("../../../../lib/db", () => {
       updateMany: vi.fn(),
       findUnique: vi.fn(),
       count:      vi.fn(),
+    },
+    partner: {
+      findUnique: vi.fn(),
     },
   };
   return { db };
@@ -72,6 +77,9 @@ const mockDb = db as unknown as {
     findUnique: ReturnType<typeof vi.fn>;
     count:      ReturnType<typeof vi.fn>;
   };
+  partner: {
+    findUnique: ReturnType<typeof vi.fn>;
+  };
 };
 
 function fd(obj: Record<string, string>): FormData {
@@ -82,7 +90,7 @@ function fd(obj: Record<string, string>): FormData {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  sessionMock.mockResolvedValue({ sub: "self-1", email: "self@admin.com", tv: 0 });
+  sessionMock.mockResolvedValue({ sub: "self-1", email: "self@admin.com", tv: 0, role: "ADMIN", partnerId: null });
 });
 
 describe("createAdmin", () => {
@@ -122,6 +130,42 @@ describe("createAdmin", () => {
         passwordHash: "hashed:longenoughpw1",
         isActive:     true,
         tokenVersion: 0,
+        role:         "ADMIN",
+        partnerId:    null,
+      }),
+    });
+  });
+
+  it("rejects a PARTNER role with no partner selected", async () => {
+    const res = await createAdmin(
+      fd({ email: "p@x.com", password: "longenoughpw1", role: "PARTNER" }),
+    );
+    expect(res).toEqual({ ok: false, error: "เลือก Partner ให้ผู้ใช้ที่เป็น Partner ก่อน" });
+    expect(mockDb.partner.findUnique).not.toHaveBeenCalled();
+    expect(mockDb.adminUser.create).not.toHaveBeenCalled();
+  });
+
+  it("rejects a PARTNER pointing at a non-existent partner", async () => {
+    mockDb.partner.findUnique.mockResolvedValueOnce(null);
+    const res = await createAdmin(
+      fd({ email: "p@x.com", password: "longenoughpw1", role: "PARTNER", partnerId: "ghost" }),
+    );
+    expect(res).toEqual({ ok: false, error: "ไม่พบ Partner ที่เลือก" });
+    expect(mockDb.adminUser.create).not.toHaveBeenCalled();
+  });
+
+  it("creates a PARTNER linked to the chosen partner", async () => {
+    mockDb.partner.findUnique.mockResolvedValueOnce({ id: "pt-1" });
+    mockDb.adminUser.create.mockResolvedValueOnce({ id: "new-2" });
+    const res = await createAdmin(
+      fd({ email: "p@x.com", password: "longenoughpw1", role: "PARTNER", partnerId: "pt-1" }),
+    );
+    expect(res).toEqual({ ok: true });
+    expect(mockDb.adminUser.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        email:     "p@x.com",
+        role:      "PARTNER",
+        partnerId: "pt-1",
       }),
     });
   });

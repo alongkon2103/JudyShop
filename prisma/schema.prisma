@@ -34,21 +34,21 @@ model Product {
   shortDescriptionEn String?
   shortDescriptionTh String?
 
-  badge        ProductBadge?
+  badge         ProductBadge?
   /// Roblox place/game ID this whitelist applies to.
-  gameId       String?
+  gameId        String?
   /// Optional link to the Roblox game itself — "Open game" CTA on
   /// the success page. Distinct from gameId (numeric, for whitelist
   /// lookups) so the admin can pin a marketing URL with slug.
-  gameLinkUrl  String?
+  gameLinkUrl   String?
   /// Optional external link shown on the success page after a paying
   /// customer's order is fulfilled. Sits below "Open game" and above
   /// the preset download list — typically a setup guide / Drive link.
   gamePresetUrl String?
-  isActive     Boolean       @default(true)
-  comingSoon   Boolean       @default(false)
+  isActive      Boolean       @default(true)
+  comingSoon    Boolean       @default(false)
   /// Smaller value = appears first.
-  displayOrder Int           @default(0)
+  displayOrder  Int           @default(0)
 
   /// Allow visitors to claim a short timed trial (no payment) for this product.
   trialEnabled Boolean @default(false)
@@ -168,22 +168,22 @@ enum WhitelistSource {
 /// answer "who deleted this whitelist entry?" / "who issued that refund?"
 /// later. Never updated, never deleted by the app.
 model AuditLog {
-  id          String   @id @default(cuid())
+  id         String  @id @default(cuid())
   /// Admin's session sub (= AdminUser.id). Null only for system events.
-  actorId     String?
+  actorId    String?
   /// Snapshot of the admin's email at action time so renames are durable.
-  actorEmail  String?
+  actorEmail String?
   /// Free-form action key, e.g. "product.update", "order.refund", "whitelist.delete".
-  action      String
+  action     String
   /// Optional pointer to the affected row (productId / orderId / etc).
-  targetType  String?
-  targetId    String?
+  targetType String?
+  targetId   String?
   /// Arbitrary JSON payload — diff, new values, reason. Capped client-side.
-  payload     Json?
+  payload    Json?
   /// Best-effort IP at action time.
-  ip          String?
+  ip         String?
 
-  createdAt   DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@index([createdAt])
   @@index([actorId, createdAt])
@@ -195,13 +195,13 @@ model AuditLog {
 /// We don't delete these rows when the customer later purchases — the
 /// Whitelist row might churn but the history must survive.
 model TrialUsage {
-  id         String   @id @default(cuid())
-  productId  String
-  username   String
-  ip         String?
-  userAgent  String?  @db.Text
-  startedAt  DateTime @default(now())
-  expiresAt  DateTime
+  id        String   @id @default(cuid())
+  productId String
+  username  String
+  ip        String?
+  userAgent String?  @db.Text
+  startedAt DateTime @default(now())
+  expiresAt DateTime
 
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
@@ -365,7 +365,7 @@ model Preset {
 
 model Setting {
   /// Always "singleton" — the table holds exactly one row.
-  id             String   @id
+  id               String  @id
   /// Percentage added to the cart total when paying by credit card.
   /// e.g. 3.00 → +3 % surcharge. PromptPay is not surcharged.
   cardFeePercent   Decimal @default(0) @db.Decimal(5, 2)
@@ -384,11 +384,11 @@ model Setting {
   /// Admin-authored site rules — rendered on /[locale]/rules. Stored
   /// as TipTap-sanitized HTML (same pipeline as product descriptions).
   /// Two columns for i18n; both fall back to "" when unset.
-  rulesContentEn String   @default("") @db.Text
-  rulesContentTh String   @default("") @db.Text
+  rulesContentEn String @default("") @db.Text
+  rulesContentTh String @default("") @db.Text
 
-  updatedAt      DateTime @updatedAt
-  updatedBy      String?
+  updatedAt DateTime @updatedAt
+  updatedBy String?
 }
 
 // ── How-to-use videos (admin-managed tutorial library) ────────
@@ -396,11 +396,11 @@ model Setting {
 // /[locale]/how-to-use page renders these as tabs (one card per
 // video) with an embedded YouTube player below.
 model HowToUseVideo {
-  id            String   @id @default(cuid())
+  id            String  @id @default(cuid())
   titleEn       String
   titleTh       String
-  descriptionEn String?  @db.Text
-  descriptionTh String?  @db.Text
+  descriptionEn String? @db.Text
+  descriptionTh String? @db.Text
   /// Original YouTube URL as pasted by the admin. The embed iframe
   /// uses the parsed videoId so admins can paste any youtu.be /
   /// youtube.com/watch / youtube.com/shorts format.
@@ -408,8 +408,8 @@ model HowToUseVideo {
   /// Parsed video id (e.g. "dQw4w9WgXcQ"). Validated at write time
   /// so the public page never has to handle a bad URL.
   videoId       String
-  displayOrder  Int      @default(0)
-  isActive      Boolean  @default(true)
+  displayOrder  Int     @default(0)
+  isActive      Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -437,7 +437,16 @@ model WebhookEvent {
   @@index([type, receivedAt])
 }
 
-// ── Admin user (single-admin pattern for now) ─────────────────
+// ── App users (admins + partners) ─────────────────────────────
+// Historically single-admin; now every login is an AdminUser carrying
+// a `role`. ADMIN = full back-office (/admin). PARTNER = scoped portal
+// (/partner) that only ever sees its own Partner's products + revenue.
+// `partnerId` links a PARTNER login to the Partner whose data it may see.
+
+enum UserRole {
+  ADMIN
+  PARTNER
+}
 
 model AdminUser {
   id           String    @id @default(cuid())
@@ -447,6 +456,18 @@ model AdminUser {
   isActive     Boolean   @default(true)
   lastLoginAt  DateTime?
 
+  /// Access level. ADMIN = full /admin back-office; PARTNER = /partner
+  /// portal scoped to `partner` only. Existing rows default to ADMIN so
+  /// this migration never downgrades a live admin.
+  role      UserRole @default(ADMIN)
+  /// Which Partner this login represents. Set only for PARTNER rows
+  /// (enforced in the create/edit action); always null for ADMIN rows.
+  /// onDelete: Restrict — a Partner with a login attached can't be
+  /// deleted until that login is removed/reassigned, so a PARTNER row
+  /// can never be orphaned with a dangling partnerId.
+  partnerId String?
+  partner   Partner? @relation(fields: [partnerId], references: [id], onDelete: Restrict)
+
   // Bumped on logout / password change. JWTs carry the version they
   // were signed with; `requireAdmin()` rejects sessions where the
   // version no longer matches the DB, so a stolen cookie becomes
@@ -455,6 +476,8 @@ model AdminUser {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([partnerId])
 }
 
 // ── Business partners + revenue-share allocations ─────────────
@@ -476,16 +499,20 @@ model AdminUser {
 // silently losing rows.
 
 model Partner {
-  id        String @id @default(cuid())
+  id      String  @id @default(cuid())
   /// Display name shown across admin UI + finance reports.
-  name      String
+  name    String
   /// Free-form contact (email / phone / LINE id) — single field so
   /// admin can use whatever channel they actually reach the partner on.
-  contact   String?
+  contact String?
   /// Internal admin note. Not shown anywhere customer-facing.
-  note      String?
+  note    String?
 
   shares ProductPartner[]
+  /// Login accounts (AdminUser rows with role=PARTNER) that represent
+  /// this partner in the /partner portal. Usually 0 or 1, but the
+  /// schema allows several logins to share one Partner's view.
+  users  AdminUser[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

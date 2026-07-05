@@ -6,11 +6,13 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 type Props = {
   selectedMonth: string;   // "YYYY-MM"
+  /** Route this picker drives — "/admin/finance" or "/partner/finance". */
+  basePath: string;
 };
 
 /** Navigate via ?month=YYYY-MM — no full reload, lets the server
  *  component re-run with the new range. Prev / Next walk one month. */
-export function MonthPicker({ selectedMonth }: Props) {
+export function MonthPicker({ selectedMonth, basePath }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
@@ -22,12 +24,12 @@ export function MonthPicker({ selectedMonth }: Props) {
     if (month < 1) { month += 12; year -= 1; }
     if (month > 12) { month -= 12; year += 1; }
     const key = `${year}-${String(month).padStart(2, "0")}`;
-    startTransition(() => router.replace(`/admin/finance?month=${key}`, { scroll: false }));
+    startTransition(() => router.replace(`${basePath}?month=${key}`, { scroll: false }));
   };
 
   const handleNative = (value: string) => {
     if (!value) return;
-    startTransition(() => router.replace(`/admin/finance?month=${value}`, { scroll: false }));
+    startTransition(() => router.replace(`${basePath}?month=${value}`, { scroll: false }));
   };
 
   return (

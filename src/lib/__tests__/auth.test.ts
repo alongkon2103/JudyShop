@@ -93,17 +93,52 @@ describe("hashPassword / verifyPassword", () => {
 // ── JWT session ─────────────────────────────────────────────
 
 describe("signSession / verifySession", () => {
-  it("round-trips sub + email through a signed JWT", async () => {
-    const token = await signSession({ sub: "user-1", email: "a@b.com", tv: 0 });
+  it("round-trips an ADMIN session (partnerId null) through a signed JWT", async () => {
+    const token = await signSession({
+      sub: "user-1",
+      email: "a@b.com",
+      tv: 0,
+      role: "ADMIN",
+      partnerId: null,
+    });
     expect(typeof token).toBe("string");
     expect(token.split(".")).toHaveLength(3); // header.payload.signature
 
     const session = await verifySession(token);
-    expect(session).toEqual({ sub: "user-1", email: "a@b.com", tv: 0 });
+    expect(session).toEqual({
+      sub: "user-1",
+      email: "a@b.com",
+      tv: 0,
+      role: "ADMIN",
+      partnerId: null,
+    });
+  });
+
+  it("round-trips a PARTNER session carrying its partnerId", async () => {
+    const token = await signSession({
+      sub: "user-2",
+      email: "p@b.com",
+      tv: 3,
+      role: "PARTNER",
+      partnerId: "partner-9",
+    });
+    expect(await verifySession(token)).toEqual({
+      sub: "user-2",
+      email: "p@b.com",
+      tv: 3,
+      role: "PARTNER",
+      partnerId: "partner-9",
+    });
   });
 
   it("returns null for a tampered signature", async () => {
-    const token = await signSession({ sub: "user-1", email: "a@b.com", tv: 0 });
+    const token = await signSession({
+      sub: "user-1",
+      email: "a@b.com",
+      tv: 0,
+      role: "ADMIN",
+      partnerId: null,
+    });
     const [h, p] = token.split(".");
     const bad = `${h}.${p}.tamperedsignaturexx`;
     expect(await verifySession(bad)).toBeNull();
@@ -138,6 +173,26 @@ describe("signSession / verifySession", () => {
       .setExpirationTime("1h")
       .sign(evilSecret);
     expect(await verifySession(token)).toBeNull();
+  });
+
+  it("returns null when role is absent or not a known value", async () => {
+    // Correctly signed + issuer/audience valid, but the role claim is
+    // missing or bogus — verifySession must refuse to guess a privilege
+    // level and return null so the request falls through to login.
+    const { SignJWT } = await import("jose");
+    const secret = new TextEncoder().encode(fakeEnv.ADMIN_SESSION_SECRET);
+    const mint = (extra: Record<string, unknown>) =>
+      new SignJWT({ email: "a@b.com", tv: 0, ...extra } as any)
+        .setProtectedHeader({ alg: "HS256" })
+        .setSubject("u")
+        .setIssuer("judyshop-admin")
+        .setAudience("judyshop-admin")
+        .setIssuedAt()
+        .setExpirationTime("1h")
+        .sign(secret);
+    expect(await verifySession(await mint({}))).toBeNull();               // no role
+    expect(await verifySession(await mint({ role: "SUPER" }))).toBeNull(); // bad role
+    expect(await verifySession(await mint({ role: "PARTNER", pid: 5 }))).toBeNull(); // pid wrong type
   });
 });
 

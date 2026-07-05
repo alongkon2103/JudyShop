@@ -101,7 +101,7 @@ export async function deletePartner(id: string): Promise<PartnerResult> {
   const session = await requireAdmin();
   const before = await db.partner.findUnique({
     where: { id },
-    include: { _count: { select: { shares: true } } },
+    include: { _count: { select: { shares: true, users: true } } },
   });
   if (!before) return { ok: false, error: "Partner not found" };
 
@@ -111,6 +111,15 @@ export async function deletePartner(id: string): Promise<PartnerResult> {
       error: `ยังลบไม่ได้ — Partner นี้ถือสิทธิ์อยู่ใน ${before._count.shares} เกม ลบ share ออกจากทุกเกมก่อน`,
     };
   }
+  // A PARTNER login points here via AdminUser.partnerId (FK RESTRICT).
+  // Deleting the partner out from under a live login would orphan it, so
+  // require the account to be removed/reassigned first.
+  if (before._count.users > 0) {
+    return {
+      ok: false,
+      error: `ยังลบไม่ได้ — มีบัญชี login ผูกกับ Partner นี้อยู่ ${before._count.users} บัญชี ลบหรือย้ายบัญชีออกก่อน`,
+    };
+  }
 
   try {
     await db.partner.delete({ where: { id } });
@@ -118,7 +127,7 @@ export async function deletePartner(id: string): Promise<PartnerResult> {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2003") {
       return {
         ok: false,
-        error: "ลบไม่ได้ Partner ยังถือสิทธิ์อยู่ในบาง product — ลบ share ก่อน",
+        error: "ลบไม่ได้ — Partner ยังถูกใช้งานอยู่ (share หรือบัญชี login) เอาออกก่อน",
       };
     }
     throw err;

@@ -11,7 +11,7 @@ import { ResetPasswordButton } from "./ResetPasswordButton";
 import { ForceLogoutButton } from "./ForceLogoutButton";
 import { ForceLogoutAllButton } from "./ForceLogoutAllButton";
 
-export const metadata: Metadata = { title: "Admins" };
+export const metadata: Metadata = { title: "Users" };
 
 function fmtDate(d: Date | null): string {
   if (!d) return "—";
@@ -27,17 +27,25 @@ function fmtDate(d: Date | null): string {
 export default async function AdminsPage() {
   const session = await requireAdmin();
 
-  const admins = await db.adminUser.findMany({
-    orderBy: [{ isActive: "desc" }, { createdAt: "asc" }],
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      isActive: true,
-      lastLoginAt: true,
-      createdAt: true,
-    },
-  });
+  const [admins, partners] = await Promise.all([
+    db.adminUser.findMany({
+      orderBy: [{ isActive: "desc" }, { createdAt: "asc" }],
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        isActive: true,
+        lastLoginAt: true,
+        createdAt: true,
+        role: true,
+        partner: { select: { name: true } },
+      },
+    }),
+    db.partner.findMany({
+      orderBy: { name: "asc" },
+      select: { id: true, name: true },
+    }),
+  ]);
 
   const activeCount = admins.filter((a) => a.isActive).length;
 
@@ -45,21 +53,21 @@ export default async function AdminsPage() {
     <section className="space-y-6">
       <PageHeader
         kicker="System"
-        title="Admins"
-        subtitle={`คนที่เข้า admin panel ได้ — ${activeCount} active / ${admins.length} total`}
+        title="Users"
+        subtitle={`ผู้ใช้ที่เข้าระบบได้ (Admin + Partner) — ${activeCount} active / ${admins.length} total`}
       />
 
       <div className="panel rounded-xl p-4 sm:p-5">
         <h2 className="mb-3 text-[14px] font-semibold uppercase tracking-[0.06em] text-fg-light">
-          Add admin
+          Add user
         </h2>
-        <NewAdminForm />
+        <NewAdminForm partners={partners} />
       </div>
 
       {admins.length === 0 ? (
         <EmptyState
           icon={<UserCog size={20} />}
-          title="ยังไม่มี Admin"
+          title="ยังไม่มีผู้ใช้"
           description="(ไม่น่าจะเกิดขึ้น — คุณ login เข้าหน้านี้อยู่)"
         />
       ) : (
@@ -71,10 +79,11 @@ export default async function AdminsPage() {
             <ForceLogoutAllButton />
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px] border-collapse text-left text-[13px]">
+            <table className="w-full min-w-[860px] border-collapse text-left text-[13px]">
               <thead className="border-b border-line-light bg-paper-2/40 text-[11px] uppercase tracking-[0.06em] text-fg-light-mute">
                 <tr>
                   <th className="px-4 py-2.5 font-semibold">Email · Name</th>
+                  <th className="px-4 py-2.5 font-semibold">Role</th>
                   <th className="px-4 py-2.5 font-semibold">Status</th>
                   <th className="px-4 py-2.5 font-semibold">Last login</th>
                   <th className="px-4 py-2.5 font-semibold">Created</th>
@@ -99,6 +108,22 @@ export default async function AdminsPage() {
                         </div>
                         {a.name && (
                           <p className="text-[11px] text-fg-light-soft">{a.name}</p>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        {a.role === "PARTNER" ? (
+                          <div className="flex flex-col gap-0.5">
+                            <span className="inline-flex w-fit items-center rounded-full bg-pink-500/12 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-pink-500">
+                              Partner
+                            </span>
+                            <span className="text-[11px] text-fg-light-soft">
+                              {a.partner?.name ?? "—"}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="inline-flex w-fit items-center rounded-full bg-paper-2 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-fg-light-soft">
+                            Admin
+                          </span>
                         )}
                       </td>
                       <td className="px-4 py-3">

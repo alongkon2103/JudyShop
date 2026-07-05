@@ -7,7 +7,6 @@ import { Portal } from "@/components/admin/Portal";
 import { useToast } from "@/components/admin/toast/ToastContext";
 import { toLocalInputValue } from "@/lib/datetime";
 import { cn } from "@/lib/cn";
-import { deleteWhitelist, updateWhitelist } from "./_actions";
 
 type Props = {
   id: string;
@@ -17,6 +16,11 @@ type Props = {
   isLifetime: boolean;
   expireDate: string | null;
   label: string | null;
+  /** Injected so admin + partner reuse this modal with their own scoped
+   *  server actions. `updateAction` returns a result; `deleteAction`
+   *  throws on failure (matching the underlying server actions). */
+  updateAction: (fd: FormData) => Promise<{ ok: true } | { ok: false; error: string }>;
+  deleteAction: (id: string) => Promise<void>;
 };
 
 const QUICK_EXTENDS = [
@@ -48,6 +52,8 @@ export function EditWhitelistButton({
   isLifetime: initialLifetime,
   expireDate: initialExpireIso,
   label: initialLabel,
+  updateAction,
+  deleteAction,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -113,7 +119,7 @@ export function EditWhitelistButton({
   const handleDelete = () => {
     startTransition(async () => {
       try {
-        await deleteWhitelist(id);
+        await deleteAction(id);
         toast.success(`Removed ${username}`);
         setOpen(false);
       } catch (e) {
@@ -131,7 +137,7 @@ export function EditWhitelistButton({
     if (lifetime) fd.set("isLifetime", "on");
 
     startTransition(async () => {
-      const res = await updateWhitelist(fd);
+      const res = await updateAction(fd);
       if (res.ok) {
         toast.success("Whitelist updated");
         setOpen(false);
