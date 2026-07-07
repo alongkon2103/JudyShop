@@ -37,7 +37,7 @@ export function Hero() {
                 {tCommon("joinDiscord")}
               </Button>
             </div>
-            <Button
+            {/* <Button
               href={SITE.tikfinityUrl}
               variant="secondary"
               size="lg"
@@ -45,7 +45,7 @@ export function Hero() {
               rel="noreferrer"
             >
               {t("ctaTikfinity")}
-            </Button>
+            </Button> */}
           </div>
         </div>
 

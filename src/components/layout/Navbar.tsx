@@ -16,7 +16,7 @@ import { LocaleSwitcher } from "./LocaleSwitcher";
 const NAV = [
   { key: "home",      href: "/" },
   { key: "shop",      href: "/shop" },
-  { key: "tikfinity", href: SITE.tikfinityUrl, external: true },
+  // { key: "tikfinity", href: SITE.tikfinityUrl, external: true },
   { key: "news",      href: "/news" },
   { key: "contact",   href: "/contact" },
   { key: "howToUse",  href: "/how-to-use" },
