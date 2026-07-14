@@ -80,6 +80,26 @@ export function NewProductForm() {
         </div>
       </FormSection>
 
+      <FormSection
+        title="Partner / affiliate link"
+        subtitle="ถ้าเป็นเกมของร้านพาร์ทเนอร์ (ขายผ่านร้านอื่น) วางลิงก์ที่เขาให้มาเต็มๆ รวม ?ref= — การ์ดจะพาลูกค้าออกไปหน้าร้านนั้นแทนการเปิดหน้าจ่ายเงินในเว็บ (ไม่ต้องใส่ Plan)"
+      >
+        <Field
+          label="External URL"
+          error={errors.externalUrl}
+          hint="เว้นว่างไว้ถ้าเป็นเกมของคุณเองที่ขายในเว็บ"
+          full
+        >
+          <input
+            name="externalUrl"
+            type="url"
+            maxLength={500}
+            placeholder="https://aclassstore.com/products/ac-jump-evo?ref=JUDY-STUDIO"
+            className={inputClass}
+          />
+        </Field>
+      </FormSection>
+
       <FormSection title="Display name" subtitle="ตัวอักษรที่ลูกค้าเห็น (กรอกทั้ง EN และ TH).">
         <I18nField
           label="Name"

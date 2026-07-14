@@ -59,6 +59,19 @@ export const env = {
     return process.env.NEXT_PUBLIC_SITE_URL?.trim() || "http://localhost:3000";
   },
 
+  /** Read-only affiliate API key (afk_…) issued to us by aclassstore.
+   *  Server-side only — used to pull our own commission dashboard.
+   *  Empty when unconfigured; the dashboard shows a setup hint instead
+   *  of crashing. */
+  get AFFILIATE_API_KEY() {
+    return process.env.AFFILIATE_API_KEY?.trim() ?? "";
+  },
+  /** Origin of the store we're an affiliate of. Trailing slashes are
+   *  stripped so we can safely concatenate the API path. */
+  get AFFILIATE_API_BASE() {
+    return (process.env.AFFILIATE_API_BASE?.trim() || "https://aclassstore.com").replace(/\/+$/, "");
+  },
+
   get NODE_ENV() {
     return (process.env.NODE_ENV ?? "development") as
       | "development"

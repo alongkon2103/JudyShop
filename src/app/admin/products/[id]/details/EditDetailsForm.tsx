@@ -29,6 +29,7 @@ type Props = {
     gameId: string | null;
     gameLinkUrl: string | null;
     gamePresetUrl: string | null;
+    externalUrl: string | null;
     isActive: boolean;
     comingSoon: boolean;
     trialEnabled: boolean;
@@ -114,6 +115,22 @@ export function EditDetailsForm({ product }: Props) {
               defaultValue={product.gamePresetUrl ?? ""}
               maxLength={500}
               placeholder="https://..."
+              className={inputClass}
+            />
+          </Field>
+
+          <Field
+            label="Partner / affiliate link"
+            error={errors.externalUrl}
+            hint="ถ้าเป็นเกมร้านพาร์ทเนอร์: วางลิงก์เต็ม (รวม ?ref=) — การ์ดจะพาออกไปหน้าร้านนั้นแทนการจ่ายเงินในเว็บ (ไม่ต้องใส่ Plan). เว้นว่าง = เกมของคุณเอง"
+            full
+          >
+            <input
+              name="externalUrl"
+              type="url"
+              defaultValue={product.externalUrl ?? ""}
+              maxLength={500}
+              placeholder="https://aclassstore.com/products/ac-jump-evo?ref=JUDY-STUDIO"
               className={inputClass}
             />
           </Field>

@@ -41,6 +41,8 @@
   },
   "product": {
     "from": "From",
+    "partnerStore": "Partner",
+    "buyAtPartner": "Buy at partner store",
     "selectPlan": "Select a plan",
     "paymentMethod": "Payment method",
     "promptpayTitle": "PromptPay",

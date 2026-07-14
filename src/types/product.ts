@@ -25,6 +25,11 @@ export type Product = {
   images: string[];
   badge?: "hot" | "new" | "sale";
   plans: PricingPlan[];
+  /** When set, this is a partner/affiliate referral product — no own
+   *  checkout. The shop card links straight out to this URL (the full
+   *  partner link incl. their ref query) instead of opening the buy
+   *  modal, and `plans` is empty. */
+  externalUrl?: string;
   comingSoon?: boolean;
   /** True when "Try N minutes" is enabled. UI shows a trial CTA. */
   trialEnabled?: boolean;

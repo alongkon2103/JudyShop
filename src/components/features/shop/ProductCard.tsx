@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { ImageOff } from "lucide-react";
+import { ImageOff, ExternalLink } from "lucide-react";
 import { ImageWithSkeleton } from "@/components/ui/ImageWithSkeleton";
 import { Badge } from "@/components/ui/Badge";
 import { formatTHB, formatUSD } from "@/lib/format";
@@ -20,25 +20,25 @@ export function ProductCard({ product, onSelect }: Props) {
   // server render or a manual ProductGrid caller could pass one through.
   // Render "—" instead of crashing the entire shop page.
   const lowest = product.plans[0];
+  // Partner/affiliate referral product: no own checkout — the card is a
+  // plain outbound link to the partner store instead of a buy modal.
+  const isExternal = Boolean(product.externalUrl);
 
-  return (
-    <button
-      type="button"
-      onClick={() => onSelect(product)}
-      disabled={product.comingSoon}
-      className={cn(
-        // h-full keeps every card in a grid row the same height, even
-        // when one product's short description is 1 line and another's
-        // is 2 — the body grows, the price row stays pinned to the
-        // bottom via `mt-auto`.
-        "group/card relative flex h-full w-full flex-col overflow-hidden text-left",
-        "sticker rounded-lg sm:rounded-xl",
-        "transition-all duration-base ease-spring",
-        "hover:-translate-y-1.5",
-        "disabled:opacity-55 disabled:hover:translate-y-0",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-300",
-      )}
-    >
+  const className = cn(
+    // h-full keeps every card in a grid row the same height, even
+    // when one product's short description is 1 line and another's
+    // is 2 — the body grows, the price row stays pinned to the
+    // bottom via `mt-auto`.
+    "group/card relative flex h-full w-full flex-col overflow-hidden text-left",
+    "sticker rounded-lg sm:rounded-xl",
+    "transition-all duration-base ease-spring",
+    "hover:-translate-y-1.5",
+    "disabled:opacity-55 disabled:hover:translate-y-0",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-300",
+  );
+
+  const body = (
+    <>
       <div className="relative aspect-[5/3] w-full overflow-hidden bg-paper-2">
         {product.images.length > 0 ? (
           <ImageWithSkeleton
@@ -51,6 +51,14 @@ export function ProductCard({ product, onSelect }: Props) {
         ) : (
           <div className="grid h-full w-full place-items-center text-fg-light-mute">
             <ImageOff size={32} strokeWidth={1.5} aria-hidden />
+          </div>
+        )}
+        {isExternal && (
+          <div className="absolute left-2 top-2 sm:left-3 sm:top-3">
+            <span className="inline-flex items-center gap-1 rounded-full bg-black/60 px-2 py-1 font-sans text-[10px] font-extrabold uppercase tracking-[0.1em] text-white sm:text-[11px]">
+              <ExternalLink size={11} strokeWidth={2.5} aria-hidden />
+              {t("partnerStore")}
+            </span>
           </div>
         )}
         {product.badge && (
@@ -76,20 +84,60 @@ export function ProductCard({ product, onSelect }: Props) {
           {product.shortDescription || product.descriptionPlain}
         </p>
 
-        <div className="mt-auto flex items-end justify-between gap-2 pt-2 sm:pt-3">
-          <span className="hidden font-sans text-[11px] font-extrabold uppercase tracking-[0.12em] text-fg-light-mute sm:inline">
-            {t("from")}
-          </span>
-          <span className="ml-auto whitespace-nowrap font-display text-[16px] text-pink-400 sm:text-[20px]">
-            {lowest ? formatTHB(lowest.priceTHB) : "—"}
-            {lowest && (
-              <span className="hidden font-sans text-[12px] font-bold text-fg-light-mute sm:inline">
-                {" "}/ {formatUSD(lowest.priceUSD)}
-              </span>
-            )}
-          </span>
-        </div>
+        {isExternal ? (
+          // Understated on purpose — a quiet text link, not a filled
+          // button, so our own products' pink price stays the visual
+          // anchor. Colour lifts to pink only on hover.
+          <div className="mt-auto flex items-center justify-end gap-1.5 pt-2 sm:pt-3">
+            <span className="inline-flex items-center gap-1 whitespace-nowrap font-sans text-[11px] font-extrabold uppercase tracking-[0.1em] text-fg-light-mute transition-colors duration-fast group-hover/card:text-pink-400 sm:text-[12px]">
+              {t("buyAtPartner")}
+              <ExternalLink size={12} strokeWidth={2.5} aria-hidden />
+            </span>
+          </div>
+        ) : (
+          <div className="mt-auto flex items-end justify-between gap-2 pt-2 sm:pt-3">
+            <span className="hidden font-sans text-[11px] font-extrabold uppercase tracking-[0.12em] text-fg-light-mute sm:inline">
+              {t("from")}
+            </span>
+            <span className="ml-auto whitespace-nowrap font-display text-[16px] text-pink-400 sm:text-[20px]">
+              {lowest ? formatTHB(lowest.priceTHB) : "—"}
+              {lowest && (
+                <span className="hidden font-sans text-[12px] font-bold text-fg-light-mute sm:inline">
+                  {" "}/ {formatUSD(lowest.priceUSD)}
+                </span>
+              )}
+            </span>
+          </div>
+        )}
       </div>
+    </>
+  );
+
+  // Partner product (and not coming soon) → outbound link, opens in a new
+  // tab. rel="sponsored nofollow noopener noreferrer" is the standard for
+  // affiliate links (SEO honesty + tab-safety). Coming-soon partner cards
+  // fall through to the disabled button so the link can't be followed yet.
+  if (isExternal && !product.comingSoon) {
+    return (
+      <a
+        href={product.externalUrl}
+        target="_blank"
+        rel="sponsored nofollow noopener noreferrer"
+        className={className}
+      >
+        {body}
+      </a>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(product)}
+      disabled={product.comingSoon}
+      className={className}
+    >
+      {body}
     </button>
   );
 }

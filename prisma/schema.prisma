@@ -45,6 +45,14 @@ model Product {
   /// customer's order is fulfilled. Sits below "Open game" and above
   /// the preset download list — typically a setup guide / Drive link.
   gamePresetUrl String?
+  /// Affiliate / partner-store link. When set, this product is NOT sold
+  /// through our own checkout — it's a referral card. The public shop
+  /// renders it with an outbound "Buy at partner store" button (opens in
+  /// a new tab) instead of the plan/payment modal, and the product needs
+  /// no Plan rows. Store the full ready-made link the partner gave us,
+  /// including their ref query (e.g.
+  /// "https://aclassstore.com/products/ac-jump-evo?ref=JUDY-STUDIO").
+  externalUrl   String?
   isActive      Boolean       @default(true)
   comingSoon    Boolean       @default(false)
   /// Smaller value = appears first.

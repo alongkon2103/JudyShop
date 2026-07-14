@@ -106,6 +106,7 @@ export default async function AdminProductsPage() {
                           {p.isActive ? "Active" : "Hidden"}
                         </StatusBadge>
                         {p.comingSoon && <StatusBadge tone="warn">Soon</StatusBadge>}
+                        {p.externalUrl && <StatusBadge tone="accent">Partner</StatusBadge>}
                         {p.badge && <StatusBadge tone="accent">{p.badge}</StatusBadge>}
                       </div>
                     </td>

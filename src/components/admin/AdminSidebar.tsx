@@ -17,6 +17,7 @@ import {
   BarChart3,
   PlayCircle,
   Gavel,
+  BadgePercent,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 
@@ -28,6 +29,7 @@ const NAV: { section: string; items: NavItem[] }[] = [
     items: [
       { href: "/admin",           label: "Dashboard", icon: LayoutDashboard },
       { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+      { href: "/admin/affiliate", label: "Affiliate", icon: BadgePercent },
     ],
   },
   {

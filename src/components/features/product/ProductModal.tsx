@@ -334,8 +334,8 @@ export function ProductModal({
             </button>
           </div>
 
-          {/* <RobloxPreview username={username} onResolved={onRobloxResolved} />
-          <p className="text-[12px] leading-snug text-fg-light-soft">{t("robloxUsernameHint")}</p> */}
+          <RobloxPreview username={username} onResolved={onRobloxResolved} />
+          <p className="text-[12px] leading-snug text-fg-light-soft">{t("robloxUsernameHint")}</p>
 
         </div>
 

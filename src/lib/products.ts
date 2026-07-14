@@ -31,9 +31,11 @@ export async function getActiveProducts(locale: Locale = DEFAULT_LOCALE): Promis
   });
   // A product with no active plans isn't sellable — hide it from the
   // public shop rather than rendering a card with no price. Admin can
-  // still see/edit it from /admin/products.
+  // still see/edit it from /admin/products. Exception: partner/affiliate
+  // products (externalUrl set) are referral cards with no plans of their
+  // own, so they stay visible even without a plan.
   return rows
-    .filter((p) => p.plans.length > 0)
+    .filter((p) => p.plans.length > 0 || Boolean(p.externalUrl))
     .map((p) => normalize(p, locale));
 }
 
@@ -68,6 +70,7 @@ function normalize(p: DbProductFull, locale: Locale): Product {
       pickI18n(p.shortDescriptionEn, p.shortDescriptionTh, locale) || undefined,
     images: p.images.map((i) => i.url),
     badge: p.badge ? (p.badge.toLowerCase() as Product["badge"]) : undefined,
+    externalUrl: p.externalUrl ?? undefined,
     comingSoon: p.comingSoon,
     trialEnabled: p.trialEnabled,
     trialMinutes: p.trialMinutes,

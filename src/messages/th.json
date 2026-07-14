@@ -41,6 +41,8 @@
   },
   "product": {
     "from": "เริ่มต้น",
+    "partnerStore": "ร้านพาร์ทเนอร์",
+    "buyAtPartner": "ซื้อที่ร้านพาร์ทเนอร์",
     "selectPlan": "เลือกแพ็กเกจ",
     "paymentMethod": "ช่องทางชำระเงิน",
     "promptpayTitle": "พร้อมเพย์",

@@ -45,6 +45,9 @@ const ProductInput = z.object({
   // so the admin can clear them.
   gameLinkUrl:   z.string().max(500).url().optional().or(z.literal("")),
   gamePresetUrl: z.string().max(500).url().optional().or(z.literal("")),
+  // Partner/affiliate outbound link. When set, the product renders as a
+  // referral card (no own checkout / plans). Validated as a URL, "" clears.
+  externalUrl:   z.string().max(500).url().optional().or(z.literal("")),
   isActive: z.union([z.literal("on"), z.literal("")]).optional(),
   comingSoon: z.union([z.literal("on"), z.literal("")]).optional(),
   trialEnabled: z.union([z.literal("on"), z.literal("")]).optional(),
@@ -115,6 +118,7 @@ export async function createProductAction(
       gameId: parseGameId(data.gameId),
       gameLinkUrl:   opt(data.gameLinkUrl),
       gamePresetUrl: opt(data.gamePresetUrl),
+      externalUrl:   opt(data.externalUrl),
       isActive: data.isActive === "on",
       comingSoon: data.comingSoon === "on",
       trialEnabled: data.trialEnabled === "on",
@@ -188,6 +192,7 @@ export async function updateProductAction(
       gameId: parseGameId(data.gameId),
       gameLinkUrl:   opt(data.gameLinkUrl),
       gamePresetUrl: opt(data.gamePresetUrl),
+      externalUrl:   opt(data.externalUrl),
       isActive: data.isActive === "on",
       comingSoon: data.comingSoon === "on",
       trialEnabled: data.trialEnabled === "on",
