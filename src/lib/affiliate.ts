@@ -45,6 +45,11 @@ export type AffiliateSaleStatus = "pending" | "requested" | "paid" | "reversed";
 export type AffiliateSale = {
   date: string;
   product: string | null;
+  /** Roblox username the whitelist was granted to. May be absent on
+   *  older records / partial payloads. */
+  whitelisted_username: string | null;
+  /** Buyer email. May be absent on older records / partial payloads. */
+  email: string | null;
   sale_amount: number;
   commission_pct: number;
   commission: number;
@@ -135,24 +140,6 @@ export async function getAffiliateDashboard(): Promise<AffiliateResult> {
 }
 
 // ── Display helpers ──────────────────────────────────────────────────
-
-/** Money formatter — commissions carry satang, so always show 2 dp. */
-export function fmtAffMoney(amount: number, currency = "THB"): string {
-  return new Intl.NumberFormat("th-TH", {
-    style: "currency",
-    currency: currency || "THB",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(Number.isFinite(amount) ? amount : 0);
-}
-
-/** ISO 8601 → "13 ก.ค. 2026 16:41". Returns "—" for null/invalid. */
-export function fmtAffDate(iso: string | null): string {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "—";
-  return new Intl.DateTimeFormat("th-TH", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(d);
-}
+// Re-exported from a client-safe module so both the server page and the
+// "use client" sales table can format without importing the fetcher.
+export { fmtAffMoney, fmtAffDate } from "./affiliate-format";

@@ -6,7 +6,6 @@ import {
   WifiOff,
   ServerCrash,
   Ticket,
-  Receipt,
   Wallet,
 } from "lucide-react";
 import { requireAdmin } from "@/lib/admin-session";
@@ -20,14 +19,11 @@ import {
   type AffiliateResult,
   type AffiliateDashboard,
 } from "@/lib/affiliate";
+import { SalesTable } from "./SalesTable";
 
 export const metadata: Metadata = { title: "Affiliate" };
 // Money dashboard — always live, never cached.
 export const dynamic = "force-dynamic";
-
-// How many sale rows to render. The API returns up to 1000; showing them
-// all would bloat the page, so we cap and note the remainder.
-const SALES_LIMIT = 100;
 
 export default async function AffiliatePage() {
   await requireAdmin();
@@ -98,7 +94,6 @@ function ErrorState({ result }: { result: Extract<AffiliateResult, { ok: false }
 function Dashboard({ data }: { data: AffiliateDashboard }) {
   const { profile, totals, codes, sales, payouts } = data;
   const cur = totals.currency || "THB";
-  const shownSales = sales.slice(0, SALES_LIMIT);
 
   return (
     <div className="space-y-6">
@@ -181,51 +176,8 @@ function Dashboard({ data }: { data: AffiliateDashboard }) {
         )}
       </Panel>
 
-      {/* Sales */}
-      <Panel
-        title="รายการขาย / Sales"
-        icon={<Receipt size={16} />}
-        note={
-          sales.length > SALES_LIMIT
-            ? `แสดง ${SALES_LIMIT} รายการล่าสุด จากทั้งหมด ${sales.length.toLocaleString()}`
-            : undefined
-        }
-      >
-        {shownSales.length === 0 ? (
-          <EmptyRow text="ยังไม่มีรายการขาย" />
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[820px] border-collapse text-left text-[13px]">
-              <TableHead
-                cols={["วันที่", "Product", "ยอดขาย", "Comm %", "ค่าคอม", "Status"]}
-                rightFrom={2}
-              />
-              <tbody className="divide-y divide-line-light text-fg-light">
-                {shownSales.map((s, i) => (
-                  <tr key={`${s.date}-${i}`} className="hover:bg-paper-2/30">
-                    <td className="px-4 py-3 whitespace-nowrap text-fg-light-soft">
-                      {fmtAffDate(s.date)}
-                    </td>
-                    <td className="px-4 py-3">{s.product ?? "—"}</td>
-                    <td className="px-4 py-3 text-right tabular-nums text-fg-light-soft">
-                      {fmtAffMoney(s.sale_amount, cur)}
-                    </td>
-                    <td className="px-4 py-3 text-right tabular-nums text-fg-light-soft">
-                      {s.commission_pct}%
-                    </td>
-                    <td className="px-4 py-3 text-right font-semibold tabular-nums text-pink-500">
-                      {fmtAffMoney(s.commission, cur)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <StatusBadge tone={saleTone(s.status)}>{s.status}</StatusBadge>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Panel>
+      {/* Sales — client table with search + product sort */}
+      <SalesTable sales={sales} currency={cur} />
 
       {/* Payouts */}
       <Panel title="การจ่ายเงิน / Payouts" icon={<Wallet size={16} />}>
@@ -351,13 +303,6 @@ function EmptyRow({ text }: { text: string }) {
 }
 
 // ── Status → badge tone ──────────────────────────────────────────────
-
-function saleTone(status: string): "ok" | "warn" | "info" | "muted" {
-  if (status === "paid") return "ok";
-  if (status === "pending") return "warn";
-  if (status === "requested") return "info";
-  return "muted"; // reversed / unknown
-}
 
 function payoutTone(status: string): "ok" | "warn" | "info" | "muted" {
   if (status === "paid") return "ok";
